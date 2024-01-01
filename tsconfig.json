@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "strict": false,
+    "strictNullChecks": true,
+    "noEmit": true,
+    "allowJs": true,
+    "lib": ["es2020", "dom"],
+    "module": "esnext",
+    "target": "es2020",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+    "baseUrl": ".",
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@core/*": [
+        "./src/core/*"
+      ],
+      "@providers/*": [
+        "./src/providers/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".eslintrc.cjs",
+    "src/core/*/node_modules",
+    "src/core/*/dist",
+    "src/providers/*/node_modules", 
+    "src/providers/*/dist"
+  ]
+}

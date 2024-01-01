@@ -1,0 +1,14 @@
+{
+  "extends": "@repo/typescript-config/pub.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "./",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "baseUrl": "./"
+  },
+  "include": [
+    "tests", "src", "turbo", "tsup.config.ts", "examples"],
+  "exclude": ["node_modules", "dist"]
+}

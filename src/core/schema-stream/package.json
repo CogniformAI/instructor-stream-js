@@ -1,0 +1,45 @@
+{
+  "name": "@cogniformai/schema-stream",
+  "version": "3.2.2",
+  "author": "David Robertson <info@drobertson.pro> (https://x.com/davidalexr987)",
+  "homepage": "https://github.com/cogniformai/instructor-stream-js",
+  "private": true,
+  "repository": {
+    "directory": "src/core/schema-stream",
+    "type": "git",
+    "url": "https://github.com/cogniformai/instructor-stream-js.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "sideEffects": false,
+  "license": "MIT",
+  "scripts": {
+    "test": "bun test --coverage --verbose",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "TIMING=1 eslint src/**/*.ts* --fix",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.56.1",
+    "@types/ramda": "^0.30.2",
+    "bun-types": "^1.2.19",
+    "eslint": "^8.53.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "zod": "^4.0.5"
+  },
+  "peerDependencies": {
+    "zod": "^4.0.5"
+  },
+  "dependencies": {
+    "ramda": "^0.31.3"
+  }
+}
