@@ -1,10 +1,10 @@
-import { describe, expect, test } from "bun:test"
-import type OpenAI from "openai"
+import { describe, expect, test } from 'bun:test'
+import type OpenAI from 'openai'
 
-import { thinkingJsonParser } from "./thinking"
+import { thinkingJsonParser } from './thinking'
 
-describe("thinkingJsonParser", () => {
-  test("should parse JSON and include thinking content", () => {
+describe('thinkingJsonParser', () => {
+  test('should parse JSON and include thinking content', () => {
     const response = `<thinking>This is a thinking process</thinking>
     
     \`\`\`json
@@ -16,33 +16,33 @@ describe("thinkingJsonParser", () => {
     const result = thinkingJsonParser(response)
     const parsed = JSON.parse(result.json)
 
-    expect(parsed.result).toBe("test")
-    expect(result.thinking).toBe("This is a thinking process")
+    expect(parsed.result).toBe('test')
+    expect(result.thinking).toBe('This is a thinking process')
   })
 
-  test("should create JSON with only thinking when no JSON content", () => {
-    const response = "<think>Just thinking about stuff</think>"
+  test('should create JSON with only thinking when no JSON content', () => {
+    const response = '<think>Just thinking about stuff</think>'
     const result = thinkingJsonParser(response)
 
     expect(result?.thinking).toBeDefined()
-    expect(result?.json).toBe("")
+    expect(result?.json).toBe('')
   })
 
-  test("should parse JSON without thinking content", () => {
+  test('should parse JSON without thinking content', () => {
     const response = '```json\n{"test": true}\n```'
     const result = thinkingJsonParser(response)
     const parsed = JSON.parse(result.json)
     expect(parsed.test).toBe(true)
-    expect(result.thinking).toBe("")
+    expect(result.thinking).toBe('')
   })
 
-  test("should handle incomplete JSON in response", () => {
+  test('should handle incomplete JSON in response', () => {
     const response = '```json\n{"test": true'
     const result = thinkingJsonParser(response)
     expect(result.json).toBe('{"test": true')
   })
 
-  test("should handle nested markdown blocks", () => {
+  test('should handle nested markdown blocks', () => {
     const response = `<thinking>Consider this example:
 \`\`\`json
 {
@@ -59,44 +59,44 @@ Still thinking...</thinking>
 `
     const result = thinkingJsonParser(response)
     const parsed = JSON.parse(result.json)
-    expect(parsed.final).toBe("result")
+    expect(parsed.final).toBe('result')
     expect(result.thinking).toBe(
       'Consider this example:\n```json\n{\n  "example": "nested"\n}\n```\nStill thinking...'
     )
   })
 
-  test("should handle OpenAI streaming response", () => {
+  test('should handle OpenAI streaming response', () => {
     const response = {
-      id: "chatcmpl-123",
-      object: "chat.completion",
+      id: 'chatcmpl-123',
+      object: 'chat.completion',
       created: 1234567890,
-      model: "gpt-4",
+      model: 'gpt-4',
       choices: [
         {
           message: {
-            role: "assistant",
-            content: "<thinking>Processing...</thinking>"
-          }
-        }
-      ]
+            role: 'assistant',
+            content: '<thinking>Processing...</thinking>',
+          },
+        },
+      ],
     } as OpenAI.Chat.Completions.ChatCompletion
 
     const result = thinkingJsonParser(response)
 
-    expect(result?.thinking).toBe("Processing...")
+    expect(result?.thinking).toBe('Processing...')
   })
 
-  test("should handle OpenAI non-streaming response", () => {
+  test('should handle OpenAI non-streaming response', () => {
     const response = {
-      id: "chatcmpl-123",
-      object: "chat.completion",
+      id: 'chatcmpl-123',
+      object: 'chat.completion',
       created: 1234567890,
-      model: "gpt-4",
+      model: 'gpt-4',
       choices: [
         {
           index: 0,
           message: {
-            role: "assistant",
+            role: 'assistant',
             content: `<thinking>Final thoughts</thinking>
             
               \`\`\`json
@@ -104,20 +104,20 @@ Still thinking...</thinking>
                 "complete": true
               }
               \`\`\`
-              `
-          }
-        }
-      ]
+              `,
+          },
+        },
+      ],
     } as OpenAI.Chat.Completions.ChatCompletion
 
     const result = thinkingJsonParser(response)
     const parsed = JSON.parse(result.json)
     expect(parsed.complete).toBe(true)
-    expect(result.thinking).toBe("Final thoughts")
+    expect(result.thinking).toBe('Final thoughts')
   })
 
-  test("should handle empty or invalid input", () => {
-    expect(thinkingJsonParser("")).toEqual({ json: "", thinking: "" })
-    expect(thinkingJsonParser("no special content")).toEqual({ json: "", thinking: "" })
+  test('should handle empty or invalid input', () => {
+    expect(thinkingJsonParser('')).toEqual({ json: '', thinking: '' })
+    expect(thinkingJsonParser('no special content')).toEqual({ json: '', thinking: '' })
   })
 })

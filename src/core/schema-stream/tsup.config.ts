@@ -1,14 +1,14 @@
-import { defineConfig } from "tsup"
+import { defineConfig } from 'tsup'
 
-export default defineConfig(options => {
+export default defineConfig((options) => {
   return {
-    entry: ["src/index.ts"],
+    entry: ['src/index.ts'],
     dts: true,
     watch: options.watch,
     sourcemap: true,
     minify: true,
-    target: "es2020",
-    format: ["cjs", "esm"],
-    external: ["zod"]
+    target: 'es2020',
+    format: ['cjs', 'esm'],
+    external: ['zod'],
   }
 })

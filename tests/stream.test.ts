@@ -1,7 +1,7 @@
-import Instructor from "@/instructor"
-import { describe, expect, test } from "bun:test"
-import OpenAI from "openai"
-import { z } from "zod"
+import Instructor from '@/instructor'
+import { describe, expect, test } from 'bun:test'
+import OpenAI from 'openai'
+import { z } from 'zod'
 
 const textBlock = `
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -24,36 +24,36 @@ async function extractUser() {
         z.object({
           name: z.string(),
           handle: z.string(),
-          twitter: z.string()
+          twitter: z.string(),
         })
       )
       .min(3),
     location: z.string(),
-    budget: z.number()
+    budget: z.number(),
   })
 
   type Extraction = Partial<z.infer<typeof ExtractionValuesSchema>>
 
   const oai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY ?? undefined,
-    organization: process.env.OPENAI_ORG_ID ?? undefined
+    organization: process.env.OPENAI_ORG_ID ?? undefined,
   })
 
   const client = Instructor({
     client: oai,
-    mode: "TOOLS"
+    mode: 'TOOLS',
   })
 
   const extractionStream = await client.chat.completions.create({
-    messages: [{ role: "user", content: textBlock }],
-    model: "gpt-4o",
-    response_model: { schema: ExtractionValuesSchema, name: "Extr" },
+    messages: [{ role: 'user', content: textBlock }],
+    model: 'gpt-4o',
+    response_model: { schema: ExtractionValuesSchema, name: 'Extr' },
     max_retries: 3,
     stream: true,
     stream_options: {
-      include_usage: true
+      include_usage: true,
     },
-    seed: 1
+    seed: 1,
   })
 
   let extraction: Extraction = {}
@@ -61,7 +61,7 @@ async function extractUser() {
   for await (const result of extractionStream) {
     try {
       extraction = result
-      expect(result).toHaveProperty("users")
+      expect(result).toHaveProperty('users')
     } catch (e) {
       console.log(e)
       break
@@ -72,14 +72,14 @@ async function extractUser() {
   return extraction
 }
 
-describe("StreamFunctionCall", () => {
-  test("Generator: Should return extracted users and budget", async () => {
+describe('StreamFunctionCall', () => {
+  test('Generator: Should return extracted users and budget', async () => {
     const extraction = await extractUser()
 
     expect(extraction.users).toHaveLength(3)
-    expect(extraction.users![0]).toHaveProperty("name")
-    expect(extraction.users![0]).toHaveProperty("handle")
-    expect(extraction.users![0]).toHaveProperty("twitter")
+    expect(extraction.users![0]).toHaveProperty('name')
+    expect(extraction.users![0]).toHaveProperty('handle')
+    expect(extraction.users![0]).toHaveProperty('twitter')
     expect(extraction.budget).toBe(50000)
   })
 })

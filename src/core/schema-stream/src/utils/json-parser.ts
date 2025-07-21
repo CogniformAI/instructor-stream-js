@@ -5,10 +5,10 @@ import TokenParser, {
   StackElement,
   TokenParserMode,
   TokenParserState,
-  type TokenParserOptions
-} from "./token-parser"
-import TokenType from "./token-type"
-import Tokenizer, { type TokenizerOptions } from "./tokenizer"
+  type TokenParserOptions,
+} from './token-parser'
+import TokenType from './token-type'
+import Tokenizer, { type TokenizerOptions } from './tokenizer'
 
 export interface JSONParserOptions extends TokenizerOptions, TokenParserOptions {}
 
@@ -54,13 +54,13 @@ export default class JSONParser {
       tokenizer: ParsedTokenInfo
     }) => void
   ) {
-    this.tokenizer.onToken = parsedToken => {
+    this.tokenizer.onToken = (parsedToken) => {
       const valueTokenTypes = [
         TokenType.STRING,
         TokenType.NUMBER,
         TokenType.TRUE,
         TokenType.FALSE,
-        TokenType.NULL
+        TokenType.NULL,
       ]
 
       if (
@@ -72,9 +72,9 @@ export default class JSONParser {
             state: this.tokenParser.state,
             key: this.tokenParser.key,
             mode: this.tokenParser.mode,
-            stack: this.tokenParser.stack
+            stack: this.tokenParser.stack,
           },
-          tokenizer: parsedToken
+          tokenizer: parsedToken,
         })
       }
 

@@ -1,12 +1,12 @@
-import Instructor from "@/instructor"
-import OpenAI from "openai"
-import { z } from "zod"
+import Instructor from '@/instructor'
+import OpenAI from 'openai'
+import { z } from 'zod'
 
-const PrioritySchema = z.enum(["HIGH", "MEDIUM", "LOW"])
+const PrioritySchema = z.enum(['HIGH', 'MEDIUM', 'LOW'])
 
 const SubtaskSchema = z.object({
   id: z.number(),
-  name: z.string()
+  name: z.string(),
 })
 
 const TicketSchema = z.object({
@@ -16,41 +16,41 @@ const TicketSchema = z.object({
   priority: PrioritySchema,
   assignees: z.array(z.string()),
   subtasks: z.array(SubtaskSchema).optional(),
-  dependencies: z.array(z.number()).optional()
+  dependencies: z.array(z.number()).optional(),
 })
 
 const ActionItemsSchema = z.object({
-  items: z.array(TicketSchema)
+  items: z.array(TicketSchema),
 })
 
 const oai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY ?? undefined,
-  organization: process.env.OPENAI_ORG_ID ?? undefined
+  organization: process.env.OPENAI_ORG_ID ?? undefined,
 })
 
 const client = Instructor({
   client: oai,
-  mode: "TOOLS"
+  mode: 'TOOLS',
 })
 
 const extractActionItems = async (data: string) => {
   const actionItems = await client.chat.completions.create({
     messages: [
       {
-        role: "system",
-        content: "The following is a transcript of a meeting..."
+        role: 'system',
+        content: 'The following is a transcript of a meeting...',
       },
       {
-        role: "user",
-        content: `Create the action items for the following transcript: ${data}`
-      }
+        role: 'user',
+        content: `Create the action items for the following transcript: ${data}`,
+      },
     ],
-    model: "gpt-4o",
-    response_model: { schema: ActionItemsSchema, name: "ActionItems" },
+    model: 'gpt-4o',
+    response_model: { schema: ActionItemsSchema, name: 'ActionItems' },
     max_tokens: 1000,
     temperature: 0.0,
     max_retries: 2,
-    seed: 1
+    seed: 1,
   })
 
   return actionItems

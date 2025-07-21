@@ -1,6 +1,6 @@
-import Instructor from "@/instructor"
-import OpenAI from "openai"
-import { z } from "zod"
+import Instructor from '@/instructor'
+import OpenAI from 'openai'
+import { z } from 'zod'
 
 const textBlock = `
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -29,38 +29,38 @@ const ExtractionValuesSchema = z.object({
       z.object({
         name: z.string(),
         handle: z.string(),
-        twitter: z.string()
+        twitter: z.string(),
       })
     )
     .min(5),
   date: z.string(),
   location: z.string(),
   budget: z.number(),
-  deadline: z.string().min(1)
+  deadline: z.string().min(1),
 })
 
 const oai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY ?? undefined,
-  organization: process.env.OPENAI_ORG_ID ?? undefined
+  organization: process.env.OPENAI_ORG_ID ?? undefined,
 })
 
 const client = Instructor({
   client: oai,
-  mode: "TOOLS"
+  mode: 'TOOLS',
 })
 
 let extraction = {}
 
 const extractionStream = await client.chat.completions.create({
-  messages: [{ role: "user", content: textBlock }],
-  model: "gpt-4o",
+  messages: [{ role: 'user', content: textBlock }],
+  model: 'gpt-4o',
   response_model: {
     schema: ExtractionValuesSchema,
-    name: "value extraction"
+    name: 'value extraction',
   },
   max_retries: 3,
   stream: true,
-  seed: 1
+  seed: 1,
 })
 
 for await (const result of extractionStream) {
@@ -75,5 +75,5 @@ for await (const result of extractionStream) {
 }
 
 console.clear()
-console.log("completed extraction:")
+console.log('completed extraction:')
 console.table(extraction)

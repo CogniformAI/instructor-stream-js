@@ -1,15 +1,16 @@
-import OpenAI from "openai"
-import { Stream } from "openai/streaming"
-import { z } from "zod"
+import OpenAI from 'openai'
+import { Stream } from 'openai/streaming'
+import { z } from 'zod'
+
 import {
   CompletionMeta as ZCompletionMeta,
   type Mode as ZMode,
-  type ResponseModel as ZResponseModel
-} from "../core/zod-stream/src"
+  type ResponseModel as ZResponseModel,
+} from '../core/zod-stream/src'
 
 export type GenericCreateParams<M = unknown> = Omit<
   Partial<OpenAI.ChatCompletionCreateParams>,
-  "model" | "messages"
+  'model' | 'messages'
 > & {
   model: string
   messages: M[]
@@ -51,20 +52,20 @@ export type ClientTypeChatCompletionRequestOptions<C> =
   C extends OpenAI ? OpenAI.RequestOptions : GenericRequestOptions
 
 export type ClientType<C> =
-  C extends OpenAI ? "openai"
-  : C extends GenericClient ? "generic"
+  C extends OpenAI ? 'openai'
+  : C extends GenericClient ? 'generic'
   : never
 
 export type OpenAILikeClient<C> = OpenAI | (C & GenericClient)
 export type SupportedInstructorClient = GenericClient | OpenAI
-export type LogLevel = "debug" | "info" | "warn" | "error"
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export type CompletionMeta = Partial<ZCompletionMeta> & {
   usage?: OpenAI.CompletionUsage
   thinking?: string
 }
 
-export type Mode = ZMode | "THINKING_MD_JSON"
+export type Mode = ZMode | 'THINKING_MD_JSON'
 
 export type ResponseModel<T extends z.ZodTypeAny> = ZResponseModel<T>
 

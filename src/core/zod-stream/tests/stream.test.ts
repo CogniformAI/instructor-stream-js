@@ -1,9 +1,10 @@
-import { OAIStream } from "../src/oai/stream"
-import { withResponseModel } from "../src/response-model"
-import ZodStream from "../src/structured-stream.client"
-import { describe, expect, test } from "bun:test"
-import OpenAI from "openai"
-import { z } from "zod"
+import { describe, expect, test } from 'bun:test'
+import OpenAI from 'openai'
+import { z } from 'zod'
+
+import { OAIStream } from '../src/oai/stream'
+import { withResponseModel } from '../src/response-model'
+import ZodStream from '../src/structured-stream.client'
 
 const textBlock = `
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -25,37 +26,37 @@ const ExtractionValuesSchema = z.object({
       z.object({
         name: z.string(),
         handle: z.string(),
-        twitter: z.string()
+        twitter: z.string(),
       })
     )
     .min(3),
   location: z.string(),
-  budget: z.number()
+  budget: z.number(),
 })
 
 async function CreateOAIStream() {
   const oai = new OpenAI({
-    apiKey: process.env["OPENAI_API_KEY"] ?? undefined,
-    organization: process.env["OPENAI_ORG_ID"] ?? undefined
+    apiKey: process.env['OPENAI_API_KEY'] ?? undefined,
+    organization: process.env['OPENAI_ORG_ID'] ?? undefined,
   })
 
   const params = withResponseModel({
-    response_model: { schema: ExtractionValuesSchema, name: "Extract" },
+    response_model: { schema: ExtractionValuesSchema, name: 'Extract' },
     params: {
-      messages: [{ role: "user", content: textBlock }],
-      model: "gpt-4",
-      seed: 1
+      messages: [{ role: 'user', content: textBlock }],
+      model: 'gpt-4',
+      seed: 1,
     },
-    mode: "TOOLS"
+    mode: 'TOOLS',
   })
 
   const extractionStream = await oai.chat.completions.create({
     ...params,
-    stream: true
+    stream: true,
   })
 
   return OAIStream({
-    res: extractionStream
+    res: extractionStream,
   })
 }
 
@@ -64,7 +65,7 @@ async function extractUser() {
 
   const extractionStream = await client.create({
     completionPromise: CreateOAIStream,
-    response_model: { schema: ExtractionValuesSchema, name: "Extract" }
+    response_model: { schema: ExtractionValuesSchema, name: 'Extract' },
   })
 
   let result: Partial<z.infer<typeof ExtractionValuesSchema>> = {}
@@ -76,12 +77,12 @@ async function extractUser() {
   return result
 }
 
-describe("OAI structured stream - basic", () => {
-  test("Generator: Should return extracted users and budget", async () => {
+describe('OAI structured stream - basic', () => {
+  test('Generator: Should return extracted users and budget', async () => {
     const extraction = await extractUser()
     expect(extraction?.users).toHaveLength(3)
-    expect(extraction?.users![0]).toHaveProperty("name")
-    expect(extraction?.users![0]).toHaveProperty("handle")
-    expect(extraction?.users![0]).toHaveProperty("twitter")
+    expect(extraction?.users![0]).toHaveProperty('name')
+    expect(extraction?.users![0]).toHaveProperty('handle')
+    expect(extraction?.users![0]).toHaveProperty('twitter')
   })
 })

@@ -1,7 +1,7 @@
-import Instructor from "@/index"
-import { describe, expect, test } from "bun:test"
-import OpenAI from "openai"
-import { z } from "zod"
+import Instructor from '@/index'
+import { describe, expect, test } from 'bun:test'
+import OpenAI from 'openai'
+import { z } from 'zod'
 
 const textBlock = `
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -23,7 +23,7 @@ const ExtractionValuesSchema = z.object({
       z.object({
         name: z.string(),
         email: z.string(),
-        twitter: z.string()
+        twitter: z.string(),
       })
     )
     .min(3),
@@ -31,50 +31,50 @@ const ExtractionValuesSchema = z.object({
     date: z.string(),
     venue: z.string(),
     budget: z.number(),
-    keynoteSpeaker: z.string()
+    keynoteSpeaker: z.string(),
   }),
   nextMeeting: z.object({
     date: z.string(),
     time: z.string(),
-    timezone: z.string()
-  })
+    timezone: z.string(),
+  }),
 })
 
-describe("thinking parser - live tests", () => {
-  test("should parse r1 response with thinking tags", async () => {
+describe('thinking parser - live tests', () => {
+  test('should parse r1 response with thinking tags', async () => {
     const groq = new OpenAI({
-      apiKey: process.env["GROQ_API_KEY"] ?? undefined,
-      baseURL: "https://api.groq.com/openai/v1"
+      apiKey: process.env['GROQ_API_KEY'] ?? undefined,
+      baseURL: 'https://api.groq.com/openai/v1',
     })
 
     const client = Instructor({
       client: groq,
-      mode: "THINKING_MD_JSON",
-      debug: true
+      mode: 'THINKING_MD_JSON',
+      debug: true,
     })
 
     const result = await client.chat.completions.create({
-      messages: [{ role: "user", content: textBlock }],
-      model: "deepseek-r1-distill-llama-70b",
-      response_model: { schema: ExtractionValuesSchema, name: "Extract" },
-      max_retries: 4
+      messages: [{ role: 'user', content: textBlock }],
+      model: 'deepseek-r1-distill-llama-70b',
+      response_model: { schema: ExtractionValuesSchema, name: 'Extract' },
+      max_retries: 4,
     })
 
-    console.log("result", result)
+    console.log('result', result)
 
     expect(result._meta?.thinking).toBeDefined()
-    expect(typeof result._meta?.thinking).toBe("string")
+    expect(typeof result._meta?.thinking).toBe('string')
 
     expect(result.users).toHaveLength(3)
-    expect(result.users[0]).toHaveProperty("name")
-    expect(result.users[0]).toHaveProperty("email")
-    expect(result.users[0]).toHaveProperty("twitter")
+    expect(result.users[0]).toHaveProperty('name')
+    expect(result.users[0]).toHaveProperty('email')
+    expect(result.users[0]).toHaveProperty('twitter')
 
     expect(result.conference).toBeDefined()
     expect(result.conference.budget).toBe(50000)
-    expect(result.conference.keynoteSpeaker).toBe("Dr. Emily Johnson")
+    expect(result.conference.keynoteSpeaker).toBe('Dr. Emily Johnson')
 
     expect(result.nextMeeting).toBeDefined()
-    expect(result.nextMeeting.timezone).toBe("GMT")
+    expect(result.nextMeeting.timezone).toBe('GMT')
   })
 })

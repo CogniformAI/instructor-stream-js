@@ -8,10 +8,10 @@
  *
  */
 
-import { BufferedString, NonBufferedString, type StringBuilder } from "./buffered-string"
-import type { ParsedTokenInfo } from "./token-parser"
-import TokenType from "./token-type"
-import { charset, escapedSequences } from "./utf-8"
+import { BufferedString, NonBufferedString, type StringBuilder } from './buffered-string'
+import type { ParsedTokenInfo } from './token-parser'
+import TokenType from './token-type'
+import { charset, escapedSequences } from './utf-8'
 
 // Tokenizer States
 const enum TokenizerStates {
@@ -43,40 +43,40 @@ const enum TokenizerStates {
   NUMBER_AFTER_E,
   NUMBER_AFTER_E_AND_SIGN,
   NUMBER_AFTER_E_AND_DIGIT,
-  SEPARATOR
+  SEPARATOR,
 }
 
 function TokenizerStateToString(tokenizerState: TokenizerStates): string {
   return [
-    "START",
-    "ENDED",
-    "ERROR",
-    "TRUE1",
-    "TRUE2",
-    "TRUE3",
-    "FALSE1",
-    "FALSE2",
-    "FALSE3",
-    "FALSE4",
-    "NULL1",
-    "NULL2",
-    "NULL3",
-    "STRING_DEFAULT",
-    "STRING_AFTER_BACKSLASH",
-    "STRING_UNICODE_DIGIT_1",
-    "STRING_UNICODE_DIGIT_2",
-    "STRING_UNICODE_DIGIT_3",
-    "STRING_UNICODE_DIGIT_4",
-    "STRING_INCOMPLETE_CHAR",
-    "NUMBER_AFTER_INITIAL_MINUS",
-    "NUMBER_AFTER_INITIAL_ZERO",
-    "NUMBER_AFTER_INITIAL_NON_ZERO",
-    "NUMBER_AFTER_FULL_STOP",
-    "NUMBER_AFTER_DECIMAL",
-    "NUMBER_AFTER_E",
-    "NUMBER_AFTER_E_AND_SIGN",
-    "NUMBER_AFTER_E_AND_DIGIT",
-    "SEPARATOR"
+    'START',
+    'ENDED',
+    'ERROR',
+    'TRUE1',
+    'TRUE2',
+    'TRUE3',
+    'FALSE1',
+    'FALSE2',
+    'FALSE3',
+    'FALSE4',
+    'NULL1',
+    'NULL2',
+    'NULL3',
+    'STRING_DEFAULT',
+    'STRING_AFTER_BACKSLASH',
+    'STRING_UNICODE_DIGIT_1',
+    'STRING_UNICODE_DIGIT_2',
+    'STRING_UNICODE_DIGIT_3',
+    'STRING_UNICODE_DIGIT_4',
+    'STRING_INCOMPLETE_CHAR',
+    'NUMBER_AFTER_INITIAL_MINUS',
+    'NUMBER_AFTER_INITIAL_ZERO',
+    'NUMBER_AFTER_INITIAL_NON_ZERO',
+    'NUMBER_AFTER_FULL_STOP',
+    'NUMBER_AFTER_DECIMAL',
+    'NUMBER_AFTER_E',
+    'NUMBER_AFTER_E_AND_SIGN',
+    'NUMBER_AFTER_E_AND_DIGIT',
+    'SEPARATOR',
   ][tokenizerState]
 }
 
@@ -91,7 +91,7 @@ const defaultOpts: TokenizerOptions = {
   stringBufferSize: 0,
   numberBufferSize: 0,
   separator: undefined,
-  handleUnescapedNewLines: false
+  handleUnescapedNewLines: false,
 }
 
 export class TokenizerError extends Error {
@@ -123,25 +123,25 @@ export default class Tokenizer {
   constructor(opts?: TokenizerOptions) {
     opts = { ...defaultOpts, ...opts }
 
-    const onIncrementalString = str => {
+    const onIncrementalString = (str) => {
       this.onToken({
         token: TokenType.STRING,
         value: str,
-        partial: true
+        partial: true,
       })
     }
 
     this.bufferedString =
-      opts?.stringBufferSize && opts.stringBufferSize > 0
-        ? new BufferedString(opts.stringBufferSize)
-        : new NonBufferedString({
-            onIncrementalString
-          })
+      opts?.stringBufferSize && opts.stringBufferSize > 0 ?
+        new BufferedString(opts.stringBufferSize)
+      : new NonBufferedString({
+          onIncrementalString,
+        })
 
     this.bufferedNumber =
-      opts?.numberBufferSize && opts.numberBufferSize > 0
-        ? new BufferedString(opts.numberBufferSize, onIncrementalString)
-        : new NonBufferedString({})
+      opts?.numberBufferSize && opts.numberBufferSize > 0 ?
+        new BufferedString(opts.numberBufferSize, onIncrementalString)
+      : new NonBufferedString({})
 
     this.handleUnescapedNewLines = opts?.handleUnescapedNewLines ?? false
     this.separator = opts?.separator
@@ -157,13 +157,13 @@ export default class Tokenizer {
       let buffer: Uint8Array
       if (input instanceof Uint8Array) {
         buffer = input
-      } else if (typeof input === "string") {
+      } else if (typeof input === 'string') {
         buffer = this.encoder.encode(input)
-      } else if ((typeof input === "object" && "buffer" in input) || Array.isArray(input)) {
+      } else if ((typeof input === 'object' && 'buffer' in input) || Array.isArray(input)) {
         buffer = Uint8Array.from(input)
       } else {
         throw new TypeError(
-          "Unexpected type. The `write` function only accepts Arrays, TypedArrays and Strings."
+          'Unexpected type. The `write` function only accepts Arrays, TypedArrays and Strings.'
         )
       }
 
@@ -179,7 +179,7 @@ export default class Tokenizer {
                 this.onToken({
                   token: TokenType.SEPARATOR,
                   value: this.separator as string,
-                  offset: this.offset + this.separatorBytes.length - 1
+                  offset: this.offset + this.separatorBytes.length - 1,
                 })
                 continue
               }
@@ -200,48 +200,48 @@ export default class Tokenizer {
             if (n === charset.LEFT_CURLY_BRACKET) {
               this.onToken({
                 token: TokenType.LEFT_BRACE,
-                value: "{",
-                offset: this.offset
+                value: '{',
+                offset: this.offset,
               })
               continue
             }
             if (n === charset.RIGHT_CURLY_BRACKET) {
               this.onToken({
                 token: TokenType.RIGHT_BRACE,
-                value: "}",
-                offset: this.offset
+                value: '}',
+                offset: this.offset,
               })
               continue
             }
             if (n === charset.LEFT_SQUARE_BRACKET) {
               this.onToken({
                 token: TokenType.LEFT_BRACKET,
-                value: "[",
-                offset: this.offset
+                value: '[',
+                offset: this.offset,
               })
               continue
             }
             if (n === charset.RIGHT_SQUARE_BRACKET) {
               this.onToken({
                 token: TokenType.RIGHT_BRACKET,
-                value: "]",
-                offset: this.offset
+                value: ']',
+                offset: this.offset,
               })
               continue
             }
             if (n === charset.COLON) {
               this.onToken({
                 token: TokenType.COLON,
-                value: ":",
-                offset: this.offset
+                value: ':',
+                offset: this.offset,
               })
               continue
             }
             if (n === charset.COMMA) {
               this.onToken({
                 token: TokenType.COMMA,
-                value: ",",
-                offset: this.offset
+                value: ',',
+                offset: this.offset,
               })
               continue
             }
@@ -303,7 +303,7 @@ export default class Tokenizer {
               this.onToken({
                 token: TokenType.STRING,
                 value: string,
-                offset: this.offset
+                offset: this.offset,
               })
               this.offset += this.bufferedString.byteLength + 1
               continue
@@ -363,7 +363,7 @@ export default class Tokenizer {
             }
 
             if (n === charset.LATIN_SMALL_LETTER_U) {
-              this.unicode = ""
+              this.unicode = ''
               this.state = TokenizerStates.STRING_UNICODE_DIGIT_1
               continue
             }
@@ -536,7 +536,7 @@ export default class Tokenizer {
               this.onToken({
                 token: TokenType.TRUE,
                 value: true,
-                offset: this.offset
+                offset: this.offset,
               })
               this.offset += 3
               continue
@@ -567,7 +567,7 @@ export default class Tokenizer {
               this.onToken({
                 token: TokenType.FALSE,
                 value: false,
-                offset: this.offset
+                offset: this.offset,
               })
               this.offset += 4
               continue
@@ -592,7 +592,7 @@ export default class Tokenizer {
               this.onToken({
                 token: TokenType.NULL,
                 value: null,
-                offset: this.offset
+                offset: this.offset,
               })
               this.offset += 3
               continue
@@ -608,7 +608,7 @@ export default class Tokenizer {
               this.onToken({
                 token: TokenType.SEPARATOR,
                 value: this.separator as string,
-                offset: this.offset + this.separatorIndex
+                offset: this.offset + this.separatorIndex,
               })
               this.separatorIndex = 0
             }
@@ -641,7 +641,7 @@ export default class Tokenizer {
     this.onToken({
       token: TokenType.NUMBER,
       value: this.parseNumber(this.bufferedNumber.toString()),
-      offset: this.offset
+      offset: this.offset,
     })
     this.offset += this.bufferedNumber.byteLength - 1
   }

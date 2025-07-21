@@ -1,6 +1,6 @@
-import Instructor from "@/instructor"
-import OpenAI from "openai"
-import { z } from "zod"
+import Instructor from '@/instructor'
+import OpenAI from 'openai'
+import { z } from 'zod'
 
 const textBlock = `
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -29,36 +29,36 @@ const ExtractionValuesSchema = z.object({
       z.object({
         name: z.string(),
         handle: z.string(),
-        twitter: z.string()
+        twitter: z.string(),
       })
     )
     .min(5),
   date: z.string(),
   location: z.string(),
   budget: z.number(),
-  deadline: z.string().min(1)
+  deadline: z.string().min(1),
 })
 
 export const groq = new OpenAI({
-  baseURL: "https://api.groq.com/openai/v1",
-  apiKey: process.env["GROQ_API_KEY"]
+  baseURL: 'https://api.groq.com/openai/v1',
+  apiKey: process.env['GROQ_API_KEY'],
 })
 
 const client = Instructor({
   client: groq,
-  mode: "MD_JSON"
+  mode: 'MD_JSON',
 })
 
 let extraction = {}
 
 const extractionStream = await client.chat.completions.create({
-  messages: [{ role: "user", content: textBlock }],
-  model: "llama3-70b-8192",
+  messages: [{ role: 'user', content: textBlock }],
+  model: 'llama3-70b-8192',
   response_model: {
     schema: ExtractionValuesSchema,
-    name: "value extraction"
+    name: 'value extraction',
   },
-  stream: true
+  stream: true,
 })
 
 for await (const result of extractionStream) {
@@ -73,5 +73,5 @@ for await (const result of extractionStream) {
 }
 
 console.clear()
-console.log("completed extraction:")
+console.log('completed extraction:')
 console.table(extraction)

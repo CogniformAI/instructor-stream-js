@@ -17,7 +17,7 @@ export interface StringBuilder {
 }
 
 export class NonBufferedString implements StringBuilder {
-  private decoder = new TextDecoder("utf-8")
+  private decoder = new TextDecoder('utf-8')
   private strings: Array<string> = []
   private onIncrementalString?: (str: string) => void
 
@@ -49,15 +49,15 @@ export class NonBufferedString implements StringBuilder {
   }
 
   public toString(): string {
-    return this.strings.join("")
+    return this.strings.join('')
   }
 }
 
 export class BufferedString implements StringBuilder {
-  private decoder = new TextDecoder("utf-8")
+  private decoder = new TextDecoder('utf-8')
   private buffer: Uint8Array
   private bufferOffset = 0
-  private string = ""
+  private string = ''
   private onIncrementalString?: (str: string) => void
 
   public byteLength = 0
@@ -93,7 +93,7 @@ export class BufferedString implements StringBuilder {
   }
 
   public reset(): void {
-    this.string = ""
+    this.string = ''
     this.bufferOffset = 0
     this.byteLength = 0
   }

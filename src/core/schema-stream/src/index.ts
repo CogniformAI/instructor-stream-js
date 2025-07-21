@@ -1,1 +1,1 @@
-export * from "./utils/streaming-json-parser"
+export * from './utils/streaming-json-parser'

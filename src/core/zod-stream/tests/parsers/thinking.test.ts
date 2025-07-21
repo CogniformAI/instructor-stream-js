@@ -1,8 +1,9 @@
-import { thinkingJsonParser } from "../../src/parsers/thinking"
-import { withResponseModel } from "../../src/response-model"
-import { describe, expect, test } from "bun:test"
-import OpenAI from "openai"
-import { z } from "zod"
+import { describe, expect, test } from 'bun:test'
+import OpenAI from 'openai'
+import { z } from 'zod'
+
+import { thinkingJsonParser } from '../../src/parsers/thinking'
+import { withResponseModel } from '../../src/response-model'
 
 const textBlock = `
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -24,7 +25,7 @@ const ExtractionValuesSchema = z.object({
       z.object({
         name: z.string(),
         email: z.string(),
-        twitter: z.string()
+        twitter: z.string(),
       })
     )
     .min(3),
@@ -32,36 +33,36 @@ const ExtractionValuesSchema = z.object({
     date: z.string(),
     venue: z.string(),
     budget: z.number(),
-    keynoteSpeaker: z.string()
+    keynoteSpeaker: z.string(),
   }),
   nextMeeting: z.object({
     date: z.string(),
     time: z.string(),
-    timezone: z.string()
+    timezone: z.string(),
   }),
-  _thinking: z.string().optional()
+  _thinking: z.string().optional(),
 })
 
-describe("thinking parser - live tests", () => {
-  test("should parse Groq streaming response with thinking tags", async () => {
+describe('thinking parser - live tests', () => {
+  test('should parse Groq streaming response with thinking tags', async () => {
     const groq = new OpenAI({
-      apiKey: process.env["GROQ_API_KEY"] ?? undefined,
-      baseURL: "https://api.groq.com/openai/v1"
+      apiKey: process.env['GROQ_API_KEY'] ?? undefined,
+      baseURL: 'https://api.groq.com/openai/v1',
     })
 
     const params = withResponseModel({
-      response_model: { schema: ExtractionValuesSchema, name: "Extract" },
+      response_model: { schema: ExtractionValuesSchema, name: 'Extract' },
       params: {
-        messages: [{ role: "user", content: `${textBlock}\n\nPlease extract all key points.` }],
-        model: "deepseek-r1-distill-llama-70b",
-        temperature: 0.5
+        messages: [{ role: 'user', content: `${textBlock}\n\nPlease extract all key points.` }],
+        model: 'deepseek-r1-distill-llama-70b',
+        temperature: 0.5,
       },
-      mode: "THINKING_MD_JSON"
+      mode: 'THINKING_MD_JSON',
     })
 
     const stream = await groq.chat.completions.create({
       ...params,
-      stream: false
+      stream: false,
     })
 
     const resultString = thinkingJsonParser(stream)
@@ -70,26 +71,26 @@ describe("thinking parser - live tests", () => {
 
     // Verify thinking was captured
     expect(resultString.thinking).toBeDefined()
-    expect(typeof resultString.thinking).toBe("string")
+    expect(typeof resultString.thinking).toBe('string')
 
     // Verify data structure
     expect(result.users).toHaveLength(3)
-    expect(result.users[0]).toHaveProperty("name")
-    expect(result.users[0]).toHaveProperty("email")
-    expect(result.users[0]).toHaveProperty("twitter")
+    expect(result.users[0]).toHaveProperty('name')
+    expect(result.users[0]).toHaveProperty('email')
+    expect(result.users[0]).toHaveProperty('twitter')
 
     expect(result.conference).toBeDefined()
     expect(result.conference.budget).toBe(50000)
-    expect(result.conference.keynoteSpeaker).toBe("Dr. Emily Johnson")
+    expect(result.conference.keynoteSpeaker).toBe('Dr. Emily Johnson')
 
     expect(result.nextMeeting).toBeDefined()
-    expect(result.nextMeeting.timezone).toBe("GMT")
+    expect(result.nextMeeting.timezone).toBe('GMT')
   })
 
-  test("should parse Groq streaming response with thinking tags and provide details", async () => {
+  test('should parse Groq streaming response with thinking tags and provide details', async () => {
     const groq = new OpenAI({
-      apiKey: process.env["GROQ_API_KEY"] ?? undefined,
-      baseURL: "https://api.groq.com/openai/v1"
+      apiKey: process.env['GROQ_API_KEY'] ?? undefined,
+      baseURL: 'https://api.groq.com/openai/v1',
     })
 
     const MeetingDetailsSchema = z.object({
@@ -98,30 +99,30 @@ describe("thinking parser - live tests", () => {
       nextMeetingTime: z.string(),
       nextMeetingTimezone: z.string(),
       nextMeetingLocation: z.string(),
-      meetingPreparation: z.string()
+      meetingPreparation: z.string(),
     })
 
     const params = withResponseModel({
       response_model: {
         schema: MeetingDetailsSchema,
-        name: "Extract"
+        name: 'Extract',
       },
       params: {
         messages: [
           {
-            role: "user",
-            content: `${textBlock}\n\n What are the details of the next meeting and what should I know to prepare for it?`
-          }
+            role: 'user',
+            content: `${textBlock}\n\n What are the details of the next meeting and what should I know to prepare for it?`,
+          },
         ],
-        model: "deepseek-r1-distill-llama-70b",
-        temperature: 0.5
+        model: 'deepseek-r1-distill-llama-70b',
+        temperature: 0.5,
       },
-      mode: "THINKING_MD_JSON"
+      mode: 'THINKING_MD_JSON',
     })
 
     const stream = await groq.chat.completions.create({
       ...params,
-      stream: false
+      stream: false,
     })
 
     const resultString = thinkingJsonParser(stream)
@@ -130,19 +131,19 @@ describe("thinking parser - live tests", () => {
 
     // Verify thinking was captured
     expect(resultString.thinking).toBeDefined()
-    expect(typeof resultString.thinking).toBe("string")
+    expect(typeof resultString.thinking).toBe('string')
 
     expect(result.nextMeeting).toBeDefined()
-    expect(typeof result.nextMeeting).toBe("string")
+    expect(typeof result.nextMeeting).toBe('string')
     expect(result.nextMeetingDate).toBeDefined()
-    expect(typeof result.nextMeetingDate).toBe("string")
+    expect(typeof result.nextMeetingDate).toBe('string')
     expect(result.nextMeetingTime).toBeDefined()
-    expect(typeof result.nextMeetingTime).toBe("string")
+    expect(typeof result.nextMeetingTime).toBe('string')
     expect(result.nextMeetingTimezone).toBeDefined()
-    expect(typeof result.nextMeetingTimezone).toBe("string")
+    expect(typeof result.nextMeetingTimezone).toBe('string')
     expect(result.nextMeetingLocation).toBeDefined()
-    expect(typeof result.nextMeetingLocation).toBe("string")
+    expect(typeof result.nextMeetingLocation).toBe('string')
     expect(result.meetingPreparation).toBeDefined()
-    expect(typeof result.meetingPreparation).toBe("string")
+    expect(typeof result.meetingPreparation).toBe('string')
   })
 })

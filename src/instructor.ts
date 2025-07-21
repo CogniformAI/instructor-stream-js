@@ -1,18 +1,7 @@
-import {
-  ChatCompletionCreateParamsWithModel,
-  ClientTypeChatCompletionRequestOptions,
-  GenericChatCompletion,
-  GenericClient,
-  InstructorConfig,
-  LogLevel,
-  OpenAILikeClient,
-  ReturnTypeBasedOnParams
-} from "./types"
-import OpenAI from "openai"
-import { Stream } from "openai/streaming"
-import { z, ZodError } from "zod"
-import ZodStream, { OAIResponseParser, OAIStream, withResponseModel } from "./core/zod-stream/src"
-import { fromZodError } from "zod-validation-error"
+import OpenAI from 'openai'
+import { Stream } from 'openai/streaming'
+import { z, ZodError } from 'zod'
+import { fromZodError } from 'zod-validation-error'
 
 import {
   MODE_TO_RESPONSE_PARSER,
@@ -20,10 +9,23 @@ import {
   Provider,
   PROVIDER_PARAMS_TRANSFORMERS,
   PROVIDER_SUPPORTED_MODES,
-  PROVIDERS
-} from "./constants/providers"
-import { iterableTee } from "./lib"
-import { ClientTypeChatCompletionParams, CompletionMeta, Mode } from "./types"
+  PROVIDERS,
+} from './constants/providers'
+import ZodStream, { OAIResponseParser, OAIStream, withResponseModel } from './core/zod-stream/src'
+import { iterableTee } from './lib'
+import {
+  ChatCompletionCreateParamsWithModel,
+  ClientTypeChatCompletionParams,
+  ClientTypeChatCompletionRequestOptions,
+  CompletionMeta,
+  GenericChatCompletion,
+  GenericClient,
+  InstructorConfig,
+  LogLevel,
+  Mode,
+  OpenAILikeClient,
+  ReturnTypeBasedOnParams,
+} from './types'
 
 const MAX_RETRIES_DEFAULT = 0
 
@@ -45,10 +47,10 @@ class Instructor<C> {
     mode,
     debug = false,
     logger = undefined,
-    retryAllErrors = false
+    retryAllErrors = false,
   }: InstructorConfig<C>) {
     if (!isGenericClient(client) && !(client instanceof OpenAI)) {
-      throw new Error("Client does not match the required structure")
+      throw new Error('Client does not match the required structure')
     }
 
     if (client instanceof OpenAI) {
@@ -64,7 +66,7 @@ class Instructor<C> {
     this.logger = logger ?? undefined
 
     const provider =
-      typeof this.client?.baseURL === "string" ?
+      typeof this.client?.baseURL === 'string' ?
         this.client?.baseURL.includes(NON_OAI_PROVIDER_URLS.ANYSCALE) ? PROVIDERS.ANYSCALE
         : this.client?.baseURL.includes(NON_OAI_PROVIDER_URLS.TOGETHER) ? PROVIDERS.TOGETHER
         : this.client?.baseURL.includes(NON_OAI_PROVIDER_URLS.OAI) ? PROVIDERS.OAI
@@ -82,11 +84,11 @@ class Instructor<C> {
     const isModeSupported = PROVIDER_SUPPORTED_MODES[this.provider].includes(this.mode)
 
     if (this.provider === PROVIDERS.OTHER) {
-      this.log("debug", "Unknown provider - cant validate options.")
+      this.log('debug', 'Unknown provider - cant validate options.')
     }
 
     if (!isModeSupported) {
-      this.log("warn", `Mode ${this.mode} may not be supported by provider ${this.provider}`)
+      this.log('warn', `Mode ${this.mode} may not be supported by provider ${this.provider}`)
     }
   }
 
@@ -95,22 +97,22 @@ class Instructor<C> {
       this.logger(level, ...args)
     }
 
-    if (!this.debug && level === "debug") {
+    if (!this.debug && level === 'debug') {
       return
     }
 
     const timestamp = new Date().toISOString()
     switch (level) {
-      case "debug":
+      case 'debug':
         console.debug(`[Instructor:DEBUG] ${timestamp}:`, ...args)
         break
-      case "info":
+      case 'info':
         console.info(`[Instructor:INFO] ${timestamp}:`, ...args)
         break
-      case "warn":
+      case 'warn':
         console.warn(`[Instructor:WARN] ${timestamp}:`, ...args)
         break
-      case "error":
+      case 'error':
         console.error(`[Instructor:ERROR] ${timestamp}:`, ...args)
         break
     }
@@ -125,7 +127,7 @@ class Instructor<C> {
     requestOptions?: ClientTypeChatCompletionRequestOptions<C>
   ): Promise<z.infer<T>> {
     let attempts = 0
-    let validationIssues = ""
+    let validationIssues = ''
     let lastMessage: OpenAI.ChatCompletionMessageParam | null = null
 
     const paramsTransformer = PROVIDER_PARAMS_TRANSFORMERS?.[this.provider]?.[this.mode]
@@ -133,10 +135,10 @@ class Instructor<C> {
     let completionParams = withResponseModel({
       params: {
         ...params,
-        stream: params.stream ?? false
+        stream: params.stream ?? false,
       } as OpenAI.ChatCompletionCreateParams,
       mode: this.mode,
-      response_model
+      response_model,
     })
 
     if (!!paramsTransformer) {
@@ -153,10 +155,10 @@ class Instructor<C> {
             ...completionParams.messages,
             ...(lastMessage ? [lastMessage] : []),
             {
-              role: "user",
-              content: `Please correct the function call; errors encountered:\n ${validationIssues}`
-            }
-          ]
+              role: 'user',
+              content: `Please correct the function call; errors encountered:\n ${validationIssues}`,
+            },
+          ],
         }
       }
 
@@ -167,19 +169,19 @@ class Instructor<C> {
           const result = await this.client.chat.completions.create(
             {
               ...resolvedParams,
-              stream: false
+              stream: false,
             },
             requestOptions
           )
 
           completion = result as GenericChatCompletion<typeof result>
         } else {
-          throw new Error("Unsupported client type -- no completion method found.")
+          throw new Error('Unsupported client type -- no completion method found.')
         }
-        this.log("debug", "raw standard completion response: ", completion)
+        this.log('debug', 'raw standard completion response: ', completion)
       } catch (error) {
         this.log(
-          "error",
+          'error',
           `Error making completion call - mode: ${this.mode} | Client base URL: ${this.client.baseURL} | with params:`,
           resolvedParams,
           `raw error`,
@@ -202,18 +204,18 @@ class Instructor<C> {
           ...data,
           _meta: {
             usage: completion?.usage ?? undefined,
-            thinking: parsedCompletion?.thinking ?? undefined
-          }
+            thinking: parsedCompletion?.thinking ?? undefined,
+          },
         }
       } catch (error) {
         this.log(
-          "error",
-          "failed to parse completion",
+          'error',
+          'failed to parse completion',
           parsedCompletion,
           this.mode,
-          "attempt: ",
+          'attempt: ',
           attempts,
-          "max attempts: ",
+          'max attempts: ',
           max_retries
         )
 
@@ -226,20 +228,20 @@ class Instructor<C> {
         const data = await makeCompletionCall()
 
         const validation = await response_model.schema.safeParseAsync(data)
-        this.log("debug", response_model.name, "Completion validation: ", validation)
+        this.log('debug', response_model.name, 'Completion validation: ', validation)
 
         if (!validation.success) {
-          if ("error" in validation) {
+          if ('error' in validation) {
             lastMessage = {
-              role: "assistant",
-              content: JSON.stringify(data)
+              role: 'assistant',
+              content: JSON.stringify(data),
             }
 
             validationIssues = fromZodError(validation.error)?.message
 
             throw validation.error
           } else {
-            throw new Error("Validation failed.")
+            throw new Error('Validation failed.')
           }
         }
 
@@ -251,18 +253,18 @@ class Instructor<C> {
 
         if (attempts < max_retries) {
           this.log(
-            "debug",
+            'debug',
             `response model: ${response_model.name} - Retrying, attempt: `,
             attempts
           )
 
           this.log(
-            "warn",
+            'warn',
             `response model: ${response_model.name} - Validation issues: `,
             validationIssues,
-            " - Attempt: ",
+            ' - Attempt: ',
             attempts,
-            " - Max attempts: ",
+            ' - Max attempts: ',
             max_retries
           )
 
@@ -270,12 +272,12 @@ class Instructor<C> {
           return await makeCompletionCallWithRetries()
         } else {
           this.log(
-            "debug",
+            'debug',
             `response model: ${response_model.name} - Max attempts reached: ${attempts}`
           )
 
           this.log(
-            "error",
+            'error',
             `response model: ${response_model.name} - Validation issues: `,
             validationIssues
           )
@@ -293,7 +295,7 @@ class Instructor<C> {
     requestOptions?: ClientTypeChatCompletionRequestOptions<C>
   ): AsyncGenerator<Partial<T> & { _meta?: CompletionMeta }, void, unknown> {
     if (max_retries) {
-      this.log("warn", "max_retries is not supported for streaming completions")
+      this.log('warn', 'max_retries is not supported for streaming completions')
     }
 
     const paramsTransformer = PROVIDER_PARAMS_TRANSFORMERS?.[this.provider]?.[this.mode]
@@ -301,10 +303,10 @@ class Instructor<C> {
     let completionParams = withResponseModel({
       params: {
         ...params,
-        stream: true
+        stream: true,
       } as OpenAI.ChatCompletionCreateParams,
       response_model,
-      mode: this.mode
+      mode: this.mode,
     })
 
     if (paramsTransformer) {
@@ -312,37 +314,37 @@ class Instructor<C> {
     }
 
     const streamClient = new ZodStream({
-      debug: this.debug ?? false
+      debug: this.debug ?? false,
     })
 
     async function checkForUsage(
       reader: Stream<OpenAI.ChatCompletionChunk> | AsyncIterable<OpenAI.ChatCompletionChunk>
     ) {
       for await (const chunk of reader) {
-        if ("usage" in chunk) {
-          streamUsage = chunk.usage as CompletionMeta["usage"]
+        if ('usage' in chunk) {
+          streamUsage = chunk.usage as CompletionMeta['usage']
         }
       }
     }
 
-    let streamUsage: CompletionMeta["usage"] | undefined
+    let streamUsage: CompletionMeta['usage'] | undefined
     const structuredStream = await streamClient.create({
       completionPromise: async () => {
         if (this.client.chat?.completions?.create) {
           const completion = await this.client.chat.completions.create(
             {
               ...completionParams,
-              stream: true
+              stream: true,
             },
             requestOptions
           )
 
-          this.log("debug", "raw stream completion response: ", completion)
+          this.log('debug', 'raw stream completion response: ', completion)
 
           if (
-            this.provider === "OAI" &&
+            this.provider === 'OAI' &&
             completionParams?.stream &&
-            "stream_options" in completionParams &&
+            'stream_options' in completionParams &&
             completion instanceof Stream
           ) {
             const [completion1, completion2] = completion.tee()
@@ -350,13 +352,13 @@ class Instructor<C> {
             checkForUsage(completion1)
 
             return OAIStream({
-              res: completion2
+              res: completion2,
             })
           }
 
           //check if async iterator
           if (
-            this.provider !== "OAI" &&
+            this.provider !== 'OAI' &&
             completionParams?.stream &&
             completion?.[Symbol.asyncIterator]
           ) {
@@ -368,18 +370,18 @@ class Instructor<C> {
             checkForUsage(completion1)
 
             return OAIStream({
-              res: completion2
+              res: completion2,
             })
           }
 
           return OAIStream({
-            res: completion as unknown as AsyncIterable<OpenAI.ChatCompletionChunk>
+            res: completion as unknown as AsyncIterable<OpenAI.ChatCompletionChunk>,
           })
         } else {
-          throw new Error("Unsupported client type")
+          throw new Error('Unsupported client type')
         }
       },
-      response_model
+      response_model,
     })
 
     for await (const chunk of structuredStream) {
@@ -387,8 +389,8 @@ class Instructor<C> {
         ...chunk,
         _meta: {
           usage: streamUsage ?? undefined,
-          ...(chunk?._meta ?? {})
-        }
+          ...(chunk?._meta ?? {}),
+        },
       }
     }
   }
@@ -396,13 +398,13 @@ class Instructor<C> {
   private isChatCompletionCreateParamsWithModel<T extends z.ZodTypeAny>(
     params: ChatCompletionCreateParamsWithModel<T>
   ): params is ChatCompletionCreateParamsWithModel<T> {
-    return "response_model" in params
+    return 'response_model' in params
   }
 
   private isStandardStream(
     params: OpenAI.ChatCompletionCreateParams
   ): params is OpenAI.ChatCompletionCreateParams {
-    return "stream" in params && params.stream === true
+    return 'stream' in params && params.stream === true
   }
 
   public chat = {
@@ -410,7 +412,7 @@ class Instructor<C> {
       create: async <
         T extends z.ZodTypeAny,
         P extends T extends z.ZodTypeAny ? ChatCompletionCreateParamsWithModel<T>
-        : ClientTypeChatCompletionParams<OpenAILikeClient<C>> & { response_model: never }
+        : ClientTypeChatCompletionParams<OpenAILikeClient<C>> & { response_model: never },
       >(
         params: P,
         requestOptions?: ClientTypeChatCompletionRequestOptions<C>
@@ -436,11 +438,11 @@ class Instructor<C> {
 
             return result as unknown as ReturnTypeBasedOnParams<OpenAILikeClient<C>, P>
           } else {
-            throw new Error("Completion method is undefined")
+            throw new Error('Completion method is undefined')
           }
         }
-      }
-    }
+      },
+    },
   }
 }
 
@@ -476,7 +478,7 @@ export default function createInstructor<C>(args: InstructorConfig<C>): Instruct
       }
 
       return Reflect.get(target.client, prop, receiver)
-    }
+    },
   })
 
   return instructorWithProxy as InstructorClient<C>
@@ -484,13 +486,13 @@ export default function createInstructor<C>(args: InstructorConfig<C>): Instruct
 //eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isGenericClient(client: any): client is GenericClient {
   return (
-    typeof client === "object" &&
+    typeof client === 'object' &&
     client !== null &&
-    "chat" in client &&
-    typeof client.chat === "object" &&
-    "completions" in client.chat &&
-    typeof client.chat.completions === "object" &&
-    "create" in client.chat.completions &&
-    typeof client.chat.completions.create === "function"
+    'chat' in client &&
+    typeof client.chat === 'object' &&
+    'completions' in client.chat &&
+    typeof client.chat.completions === 'object' &&
+    'create' in client.chat.completions &&
+    typeof client.chat.completions.create === 'function'
   )
 }

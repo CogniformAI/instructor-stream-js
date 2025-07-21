@@ -24,14 +24,14 @@ export async function iterableTee<T>(
       } else if (done) {
         break
       } else {
-        await new Promise<void>(resolve => resolvers.push(resolve))
+        await new Promise<void>((resolve) => resolvers.push(resolve))
       }
     }
   }
 
   ;(async () => {
     for await (const item of {
-      [Symbol.asyncIterator]: () => iterator
+      [Symbol.asyncIterator]: () => iterator,
     }) {
       for (const buffer of buffers) {
         buffer.push(item)

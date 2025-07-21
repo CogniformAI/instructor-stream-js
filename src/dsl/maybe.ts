@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 export type Maybe<T extends z.ZodTypeAny> = z.ZodObject<{
   result: z.ZodOptional<T>
@@ -16,13 +16,13 @@ export const maybe = <T extends z.ZodTypeAny>(schema: T): Maybe<T> =>
     result: schema
       .optional()
       .describe(
-        "Correctly extracted result, if any, from the provided context, otherwise undefined"
+        'Correctly extracted result, if any, from the provided context, otherwise undefined'
       ),
     error: z.boolean().default(false),
     message: z
       .string()
       .optional()
       .describe(
-        "Error message if no result was found, should be short and concise, otherwise undefined"
-      )
+        'Error message if no result was found, should be short and concise, otherwise undefined'
+      ),
   }) satisfies Maybe<T>

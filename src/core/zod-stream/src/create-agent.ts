@@ -1,14 +1,14 @@
-import OpenAI from "openai"
-import { z } from "zod"
+import OpenAI from 'openai'
+import { z } from 'zod'
 
-import { OAIResponseParser } from "./oai/parser"
-import { OAIStream } from "./oai/stream"
-import { withResponseModel } from "./response-model"
-import { Mode } from "./types"
+import { OAIResponseParser } from './oai/parser'
+import { OAIStream } from './oai/stream'
+import { withResponseModel } from './response-model'
+import { Mode } from './types'
 
 export type CreateAgentParams = {
   defaultClientOptions: Partial<OpenAI.ChatCompletionCreateParams> & {
-    model: OpenAI.ChatCompletionCreateParams["model"]
+    model: OpenAI.ChatCompletionCreateParams['model']
     messages: OpenAI.ChatCompletionMessageParam[]
   }
   /**
@@ -46,8 +46,8 @@ export type ConfigOverride = Partial<OpenAI.ChatCompletionCreateParams>
 export function createAgent({
   defaultClientOptions,
   response_model,
-  mode = "TOOLS",
-  client
+  mode = 'TOOLS',
+  client,
 }: CreateAgentParams) {
   const defaultAgentParams = {
     temperature: 0.7,
@@ -55,11 +55,11 @@ export function createAgent({
     frequency_penalty: 0,
     presence_penalty: 0,
     n: 1,
-    ...defaultClientOptions
+    ...defaultClientOptions,
   }
 
   if (!client) {
-    throw new Error("an OpenAI-like client is required")
+    throw new Error('an OpenAI-like client is required')
   }
 
   const oai = client
@@ -76,7 +76,7 @@ export function createAgent({
     ): Promise<ReadableStream<Uint8Array>> => {
       const messages = [
         ...(defaultAgentParams.messages ?? []),
-        ...(configOverride?.messages ?? [])
+        ...(configOverride?.messages ?? []),
       ] as OpenAI.ChatCompletionMessageParam[]
 
       const params = withResponseModel({
@@ -86,14 +86,14 @@ export function createAgent({
           ...defaultAgentParams,
           ...configOverride,
           stream: true,
-          messages
-        }
+          messages,
+        },
       })
 
       const extractionStream = await oai.chat.completions.create(params)
 
       return OAIStream({
-        res: extractionStream
+        res: extractionStream,
       })
     },
     /**
@@ -107,7 +107,7 @@ export function createAgent({
     ): Promise<z.infer<typeof response_model.schema>> => {
       const messages = [
         ...(defaultAgentParams.messages ?? []),
-        ...(configOverride?.messages ?? [])
+        ...(configOverride?.messages ?? []),
       ] as OpenAI.ChatCompletionMessageParam[]
 
       const params = withResponseModel({
@@ -117,14 +117,14 @@ export function createAgent({
           ...defaultAgentParams,
           ...configOverride,
           stream: false,
-          messages
-        }
+          messages,
+        },
       })
 
       const res = await oai.chat.completions.create(params)
       const extractedResponse = OAIResponseParser(res)
 
       return JSON.parse(extractedResponse)
-    }
+    },
   }
 }

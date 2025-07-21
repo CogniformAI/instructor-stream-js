@@ -1,14 +1,13 @@
-import OpenAI from "openai"
+import OpenAI from 'openai'
 
-import { OAIResponseParser } from "./parser"
+import { OAIResponseParser } from './parser'
 
 interface OaiStreamArgs {
   res: AsyncIterable<OpenAI.ChatCompletionChunk>
 }
 
 function stripControlCharacters(str: string): string {
-  // eslint-disable-next-line no-control-regex
-  return str.replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+  return str.replace(/[\x00-\x1F\x7F-\x9F]/g, '')
 }
 
 /**
@@ -58,7 +57,7 @@ export function OAIStream({ res }: OaiStreamArgs): ReadableStream<Uint8Array> {
       if (cancelGenerator) {
         cancelGenerator()
       }
-    }
+    },
   })
 }
 

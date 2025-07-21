@@ -1,4 +1,4 @@
-import type OpenAI from "openai"
+import type OpenAI from 'openai'
 
 // TODO: This should probably be deprecated in favor of the `XML` version that
 // TODO: is used in `roo-code` it's more accurate, supports streaming and also supports
@@ -16,19 +16,17 @@ export function thinkingJsonParser(data: string | OpenAI.Chat.Completions.ChatCo
   thinking: string
 } {
   const text =
-    typeof data === "string"
-      ? data
-      : "choices" in data && data.choices?.[0]
-        ? data.choices[0].message?.content ?? ""
-        : ""
+    typeof data === 'string' ? data
+    : 'choices' in data && data.choices?.[0] ? (data.choices[0].message?.content ?? '')
+    : ''
 
   const thinkingRegex = /<think(?:ing)?>([\s\S]*?)(?:<\/think(?:ing)?>|\Z)/i
   const thinkingMatch = text.match(thinkingRegex)
-  const thinking = thinkingMatch ? thinkingMatch[1].trim() : ""
+  const thinking = thinkingMatch ? thinkingMatch[1].trim() : ''
 
-  const cleanText = text.replace(thinkingRegex, "").trim()
+  const cleanText = text.replace(thinkingRegex, '').trim()
 
-  if (cleanText.trim().startsWith("{") || cleanText.trim().startsWith("[")) {
+  if (cleanText.trim().startsWith('{') || cleanText.trim().startsWith('[')) {
     return { json: cleanText.trim(), thinking }
   }
 
@@ -43,10 +41,10 @@ export function thinkingJsonParser(data: string | OpenAI.Chat.Completions.ChatCo
   const partialJsonMatch = cleanText.match(/```(?:json)?\s*([\s\S]*)/i)
   if (partialJsonMatch) {
     const partialContent = partialJsonMatch[1].trim()
-    if (partialContent.startsWith("{") || partialContent.startsWith("[")) {
+    if (partialContent.startsWith('{') || partialContent.startsWith('[')) {
       return { json: partialContent, thinking }
     }
   }
 
-  return { json: "", thinking }
+  return { json: '', thinking }
 }

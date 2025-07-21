@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk"
+import Anthropic from '@anthropic-ai/sdk'
 import {
   CachedContent,
   Content,
@@ -8,17 +8,17 @@ import {
   GenerationConfig,
   GoogleGenerativeAI,
   GroundingMetadata,
-  SafetySetting
-} from "@google/generative-ai"
-import OpenAI from "openai"
+  SafetySetting,
+} from '@google/generative-ai'
+import OpenAI from 'openai'
 
-export type Providers = "openai" | "anthropic" | "google"
-export type LogLevel = "debug" | "info" | "warn" | "error"
-export type Role = "system" | "user" | "assistant" | "tool"
+export type Providers = 'openai' | 'anthropic' | 'google'
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type Role = 'system' | 'user' | 'assistant' | 'tool'
 
 export type SupportedChatCompletionMessageParam = Omit<
-  OpenAI.ChatCompletionCreateParams["messages"][number],
-  "content"
+  OpenAI.ChatCompletionCreateParams['messages'][number],
+  'content'
 > & {
   content:
     | string
@@ -40,9 +40,9 @@ export type ExtendedCompletionChunkAnthropic = Partial<OpenAI.ChatCompletionChun
 
 export type AnthropicChatCompletionParamsStream = Omit<
   Partial<OpenAI.ChatCompletionCreateParams>,
-  "model" | "messages"
+  'model' | 'messages'
 > & {
-  model: Anthropic.CompletionCreateParams["model"]
+  model: Anthropic.CompletionCreateParams['model']
   messages: SupportedChatCompletionMessageParam[]
   stream: true
   max_tokens: number
@@ -50,9 +50,9 @@ export type AnthropicChatCompletionParamsStream = Omit<
 
 export type AnthropicChatCompletionParamsNonStream = Omit<
   Partial<OpenAI.ChatCompletionCreateParams>,
-  "model" | "messages"
+  'model' | 'messages'
 > & {
-  model: Anthropic.CompletionCreateParams["model"]
+  model: Anthropic.CompletionCreateParams['model']
   messages: SupportedChatCompletionMessageParam[]
   stream?: false | undefined
   max_tokens: number
@@ -65,7 +65,7 @@ export type AnthropicChatCompletionParams =
 /** Google types */
 export type GoogleChatCompletionParamsBase = Omit<
   Partial<OpenAI.ChatCompletionCreateParams>,
-  "messages" | "model"
+  'messages' | 'model'
 > & {
   messages: SupportedChatCompletionMessageParam[]
   max_tokens: number
@@ -78,13 +78,13 @@ export type GoogleChatCompletionParamsBase = Omit<
   groundingThreshold?: number
   systemInstruction?: Content | string | undefined
   tools?: Array<{
-    type: "function"
-    function: Omit<FunctionDeclaration, "parameters"> & {
+    type: 'function'
+    function: Omit<FunctionDeclaration, 'parameters'> & {
       parameters?: Record<string, unknown>
     }
   }>
   tool_choice?: {
-    type: "function"
+    type: 'function'
     function: {
       name: string
     }
@@ -143,7 +143,7 @@ export interface GoogleChoice {
   grounding_metadata?: GoogleGroundingMetadata
 }
 
-export interface GoogleDeltaChoice extends Omit<GoogleChoice, "message"> {
+export interface GoogleDeltaChoice extends Omit<GoogleChoice, 'message'> {
   delta: GoogleMessage
 }
 
@@ -157,56 +157,54 @@ export type ExtendedCompletionChunkGoogle = Partial<OpenAI.ChatCompletionChunk> 
   choices: GoogleDeltaChoice[]
 }
 
-export type GoogleCacheCreateParams = Omit<GoogleChatCompletionParams, "stream"> & {
+export type GoogleCacheCreateParams = Omit<GoogleChatCompletionParams, 'stream'> & {
   ttlSeconds: number
 }
 
 export type GeminiGenerativeModels =
-  | "gemini-1.5-pro"
-  | "gemini-1.5-pro-latest"
-  | "gemini-1.5-flash-8b"
-  | "gemini-1.5-flash-8b-latest"
-  | "gemini-1.5-flash"
-  | "gemini-1.5-flash-latest"
+  | 'gemini-1.5-pro'
+  | 'gemini-1.5-pro-latest'
+  | 'gemini-1.5-flash-8b'
+  | 'gemini-1.5-flash-8b-latest'
+  | 'gemini-1.5-flash'
+  | 'gemini-1.5-flash-latest'
   // eslint-disable-next-line @typescript-eslint/ban-types
   | (string & {})
 
 /** General type for providers */
-export type OpenAILikeClient<P> = P extends "openai" | "azure"
-  ? OpenAI
-  : P extends "google"
-    ? GoogleGenerativeAI & {
-        chat: {
-          completions: {
-            create: <P extends GoogleChatCompletionParams>(
-              params: P
-            ) => P extends { stream: true }
-              ? Promise<AsyncIterable<ExtendedCompletionChunkGoogle>>
-              : Promise<ExtendedCompletionGoogle>
-          }
-        }
-        cacheManager: {
-          create: (params: GoogleCacheCreateParams) => Promise<CachedContent>
-          get: (cacheName: string) => Promise<CachedContent>
-          list: () => Promise<{ cachedContents: CachedContent[] }>
-          delete: (cacheName: string) => Promise<void>
-          update: (cacheName: string, params: GoogleCacheCreateParams) => Promise<CachedContent>
+export type OpenAILikeClient<P> =
+  P extends 'openai' | 'azure' ? OpenAI
+  : P extends 'google' ?
+    GoogleGenerativeAI & {
+      chat: {
+        completions: {
+          create: <P extends GoogleChatCompletionParams>(
+            params: P
+          ) => P extends { stream: true } ? Promise<AsyncIterable<ExtendedCompletionChunkGoogle>>
+          : Promise<ExtendedCompletionGoogle>
         }
       }
-    : P extends "anthropic"
-      ? Anthropic & {
-          [key: string]: unknown
-          chat: {
-            completions: {
-              create: <P extends AnthropicChatCompletionParams>(
-                params: P
-              ) => P extends { stream: true }
-                ? Promise<AsyncIterable<ExtendedCompletionChunkAnthropic>>
-                : Promise<ExtendedCompletionAnthropic>
-            }
-          }
+      cacheManager: {
+        create: (params: GoogleCacheCreateParams) => Promise<CachedContent>
+        get: (cacheName: string) => Promise<CachedContent>
+        list: () => Promise<{ cachedContents: CachedContent[] }>
+        delete: (cacheName: string) => Promise<void>
+        update: (cacheName: string, params: GoogleCacheCreateParams) => Promise<CachedContent>
+      }
+    }
+  : P extends 'anthropic' ?
+    Anthropic & {
+      [key: string]: unknown
+      chat: {
+        completions: {
+          create: <P extends AnthropicChatCompletionParams>(
+            params: P
+          ) => P extends { stream: true } ? Promise<AsyncIterable<ExtendedCompletionChunkAnthropic>>
+          : Promise<ExtendedCompletionAnthropic>
         }
-      : never
+      }
+    }
+  : never
 
 /** Logging client */
 export type LogTransport = (

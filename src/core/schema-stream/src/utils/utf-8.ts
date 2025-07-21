@@ -98,7 +98,7 @@ export const enum charset {
   LEFT_CURLY_BRACKET = 0x7b, // {
   VERTICAL_LINE = 0x7c, // |
   RIGHT_CURLY_BRACKET = 0x7d, // }
-  TILDE = 0x7e // ~
+  TILDE = 0x7e, // ~
 }
 
 export const escapedSequences: { [key: number]: number } = {
@@ -109,5 +109,5 @@ export const escapedSequences: { [key: number]: number } = {
   [charset.LATIN_SMALL_LETTER_F]: charset.FORM_FEED,
   [charset.LATIN_SMALL_LETTER_N]: charset.NEWLINE,
   [charset.LATIN_SMALL_LETTER_R]: charset.CARRIAGE_RETURN,
-  [charset.LATIN_SMALL_LETTER_T]: charset.TAB
+  [charset.LATIN_SMALL_LETTER_T]: charset.TAB,
 }

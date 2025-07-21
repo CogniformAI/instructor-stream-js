@@ -1,48 +1,47 @@
+import OpenAI from 'openai'
+import { z } from 'zod'
+import zodToJsonSchema from 'zod-to-json-schema'
+
+import { MODE } from './constants/modes'
 import {
   OAIBuildFunctionParams,
   OAIBuildJsonModeParams,
   OAIBuildJsonSchemaParams,
   OAIBuildMessageBasedParams,
   OAIBuildThinkingMessageBasedParams,
-  OAIBuildToolFunctionParams
-} from "./oai/params"
-import OpenAI from "openai"
-import { z } from "zod"
-import zodToJsonSchema from "zod-to-json-schema"
-
-import { MODE } from "./constants/modes"
-
-import { Mode, ModeParamsReturnType, ResponseModel } from "./types"
+  OAIBuildToolFunctionParams,
+} from './oai/params'
+import { Mode, ModeParamsReturnType, ResponseModel } from './types'
 
 export function withResponseModel<
   T extends z.ZodTypeAny,
   M extends Mode,
-  P extends OpenAI.ChatCompletionCreateParams
+  P extends OpenAI.ChatCompletionCreateParams,
 >({
-  response_model: { name, schema, description = "" },
+  response_model: { name, schema, description = '' },
   mode,
-  params
+  params,
 }: {
   response_model: ResponseModel<T>
   mode: M
   params: P
 }): ModeParamsReturnType<P, M> {
-  const safeName = name.replace(/[^a-zA-Z0-9]/g, "_").replace(/\s/g, "_")
+  const safeName = name.replace(/[^a-zA-Z0-9]/g, '_').replace(/\s/g, '_')
 
   const { definitions } = zodToJsonSchema(schema, {
     name: safeName,
-    errorMessages: true
+    errorMessages: true,
   })
 
   if (!definitions || !definitions?.[safeName]) {
-    console.warn("Could not extract json schema definitions from your schema", schema)
-    throw new Error("Could not extract json schema definitions from your schema")
+    console.warn('Could not extract json schema definitions from your schema', schema)
+    throw new Error('Could not extract json schema definitions from your schema')
   }
 
   const definition = {
     name: safeName,
     description,
-    ...definitions[safeName]
+    ...definitions[safeName],
   }
 
   if (mode === MODE.FUNCTIONS) {

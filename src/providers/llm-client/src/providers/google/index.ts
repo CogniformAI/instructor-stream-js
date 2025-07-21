@@ -1,15 +1,3 @@
-import ProviderLogger from "../../logger"
-import { consoleTransport } from "../../logger/transports/console"
-import {
-  ExtendedCompletionChunkGoogle,
-  ExtendedCompletionGoogle,
-  GoogleCacheCreateParams,
-  GoogleChatCompletionParams,
-  GoogleChatCompletionParamsNonStream,
-  GoogleChatCompletionParamsStream,
-  LogLevel,
-  OpenAILikeClient
-} from "../../types"
 import {
   ChatSession,
   Content,
@@ -24,10 +12,23 @@ import {
   SafetySetting,
   StartChatParams,
   Tool,
-  ToolConfig
-} from "@google/generative-ai"
-import { CachedContentUpdateParams, GoogleAICacheManager } from "@google/generative-ai/server"
-import { ClientOptions } from "openai"
+  ToolConfig,
+} from '@google/generative-ai'
+import { CachedContentUpdateParams, GoogleAICacheManager } from '@google/generative-ai/server'
+import { ClientOptions } from 'openai'
+
+import ProviderLogger from '../../logger'
+import { consoleTransport } from '../../logger/transports/console'
+import {
+  ExtendedCompletionChunkGoogle,
+  ExtendedCompletionGoogle,
+  GoogleCacheCreateParams,
+  GoogleChatCompletionParams,
+  GoogleChatCompletionParamsNonStream,
+  GoogleChatCompletionParamsStream,
+  LogLevel,
+  OpenAILikeClient,
+} from '../../types'
 
 interface ExtendedAdditionalProperties {
   cacheName?: string
@@ -92,9 +93,9 @@ interface ExtendedChoice {
   }
 }
 
-export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClient<"google"> {
+export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClient<'google'> {
   public apiKey: string
-  public logLevel: LogLevel = (process.env?.["LOG_LEVEL"] as LogLevel) ?? "info"
+  public logLevel: LogLevel = (process.env?.['LOG_LEVEL'] as LogLevel) ?? 'info'
   private googleCacheManager
   private logger: ProviderLogger
   private activeChatSessions: Map<string, ChatSession> = new Map()
@@ -105,11 +106,11 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
       groundingThreshold?: number
     }
   ) {
-    const apiKey = opts?.apiKey ?? process.env?.["GEMINI_API_KEY"] ?? null
+    const apiKey = opts?.apiKey ?? process.env?.['GEMINI_API_KEY'] ?? null
 
     if (!apiKey) {
       throw new Error(
-        "API key is required for GeminiProvider - please provide it in the constructor or set it as an environment variable named GEMINI_API_KEY."
+        'API key is required for GeminiProvider - please provide it in the constructor or set it as an environment variable named GEMINI_API_KEY.'
       )
     }
 
@@ -118,7 +119,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
     this.logLevel = opts?.logLevel ?? this.logLevel
     this.apiKey = apiKey
     this.googleCacheManager = new GoogleAICacheManager(apiKey)
-    this.logger = new ProviderLogger("GEMINI-CLIENT")
+    this.logger = new ProviderLogger('GEMINI-CLIENT')
     this.logger.addTransport(consoleTransport)
   }
 
@@ -132,18 +133,18 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
       )}`
     )
 
-    if (rest["properties"] && typeof rest["properties"] === "object") {
-      rest["properties"] = Object.entries(rest["properties"]).reduce(
+    if (rest['properties'] && typeof rest['properties'] === 'object') {
+      rest['properties'] = Object.entries(rest['properties']).reduce(
         (acc, [key, value]) => {
-          acc[key] = typeof value === "object" && value !== null ? this.cleanSchema(value) : value
+          acc[key] = typeof value === 'object' && value !== null ? this.cleanSchema(value) : value
           return acc
         },
         {} as Record<string, unknown>
       )
     }
 
-    if (rest["items"] && typeof rest["items"] === "object" && rest["items"] !== null) {
-      rest["items"] = this.cleanSchema(rest["items"] as Record<string, unknown>)
+    if (rest['items'] && typeof rest['items'] === 'object' && rest['items'] !== null) {
+      rest['items'] = this.cleanSchema(rest['items'] as Record<string, unknown>)
     }
 
     return rest
@@ -158,22 +159,23 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
       topP: params.top_p ?? undefined,
       topK: params.n ?? undefined,
       maxOutputTokens: params.max_tokens ?? undefined,
-      stopSequences: params.stop
-        ? Array.isArray(params.stop)
-          ? params.stop
+      stopSequences:
+        params.stop ?
+          Array.isArray(params.stop) ?
+            params.stop
           : [params.stop]
         : undefined,
-      candidateCount: params.n ?? undefined
+      candidateCount: params.n ?? undefined,
     }
   }
 
   /**
    * Transforms messages into Google's chat history format
    */
-  private transformHistory(messages: GoogleChatCompletionParams["messages"]): Content[] {
-    return messages.map(message => ({
-      role: message.role === "assistant" ? "model" : "user",
-      parts: [{ text: message.content.toString() }]
+  private transformHistory(messages: GoogleChatCompletionParams['messages']): Content[] {
+    return messages.map((message) => ({
+      role: message.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: message.content.toString() }],
     }))
   }
 
@@ -183,7 +185,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
     const modelConfig: ModelConfig = {
       model: params?.model,
       safetySettings: additionalProps?.safetySettings,
-      generationConfig: additionalProps?.modelGenerationConfig
+      generationConfig: additionalProps?.modelGenerationConfig,
     }
 
     if (params.groundingThreshold !== undefined) {
@@ -192,10 +194,10 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
           googleSearchRetrieval: {
             dynamicRetrievalConfig: {
               mode: DynamicRetrievalMode.MODE_DYNAMIC,
-              dynamicThreshold: params.groundingThreshold
-            }
-          }
-        }
+              dynamicThreshold: params.groundingThreshold,
+            },
+          },
+        },
       ]
     }
 
@@ -231,35 +233,35 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
 
     const chatParams: StartChatParams = {
       generationConfig,
-      history
+      history,
     }
 
     if (params.tools?.length) {
-      const functionDeclarations = params.tools.map(tool => ({
-        name: tool.function.name ?? "",
-        description: tool.function.description ?? "",
+      const functionDeclarations = params.tools.map((tool) => ({
+        name: tool.function.name ?? '',
+        description: tool.function.description ?? '',
         parameters: {
-          type: "object",
-          ...(tool.function.parameters ? this.cleanSchema(tool.function.parameters) : {})
-        }
+          type: 'object',
+          ...(tool.function.parameters ? this.cleanSchema(tool.function.parameters) : {}),
+        },
       })) as FunctionDeclaration[]
 
       const toolChoice = params.tool_choice as
-        | { type: "function"; function: { name: string } }
+        | { type: 'function'; function: { name: string } }
         | undefined
 
       chatParams.tools = [
         {
-          functionDeclarations
-        }
+          functionDeclarations,
+        },
       ] as Tool[]
 
-      if (toolChoice?.type === "function") {
+      if (toolChoice?.type === 'function') {
         chatParams.toolConfig = {
           functionCallingConfig: {
             mode: FunctionCallingMode.ANY,
-            allowedFunctionNames: [toolChoice.function.name]
-          }
+            allowedFunctionNames: [toolChoice.function.name],
+          },
         } satisfies ToolConfig
       }
     }
@@ -282,20 +284,20 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
   ): ExtendedCompletionGoogle | ExtendedCompletionChunkGoogle {
     const responseText = responseDataChunk.text()
     const toolCalls =
-      responseDataChunk.candidates?.[0]?.content?.parts?.flatMap(part =>
-        part.functionCall
-          ? [
-              {
-                index: 0,
-                id: `call_${Math.random().toString(36).slice(2)}`,
-                function: {
-                  name: part.functionCall.name,
-                  arguments: JSON.stringify(part.functionCall.args)
-                },
-                type: "function"
-              }
-            ]
-          : []
+      responseDataChunk.candidates?.[0]?.content?.parts?.flatMap((part) =>
+        part.functionCall ?
+          [
+            {
+              index: 0,
+              id: `call_${Math.random().toString(36).slice(2)}`,
+              function: {
+                name: part.functionCall.name,
+                arguments: JSON.stringify(part.functionCall.args),
+              },
+              type: 'function',
+            },
+          ]
+        : []
       ) ?? []
 
     const groundingMetadata = responseDataChunk.candidates?.[0]?.groundingMetadata as
@@ -307,19 +309,19 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
 
     if (groundingMetadata) {
       sources =
-        groundingMetadata.groundingChunks?.map(chunk => ({
-          url: chunk.web?.uri ?? "",
-          title: chunk.web?.title ?? ""
+        groundingMetadata.groundingChunks?.map((chunk) => ({
+          url: chunk.web?.uri ?? '',
+          title: chunk.web?.title ?? '',
         })) ?? []
 
       if (groundingMetadata.groundingSupports?.length) {
-        contentWithGrounding += "\n\n**Grounded Segments**\n"
-        groundingMetadata.groundingSupports.forEach(support => {
+        contentWithGrounding += '\n\n**Grounded Segments**\n'
+        groundingMetadata.groundingSupports.forEach((support) => {
           const sourceIndices = support.groundingChunkIndices
           const sourceTitles = sourceIndices
-            .map(index => sources[index]?.title)
+            .map((index) => sources[index]?.title)
             .filter(Boolean)
-            .join(", ")
+            .join(', ')
           const avgConfidence =
             support.confidenceScores.reduce((a, b) => a + b, 0) / support.confidenceScores.length
           contentWithGrounding += `> "${support.segment.text}"\n`
@@ -328,8 +330,8 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
       }
 
       if (sources.length > 0) {
-        contentWithGrounding += "\n**Grounding Sources**\n"
-        sources.forEach(source => {
+        contentWithGrounding += '\n**Grounding Sources**\n'
+        sources.forEach((source) => {
           contentWithGrounding += `- [${source.title}](${source.url})\n`
         })
       }
@@ -337,7 +339,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
 
     const responseDataBase = {
       id: `chatcmpl-${Math.random().toString(36).slice(2)}`,
-      object: params.stream ? "chat.completion.chunk" : "chat.completion",
+      object: params.stream ? 'chat.completion.chunk' : 'chat.completion',
       created: Date.now(),
       model: params.model,
       system_fingerprint: undefined,
@@ -346,28 +348,28 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
         {
           index: 0,
           message: {
-            role: "assistant",
-            content: toolCalls.length ? "" : contentWithGrounding,
-            ...(toolCalls.length ? { tool_calls: toolCalls } : {})
+            role: 'assistant',
+            content: toolCalls.length ? '' : contentWithGrounding,
+            ...(toolCalls.length ? { tool_calls: toolCalls } : {}),
           },
-          ...(groundingMetadata
-            ? {
-                grounding_metadata: {
-                  search_queries: groundingMetadata.webSearchQueries,
-                  sources: sources,
-                  search_suggestion_html: groundingMetadata.searchEntryPoint?.renderedContent,
-                  supports: groundingMetadata.groundingSupports?.map(support => ({
-                    text: support.segment.text,
-                    sources: support.groundingChunkIndices.map(index => sources[index]),
-                    confidence: support.confidenceScores
-                  }))
-                }
-              }
-            : {}),
+          ...(groundingMetadata ?
+            {
+              grounding_metadata: {
+                search_queries: groundingMetadata.webSearchQueries,
+                sources: sources,
+                search_suggestion_html: groundingMetadata.searchEntryPoint?.renderedContent,
+                supports: groundingMetadata.groundingSupports?.map((support) => ({
+                  text: support.segment.text,
+                  sources: support.groundingChunkIndices.map((index) => sources[index]),
+                  confidence: support.confidenceScores,
+                })),
+              },
+            }
+          : {}),
           finish_reason: responseDataChunk.candidates?.[0]?.finishReason?.toLowerCase() ?? null,
-          logprobs: null
-        } as ExtendedChoice
-      ]
+          logprobs: null,
+        } as ExtendedChoice,
+      ],
     }
 
     if (params.stream) {
@@ -376,9 +378,9 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
         choices: [
           {
             ...responseDataBase.choices[0],
-            delta: responseDataBase.choices[0].message
-          }
-        ]
+            delta: responseDataBase.choices[0].message,
+          },
+        ],
       } as ExtendedCompletionChunkGoogle
     }
 
@@ -413,20 +415,20 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
   ): Promise<ExtendedCompletionGoogle | AsyncIterable<ExtendedCompletionChunkGoogle>> {
     try {
       if (!params?.model || !params?.messages?.length) {
-        throw new Error("model and messages are required")
+        throw new Error('model and messages are required')
       }
 
       const chatSession = await this.getChatSession(params)
       const lastMessage = params.messages[params.messages.length - 1]
 
       if (params?.stream) {
-        this.logger.log(this.logLevel, "Starting streaming completion response")
+        this.logger.log(this.logLevel, 'Starting streaming completion response')
         const result = await chatSession.sendMessageStream(lastMessage.content.toString())
         return this.streamChatCompletion(result.stream, params)
       } else {
         const result = await chatSession.sendMessage(lastMessage.content.toString())
         if (!result?.response) {
-          throw new Error("Chat response failed")
+          throw new Error('Chat response failed')
         }
 
         const transformedResult = this.transformResponse(result.response, params)
@@ -434,7 +436,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
         return transformedResult as ExtendedCompletionGoogle
       }
     } catch (error) {
-      this.logger.log(this.logLevel, new Error("Error in Google API request:", { cause: error }))
+      this.logger.log(this.logLevel, new Error('Error in Google API request:', { cause: error }))
       throw error
     }
   }
@@ -449,14 +451,14 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
       return await this.googleCacheManager.create({
         ttlSeconds: params.ttlSeconds,
         model: params.model,
-        contents
+        contents,
       })
     } catch (err: unknown) {
       let error = err as Error
 
       if (err instanceof GoogleGenerativeAIError) {
         error = new Error(
-          "Failed to create Gemini cache manager, ensure your API key supports caching (i.e. pay-as-you-go)"
+          'Failed to create Gemini cache manager, ensure your API key supports caching (i.e. pay-as-you-go)'
         )
         error.stack = (err as Error).stack
       }
@@ -469,8 +471,8 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
 
   public chat = {
     completions: {
-      create: this.create.bind(this)
-    }
+      create: this.create.bind(this),
+    },
   }
 
   /** Interface for Google AI Cache Manager */
@@ -486,12 +488,12 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
       const contents = this.transformHistory(params.messages)
       return await this.googleCacheManager.update(cacheName, {
         cachedContent: {
-          contents
-        }
+          contents,
+        },
       } as CachedContentUpdateParams)
     },
     delete: async (cacheName: string) => {
       return await this.googleCacheManager.delete(cacheName)
-    }
+    },
   }
 }

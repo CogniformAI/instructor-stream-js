@@ -1,8 +1,8 @@
-import { lensPath, set, view } from "ramda"
-import { z, ZodObject, ZodOptional, ZodRawShape, ZodTypeAny } from "zod"
+import { lensPath, set, view } from 'ramda'
+import { z, ZodObject, ZodOptional, ZodRawShape, ZodTypeAny } from 'zod'
 
-import JSONParser from "./json-parser"
-import { ParsedTokenInfo, StackElement, TokenParserMode, TokenParserState } from "./token-parser"
+import JSONParser from './json-parser'
+import { ParsedTokenInfo, StackElement, TokenParserMode, TokenParserState } from './token-parser'
 
 type SchemaType<T extends ZodRawShape = ZodRawShape> = ZodObject<T> | ZodTypeAny
 type TypeDefaults = {
@@ -104,30 +104,30 @@ export class SchemaStream {
     }
 
     switch (type._def.typeName) {
-      case "ZodDefault":
+      case 'ZodDefault':
         return type._def.defaultValue()
-      case "ZodString":
-        return typeDefaults?.hasOwnProperty("string") ? typeDefaults.string : null
-      case "ZodNumber":
-        return typeDefaults?.hasOwnProperty("number") ? typeDefaults.number : null
-      case "ZodBoolean":
-        return typeDefaults?.hasOwnProperty("boolean") ? typeDefaults.boolean : null
-      case "ZodArray":
+      case 'ZodString':
+        return typeDefaults?.hasOwnProperty('string') ? typeDefaults.string : null
+      case 'ZodNumber':
+        return typeDefaults?.hasOwnProperty('number') ? typeDefaults.number : null
+      case 'ZodBoolean':
+        return typeDefaults?.hasOwnProperty('boolean') ? typeDefaults.boolean : null
+      case 'ZodArray':
         return []
-      case "ZodRecord":
+      case 'ZodRecord':
         return {}
-      case "ZodObject":
+      case 'ZodObject':
         return this.createBlankObject(type as SchemaType)
-      case "ZodOptional":
+      case 'ZodOptional':
         //eslint-disable-next-line
         return this.getDefaultValue((type as ZodOptional<any>).unwrap())
-      case "ZodEffects":
+      case 'ZodEffects':
         return this.getDefaultValue(type._def.schema)
-      case "ZodNullable":
+      case 'ZodNullable':
         return null
-      case "ZodEnum":
+      case 'ZodEnum':
         return null
-      case "ZodNativeEnum":
+      case 'ZodNativeEnum':
         return null
       default:
         console.warn(`No explicit default value for type: ${type._def.typeName} - returning null.`)
@@ -155,10 +155,12 @@ export class SchemaStream {
 
       return obj
     }
-    
+
     // Handle other ZodTypeAny schemas - return default value
     const defaultValue = this.getDefaultValue(schema, typeDefaults)
-    return (typeof defaultValue === 'object' && defaultValue !== null) ? defaultValue as NestedObject : {}
+    return typeof defaultValue === 'object' && defaultValue !== null ?
+        (defaultValue as NestedObject)
+      : {}
   }
 
   private getPathFromStack(
@@ -175,7 +177,7 @@ export class SchemaStream {
 
   private handleToken({
     parser: { key, stack },
-    tokenizer: { token, value, partial }
+    tokenizer: { token, value, partial },
   }: {
     parser: {
       state: TokenParserState
@@ -191,7 +193,7 @@ export class SchemaStream {
       this.onKeyComplete &&
         this.onKeyComplete({
           activePath: this.activePath,
-          completedPaths: this.completedPaths
+          completedPaths: this.completedPaths,
         })
     }
 
@@ -200,7 +202,7 @@ export class SchemaStream {
       const lens = lensPath(valuePath)
 
       if (partial) {
-        let currentValue = view(lens, value) ?? ""
+        const currentValue = view(lens, value) ?? ''
         const updatedValue = `${currentValue}${value}`
         const updatedSchemaInstance = set(lens, updatedValue, this.schemaInstance)
         this.schemaInstance = updatedSchemaInstance
@@ -236,7 +238,7 @@ export class SchemaStream {
 
     const parser = new JSONParser({
       stringBufferSize: opts.stringBufferSize ?? 0,
-      handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true
+      handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true,
     })
 
     parser.onToken = this.handleToken.bind(this)
@@ -265,11 +267,11 @@ export class SchemaStream {
         this.onKeyComplete &&
           this.onKeyComplete({
             completedPaths: this.completedPaths,
-            activePath: []
+            activePath: [],
           })
 
         this.activePath = []
-      }
+      },
     })
 
     return stream

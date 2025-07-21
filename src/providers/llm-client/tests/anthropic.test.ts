@@ -1,120 +1,121 @@
-import { createLLMClient } from "../../../index"
-import { omit } from "@/lib"
-import Anthropic from "@anthropic-ai/sdk"
-import { describe, expect, test } from "bun:test"
+import { omit } from '@/lib'
+import Anthropic from '@anthropic-ai/sdk'
+import { describe, expect, test } from 'bun:test'
 
-for await (const model of ["claude-3-5-sonnet-latest", "claude-3-opus-latest"] as const) {
+import { createLLMClient } from '../../../index'
+
+for await (const model of ['claude-3-5-sonnet-latest', 'claude-3-opus-latest'] as const) {
   await createTestCase(model)
 }
 
 const anthropicClient = createLLMClient({
-  provider: "anthropic"
+  provider: 'anthropic',
 })
 
-async function createTestCase(model: Anthropic.CompletionCreateParams["model"]) {
-  return new Promise<void>(resolve => {
+async function createTestCase(model: Anthropic.CompletionCreateParams['model']) {
+  return new Promise<void>((resolve) => {
     describe(`LLMClient Anthropic Provider - ${model}`, () => {
-      test("Function Calling standard", async () => {
+      test('Function Calling standard', async () => {
         const completion = await anthropicClient.chat.completions.create({
           model,
           max_tokens: 1000,
           messages: [
             {
-              role: "user",
-              content: "My name is Dimitri Kennedy."
-            }
+              role: 'user',
+              content: 'My name is Dimitri Kennedy.',
+            },
           ],
           tool_choice: {
-            type: "function",
+            type: 'function',
             function: {
-              name: "say_hello"
-            }
+              name: 'say_hello',
+            },
           },
           tools: [
             {
-              type: "function",
+              type: 'function',
               function: {
-                name: "say_hello",
-                description: "Say hello",
+                name: 'say_hello',
+                description: 'Say hello',
                 parameters: {
-                  type: "object",
+                  type: 'object',
                   properties: {
                     name: {
-                      type: "string"
-                    }
+                      type: 'string',
+                    },
                   },
-                  required: ["name"],
-                  additionalProperties: false
-                }
-              }
-            }
-          ]
+                  required: ['name'],
+                  additionalProperties: false,
+                },
+              },
+            },
+          ],
         })
 
         //@ts-expect-error fails because its optionally undefiened, which is fine - if we fail we fail
-        expect(omit(["id"], completion?.choices?.[0]?.message.tool_calls?.[0])).toEqual({
-          type: "function",
+        expect(omit(['id'], completion?.choices?.[0]?.message.tool_calls?.[0])).toEqual({
+          type: 'function',
           function: {
-            name: "say_hello",
-            arguments: '{"name":"Dimitri Kennedy"}'
-          }
+            name: 'say_hello',
+            arguments: '{"name":"Dimitri Kennedy"}',
+          },
         })
       })
 
-      test("Function Calling Stream", async () => {
+      test('Function Calling Stream', async () => {
         const completion = await anthropicClient.chat.completions.create({
           model,
           max_tokens: 1000,
           stream: true,
           messages: [
             {
-              role: "user",
-              content: "My name is Dimitri Kennedy."
-            }
+              role: 'user',
+              content: 'My name is Dimitri Kennedy.',
+            },
           ],
           tool_choice: {
-            type: "function",
+            type: 'function',
             function: {
-              name: "say_hello"
-            }
+              name: 'say_hello',
+            },
           },
           tools: [
             {
-              type: "function",
+              type: 'function',
               function: {
-                name: "say_hello",
-                description: "Say hello",
+                name: 'say_hello',
+                description: 'Say hello',
                 parameters: {
-                  type: "object",
+                  type: 'object',
                   properties: {
                     name: {
-                      type: "string"
-                    }
+                      type: 'string',
+                    },
                   },
-                  required: ["name"],
-                  additionalProperties: false
-                }
-              }
-            }
-          ]
+                  required: ['name'],
+                  additionalProperties: false,
+                },
+              },
+            },
+          ],
         })
 
-        let final = ""
+        let final = ''
         for await (const message of completion) {
-          final += message.choices?.[0].delta?.content ?? ""
+          final += message.choices?.[0].delta?.content ?? ''
         }
 
         expect(final).toBe(`{\"name\": \"Dimitri Kennedy\"}`)
       })
 
-      test("Function Calling STREAM - complex schema", async () => {
+      test('Function Calling STREAM - complex schema', async () => {
         const completion = await anthropicClient.chat.completions.create({
           model,
           stream: true,
           max_tokens: 1000,
           messages: [
             {
-              role: "user",
+              role: 'user',
               content: `User Data Submission:
 
           First Name: John
@@ -134,84 +135,84 @@ async function createTestCase(model: Anthropic.CompletionCreateParams["model"]) 
 
           Programming
           Leadership
-          Communication`
-            }
+          Communication`,
+            },
           ],
           tool_choice: {
-            type: "function",
+            type: 'function',
             function: {
-              name: "process_user_data"
-            }
+              name: 'process_user_data',
+            },
           },
           tools: [
             {
-              type: "function",
+              type: 'function',
               function: {
-                name: "process_user_data",
-                description: "Processes user data, including personal and professional details.",
+                name: 'process_user_data',
+                description: 'Processes user data, including personal and professional details.',
                 parameters: {
-                  type: "object",
+                  type: 'object',
                   properties: {
                     userDetails: {
-                      type: "object",
+                      type: 'object',
                       properties: {
                         firstName: {
-                          type: "string"
+                          type: 'string',
                         },
                         lastName: {
-                          type: "string"
+                          type: 'string',
                         },
                         contactDetails: {
-                          type: "object",
+                          type: 'object',
                           properties: {
                             email: {
-                              type: "string"
+                              type: 'string',
                             },
                             phoneNumber: {
-                              type: "string"
-                            }
+                              type: 'string',
+                            },
                           },
-                          required: ["email"]
-                        }
+                          required: ['email'],
+                        },
                       },
-                      required: ["firstName", "lastName", "contactDetails"]
+                      required: ['firstName', 'lastName', 'contactDetails'],
                     },
                     jobHistory: {
-                      type: "array",
+                      type: 'array',
                       items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                           companyName: {
-                            type: "string"
+                            type: 'string',
                           },
                           role: {
-                            type: "string"
+                            type: 'string',
                           },
                           years: {
-                            type: "number"
-                          }
+                            type: 'number',
+                          },
                         },
-                        required: ["companyName", "role"]
-                      }
+                        required: ['companyName', 'role'],
+                      },
                     },
                     skills: {
-                      type: "array",
+                      type: 'array',
                       items: {
-                        type: "string"
-                      }
-                    }
+                        type: 'string',
+                      },
+                    },
                   },
-                  required: ["userDetails", "jobHistory"],
-                  additionalProperties: false
-                }
-              }
-            }
-          ]
+                  required: ['userDetails', 'jobHistory'],
+                  additionalProperties: false,
+                },
+              },
+            },
+          ],
         })
 
-        let final = ""
+        let final = ''
         for await (const message of completion) {
-          final += message.choices?.[0].delta?.content ?? ""
+          final += message.choices?.[0].delta?.content ?? ''
         }
 
         expect(final).toBe(
@@ -219,35 +220,35 @@ async function createTestCase(model: Anthropic.CompletionCreateParams["model"]) 
         )
       })
 
-      test("Standard stream", async () => {
+      test('Standard stream', async () => {
         const completion = await anthropicClient.chat.completions.create({
           model,
           max_tokens: 1000,
           stream: true,
           messages: [
             {
-              role: "user",
-              content: "What is the capital of France?"
-            }
-          ]
+              role: 'user',
+              content: 'What is the capital of France?',
+            },
+          ],
         })
-        let final = ""
+        let final = ''
         for await (const message of completion) {
-          final += message.choices?.[0].delta?.content ?? ""
+          final += message.choices?.[0].delta?.content ?? ''
         }
 
-        expect(final).toInclude("Paris")
+        expect(final).toInclude('Paris')
       })
     })
 
-    test("Standard stream - beg for json", async () => {
+    test('Standard stream - beg for json', async () => {
       const completion = await anthropicClient.chat.completions.create({
         model,
         stream: true,
         max_tokens: 1000,
         messages: [
           {
-            role: "system",
+            role: 'system',
             content: `
             always return your response in strict, stringified json format and no other prose, using the following JSON schema:
              {
@@ -261,18 +262,18 @@ async function createTestCase(model: Anthropic.CompletionCreateParams["model"]) 
                required: ["content"],
                additionalProperties: false
              }
-           `
+           `,
           },
           {
-            role: "user",
-            content: "what is the capital of france?"
-          }
-        ]
+            role: 'user',
+            content: 'what is the capital of france?',
+          },
+        ],
       })
 
-      let final = ""
+      let final = ''
       for await (const message of completion) {
-        final += message.choices?.[0].delta?.content ?? ""
+        final += message.choices?.[0].delta?.content ?? ''
       }
 
       expect(final).toBeString()

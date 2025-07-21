@@ -1,13 +1,14 @@
-import { omit } from "../lib"
+import OpenAI from 'openai'
+
+import { omit } from '../lib'
 import {
   FunctionParamsReturnType,
   JsonModeParamsReturnType,
   JsonSchemaParamsReturnType,
   MessageBasedParamsReturnType,
   ParseParams,
-  ToolFunctionParamsReturnType
-} from "../types"
-import OpenAI from "openai"
+  ToolFunctionParamsReturnType,
+} from '../types'
 
 // TODO: remove the deprecated `functions` and use tools instead
 // TODO: separate this logic into something that can be surfaced to the user, this is important for the system prompt
@@ -20,7 +21,7 @@ export function OAIBuildFunctionParams<T extends OpenAI.ChatCompletionCreatePara
   const { name, description, ...definitionParams } = definition
 
   const function_call: OpenAI.ChatCompletionFunctionCallOption = {
-    name
+    name,
   }
 
   const functions: OpenAI.FunctionDefinition[] = [
@@ -28,14 +29,14 @@ export function OAIBuildFunctionParams<T extends OpenAI.ChatCompletionCreatePara
     {
       name: name,
       description: description ?? undefined,
-      parameters: definitionParams
-    }
+      parameters: definitionParams,
+    },
   ]
 
   return {
     ...params,
     function_call,
-    functions
+    functions,
   }
 }
 
@@ -46,18 +47,18 @@ export function OAIBuildToolFunctionParams<T extends OpenAI.ChatCompletionCreate
   const { name, description, ...definitionParams } = definition
 
   const tool_choice: OpenAI.ChatCompletionToolChoiceOption = {
-    type: "function",
-    function: { name }
+    type: 'function',
+    function: { name },
   }
 
   const tools: OpenAI.ChatCompletionTool[] = [
     {
-      type: "function",
+      type: 'function',
       function: {
         name: name,
         description: description,
-        parameters: definitionParams
-      }
+        parameters: definitionParams,
+      },
     },
     ...(params.tools?.map(
       (tool): OpenAI.ChatCompletionTool => ({
@@ -65,16 +66,16 @@ export function OAIBuildToolFunctionParams<T extends OpenAI.ChatCompletionCreate
         function: {
           name: tool.function.name,
           description: tool.function.description,
-          parameters: tool.function.parameters
-        }
+          parameters: tool.function.parameters,
+        },
       })
-    ) ?? [])
+    ) ?? []),
   ]
 
   return {
     ...params,
     tool_choice,
-    tools
+    tools,
   }
 }
 
@@ -86,7 +87,7 @@ export function OAIBuildMessageBasedParams<T extends OpenAI.ChatCompletionCreate
     ...params,
     messages: [
       {
-        role: "system",
+        role: 'system',
         content: `
           Given a user prompt, you will return fully valid JSON based on the following description and schema.
           You will return no other prose. You will take into account any descriptions or required parameters within the schema
@@ -94,10 +95,10 @@ export function OAIBuildMessageBasedParams<T extends OpenAI.ChatCompletionCreate
 
           description: ${definition.description}
           json schema: ${JSON.stringify(definition)}
-        `
+        `,
       },
-      ...params.messages
-    ]
+      ...params.messages,
+    ],
   }
 }
 
@@ -110,7 +111,7 @@ export function OAIBuildThinkingMessageBasedParams<T extends OpenAI.ChatCompleti
     ...params,
     messages: [
       {
-        role: "system",
+        role: 'system',
         content: `
           Given a user prompt, you will return fully valid JSON based on the provided description and schema.
 
@@ -134,10 +135,10 @@ export function OAIBuildThinkingMessageBasedParams<T extends OpenAI.ChatCompleti
 
           description: ${definition.description}
           json schema: ${JSON.stringify(definition)}
-        `
+        `,
       },
-      ...params.messages
-    ]
+      ...params.messages,
+    ],
   }
 }
 
@@ -148,10 +149,10 @@ export function OAIBuildJsonModeParams<T extends OpenAI.ChatCompletionCreatePara
 ): JsonModeParamsReturnType<T> {
   return {
     ...params,
-    response_format: { type: "json_object" },
+    response_format: { type: 'json_object' },
     messages: [
       {
-        role: "system",
+        role: 'system',
         content: `
           Given a user prompt, you will return fully valid JSON based on the following description and schema.
           You will return no other prose. You will take into account any descriptions or required parameters within the schema
@@ -159,10 +160,10 @@ export function OAIBuildJsonModeParams<T extends OpenAI.ChatCompletionCreatePara
 
           description: ${definition.description}
           json schema: ${JSON.stringify(definition)}
-        `
+        `,
       },
-      ...params.messages
-    ]
+      ...params.messages,
+    ],
   }
 }
 
@@ -174,21 +175,21 @@ export function OAIBuildJsonSchemaParams<T extends OpenAI.ChatCompletionCreatePa
   return {
     ...params,
     response_format: {
-      type: "json_object",
-      schema: omit(["name", "description"], definition)
+      type: 'json_object',
+      schema: omit(['name', 'description'], definition),
     },
     messages: [
       {
-        role: "system",
+        role: 'system',
         content: `
           Given a user prompt, you will return fully valid JSON based on the following description.
           You will return no other prose. You will take into account any descriptions or required parameters within the schema
           and return a valid and fully escaped JSON object that matches the schema and those instructions.
 
           description: ${definition.description}
-        `
+        `,
       },
-      ...params.messages
-    ]
+      ...params.messages,
+    ],
   }
 }

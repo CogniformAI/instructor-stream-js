@@ -1,4 +1,4 @@
-import OpenAI from "openai"
+import OpenAI from 'openai'
 
 /**
  * `OAIResponseFnArgsParser` parses a JSON string and extracts the function call arguments.
@@ -13,11 +13,11 @@ export function OAIResponseFnArgsParser(
     | OpenAI.Chat.Completions.ChatCompletionChunk
     | OpenAI.Chat.Completions.ChatCompletion
 ): string {
-  const parsedData = typeof data === "string" ? JSON.parse(data) : data
+  const parsedData = typeof data === 'string' ? JSON.parse(data) : data
   return (
     parsedData.choices?.[0]?.delta?.function_call?.arguments ??
     parsedData.choices?.[0]?.message?.function_call?.arguments ??
-    ""
+    ''
   )
 }
 
@@ -34,12 +34,12 @@ export function OAIResponseToolArgsParser(
     | OpenAI.Chat.Completions.ChatCompletionChunk
     | OpenAI.Chat.Completions.ChatCompletion
 ): string {
-  const parsedData = typeof data === "string" ? JSON.parse(data) : data
+  const parsedData = typeof data === 'string' ? JSON.parse(data) : data
 
   return (
     parsedData.choices?.[0]?.delta?.tool_calls?.[0]?.function?.arguments ??
     parsedData.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments ??
-    ""
+    ''
   )
 }
 
@@ -57,10 +57,10 @@ export function OAIResponseJSONParser(
     | OpenAI.Chat.Completions.ChatCompletionChunk
     | OpenAI.Chat.Completions.ChatCompletion
 ): string {
-  const parsedData = typeof data === "string" ? JSON.parse(data) : data
+  const parsedData = typeof data === 'string' ? JSON.parse(data) : data
 
   const text =
-    parsedData.choices?.[0]?.delta?.content ?? parsedData?.choices?.[0]?.message?.content ?? ""
+    parsedData.choices?.[0]?.delta?.content ?? parsedData?.choices?.[0]?.message?.content ?? ''
 
   const jsonRegex = /```json\n([\s\S]*?)\n```/
   const match = text.match(jsonRegex)
@@ -85,7 +85,7 @@ export function OAIResponseParser(
     | OpenAI.Chat.Completions.ChatCompletionChunk
     | OpenAI.Chat.Completions.ChatCompletion
 ): string {
-  const parsedData = typeof data === "string" ? JSON.parse(data) : data
+  const parsedData = typeof data === 'string' ? JSON.parse(data) : data
 
   const isFnCall =
     parsedData.choices?.[0]?.delta?.function_call?.arguments ||

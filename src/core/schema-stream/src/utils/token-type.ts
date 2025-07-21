@@ -10,23 +10,23 @@ enum TokenType {
   NULL,
   STRING,
   NUMBER,
-  SEPARATOR
+  SEPARATOR,
 }
 
 export function TokenTypeToString(tokenType: TokenType): string {
   return [
-    "LEFT_BRACE",
-    "RIGHT_BRACE",
-    "LEFT_BRACKET",
-    "RIGHT_BRACKET",
-    "COLON",
-    "COMMA",
-    "TRUE",
-    "FALSE",
-    "NULL",
-    "STRING",
-    "NUMBER",
-    "SEPARATOR"
+    'LEFT_BRACE',
+    'RIGHT_BRACE',
+    'LEFT_BRACKET',
+    'RIGHT_BRACKET',
+    'COLON',
+    'COMMA',
+    'TRUE',
+    'FALSE',
+    'NULL',
+    'STRING',
+    'NUMBER',
+    'SEPARATOR',
   ][tokenType]
 }
 
