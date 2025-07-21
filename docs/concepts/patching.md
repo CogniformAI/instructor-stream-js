@@ -12,15 +12,15 @@ The default mode is `instructor.Mode.TOOLS` which is the recommended mode for Op
 This is the recommended method for OpenAI clients. It is the most stable as functions is being deprecated soon.
 
 ```js
-import Instructor from "@instructor-ai/instructor"
-import OpenAI from "openai"
+import Instructor from '@instructor-ai/instructor'
+import OpenAI from 'openai'
 
 const client = Instructor({
   client: new OpenAI({
     apiKey: process.env.OPENAI_API_KEY ?? undefined,
-    organization: process.env.OPENAI_ORG_ID ?? undefined
+    organization: process.env.OPENAI_ORG_ID ?? undefined,
   }),
-  mode: "TOOLS"
+  mode: 'TOOLS',
 })
 ```
 
@@ -29,15 +29,15 @@ const client = Instructor({
 Note that function calling is soon to be deprecated in favor of TOOL mode for OpenAI. But will still be supported for other clients.
 
 ```js
-import Instructor from "@instructor-ai/instructor"
-import OpenAI from "openai"
+import Instructor from '@instructor-ai/instructor'
+import OpenAI from 'openai'
 
 const client = Instructor({
   client: new OpenAI({
     apiKey: process.env.OPENAI_API_KEY ?? undefined,
-    organization: process.env.OPENAI_ORG_ID ?? undefined
+    organization: process.env.OPENAI_ORG_ID ?? undefined,
   }),
-  mode: "FUNCTIONS"
+  mode: 'FUNCTIONS',
 })
 ```
 
@@ -46,15 +46,15 @@ const client = Instructor({
 JSON mode uses OpenAI's JSON fromat for responses. by setting `response_format={"type": "json_object"}` in the `chat.completions.create` method.
 
 ```js
-import Instructor from "@instructor-ai/instructor"
-import OpenAI from "openai"
+import Instructor from '@instructor-ai/instructor'
+import OpenAI from 'openai'
 
 const client = Instructor({
   client: new OpenAI({
     apiKey: process.env.OPENAI_API_KEY ?? undefined,
-    organization: process.env.OPENAI_ORG_ID ?? undefined
+    organization: process.env.OPENAI_ORG_ID ?? undefined,
   }),
-  mode: "JSON"
+  mode: 'JSON',
 })
 ```
 
@@ -63,15 +63,15 @@ const client = Instructor({
 JSON Schema mode uses OpenAI's JSON format for responses. by setting `response_format={"type": "json_object", schema:response_model.model_json_schema()}` in the `chat.completions.create` method. This is only available for select clients (e.g. llama-cpp-python, Anyscale, Together)
 
 ```js
-import Instructor from "@instructor-ai/instructor"
-import OpenAI from "openai"
+import Instructor from '@instructor-ai/instructor'
+import OpenAI from 'openai'
 
 const client = Instructor({
   client: new OpenAI({
     apiKey: process.env.OPENAI_API_KEY ?? undefined,
-    organization: process.env.OPENAI_ORG_ID ?? undefined
+    organization: process.env.OPENAI_ORG_ID ?? undefined,
   }),
-  mode: "JSON_SCHEMA"
+  mode: 'JSON_SCHEMA',
 })
 ```
 
@@ -87,8 +87,8 @@ This just asks for the response in JSON format, but it is not recommended, and m
 const client = Instructor({
   client: new OpenAI({
     apiKey: process.env.OPENAI_API_KEY ?? undefined,
-    organization: process.env.OPENAI_ORG_ID ?? undefined
+    organization: process.env.OPENAI_ORG_ID ?? undefined,
   }),
-  mode: "MD_JSON"
+  mode: 'MD_JSON',
 })
 ```

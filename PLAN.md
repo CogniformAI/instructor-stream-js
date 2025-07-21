@@ -17,9 +17,11 @@ This fork of instructor-js addresses key limitations in the original project whi
 ## Development Phases
 
 ### Phase 0: Bootstrap & Foundation (Current)
+
 **Goal**: Clean repository and establish development foundation
 
-#### 0.0 - Repository Cleanup ✅ *In Progress*
+#### 0.0 - Repository Cleanup ✅ _In Progress_
+
 - [x] Mark package as private to prevent accidental publishing
 - [x] Reset version to 0.0.0 and update package name
 - [x] Archive old documentation and examples
@@ -27,35 +29,42 @@ This fork of instructor-js addresses key limitations in the original project whi
 - [x] Establish project structure with internalized dependencies
 
 #### 0.1 - Core Dependencies Integration
+
 - [ ] Fully integrate Island AI packages (`zod-stream`, `schemaStream`, `llm-client`)
 - [ ] Update all imports to use local versions
 - [ ] Remove external dependency references
 - [ ] Verify build system works with new structure
 
 ### Phase 1: Core Modernization
+
 **Goal**: Upgrade dependencies and implement new data structures
 
 #### 1.0 - Zod 4 Migration
+
 - [ ] Replace `zod-to-json-schema` with Zod 4's native `.toJSONSchema()`
 - [ ] Update all Zod type handling for Zod 4 changes
 - [ ] Remove deprecated API usage (e.g., `invalid_type_error`, `required_error`)
 - [ ] Leverage Zod 4 performance improvements (3x faster parsing, 57% smaller bundle)
 
 #### 1.1 - Data Shape Restructuring
+
 - [ ] Implement new streaming format: `{ data: T[], _meta: CompletionMeta }`
 - [ ] Add dynamic `_type` field to metadata (`'outline' | 'detailed' | 'complete' | 'error'`)
 - [ ] Preserve `_completedPaths` and `_activePath` in metadata
 - [ ] Ensure backward compatibility documentation for migration
 
 #### 1.2 - Mode Consolidation
+
 - [ ] Remove non-streaming modes (MD_JSON, deprecated function calling)
 - [ ] Unify to two core modes: `tools()` for function calling, `structured()` for JSON/XML
 - [ ] Clean up mode-specific code and simplify API surface
 
 ### Phase 2: Performance Optimization
+
 **Goal**: Implement high-performance streaming parser
 
 #### 2.0 - Tokenizer Performance
+
 - [ ] Implement SAX-style state machine for JSON parsing
 - [ ] Minimize string creation and concatenation in parsing loops
 - [ ] Use direct value recognition for JSON literals (`true`, `false`, `null`)
@@ -63,67 +72,81 @@ This fork of instructor-js addresses key limitations in the original project whi
 - [ ] Avoid accumulating entire JSON in memory during parsing
 
 #### 2.1 - XML Streaming Support
+
 - [ ] Research and implement XML tag-based streaming (Anthropic-style)
 - [ ] Create JSON Schema → XML format converter
 - [ ] XML response → JSON data parser
 - [ ] Benchmark XML vs JSON streaming performance
 
 #### 2.2 - Memory & Performance Profiling
+
 - [ ] Create benchmarks against `stream-json`, `clarinet`, other parsers
 - [ ] Profile memory usage and garbage collection patterns
 - [ ] Optimize for linear parsing time with stable memory usage
 
 ### Phase 3: Modern Transport & Integration
+
 **Goal**: Embrace modern web standards and interleaved responses
 
 #### 3.0 - WebSocket Native Support
+
 - [ ] Implement WebSocket-first transport layer
 - [ ] SSE fallback for compatibility
 - [ ] Framework-agnostic client hooks (`useStream`, etc.)
 - [ ] Cross-platform compatibility (Node, Cloudflare Workers, Vercel)
 
 #### 3.1 - Agentic Response Handling
+
 - [ ] Support interleaved text and tool call responses
 - [ ] Automatic tool call result feeding back to LLM
 - [ ] Plain text streaming in JSON wrapper for easy client handling
 - [ ] Tool call callback system
 
 #### 3.2 - OpenAI Responses API Integration
+
 - [ ] Adapt to use OpenAI's new structured output endpoints
 - [ ] Maintain streaming capabilities that official SDK lacks
 - [ ] Preserve rich metadata that official API doesn't provide
 
 ### Phase 4: Client-Side & UI Integration
+
 **Goal**: Complete the streaming experience with client tooling
 
 #### 4.0 - Framework-Agnostic Hooks
+
 - [ ] Platform-agnostic streaming hooks using UnJS ecosystem
 - [ ] WebSocket-native with automatic fallbacks
 - [ ] Tree-shakeable design for minimal bundle impact
 
 #### 4.1 - Dynamic UI Exploration
+
 - [ ] JSON-based UI specification generation
 - [ ] Framework examples (React, Vue, Svelte) without lock-in
 - [ ] Real-time form generation from streaming schemas
 
 ### Phase 5: Validator Plugin System
+
 **Goal**: Remove hard dependency on Zod
 
 #### 5.0 - Pluggable Validation
+
 - [ ] Create `Validator<T>` adapter interface
 - [ ] Built-in adapters: `fromZod`, `fromValibot`, `fromArktype`, `fromJSONSchema`
 - [ ] Allow users to bring their own validation library
 - [ ] Maintain Zod as default but not required
 
 ### Phase 6: Advanced Features
+
 **Goal**: Cutting-edge capabilities
 
 #### 6.0 - Media Stream Handling
+
 - [ ] Native image/video streaming support
 - [ ] Binary chunk passthrough with progressive assembly
 - [ ] Automatic base64 → blob conversion
 
 #### 6.1 - Advanced Optimizations
+
 - [ ] WASM tokenizer experiments
 - [ ] Automatic JSON ↔ XML fallback based on model quality
 - [ ] Pluggable post-merge transformers
@@ -131,11 +154,13 @@ This fork of instructor-js addresses key limitations in the original project whi
 ## Release Strategy
 
 ### Version 0.x (Pre-Release)
+
 - Private development releases
 - Breaking changes allowed
 - Focus on core functionality and performance
 
 ### Version 1.0 (Stable Release)
+
 - Public release with API freeze
 - Comprehensive documentation site
 - GitHub Actions with semantic release
@@ -143,6 +168,7 @@ This fork of instructor-js addresses key limitations in the original project whi
 - Migration guide from instructor-js
 
 ### Post-1.0 Roadmap
+
 - Community feedback integration
 - Additional provider support
 - Advanced UI generation features

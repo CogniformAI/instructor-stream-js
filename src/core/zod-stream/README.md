@@ -43,7 +43,7 @@
   ```typescript
   if (isPathComplete(['user', 'preferences'], chunk)) {
     // Start personalizing immediately, don't wait for content
-    initializeUserExperience(chunk.user.preferences);
+    initializeUserExperience(chunk.user.preferences)
   }
   ```
 
@@ -51,9 +51,9 @@
 
   ```typescript
   const params = withResponseModel({
-    response_model: { schema, name: "Extract" },
-    mode: "TOOLS"  // or "FUNCTIONS", "JSON", etc.
-  });
+    response_model: { schema, name: 'Extract' },
+    mode: 'TOOLS', // or "FUNCTIONS", "JSON", etc.
+  })
   ```
 
 - **Progressive Processing**: Built on `schema-stream` for immediate access to partial results
@@ -61,9 +61,9 @@
   ```typescript
   for await (const chunk of stream) {
     // Safely access partial data with full type inference
-    chunk._meta._completedPaths.forEach(path => {
-      processDependency(path, chunk);
-    });
+    chunk._meta._completedPaths.forEach((path) => {
+      processDependency(path, chunk)
+    })
   }
   ```
 
@@ -100,45 +100,45 @@ bun add zod-stream zod openai
 The `ZodStream` client provides real-time validation and metadata for streaming LLM responses:
 
 ```typescript
-import ZodStream from "zod-stream";
-import { z } from "zod";
+import { z } from 'zod'
+import ZodStream from 'zod-stream'
 
 const client = new ZodStream({
-  debug: true  // Enable debug logging
-});
+  debug: true, // Enable debug logging
+})
 
 // Define your extraction schema
 const schema = z.object({
   content: z.string(),
   metadata: z.object({
     confidence: z.number(),
-    category: z.string()
-  })
-});
+    category: z.string(),
+  }),
+})
 
 // Create streaming extraction
 const stream = await client.create({
   completionPromise: async () => {
-    const response = await fetch("/api/extract", {
-      method: "POST",
-      body: JSON.stringify({ prompt: "..." })
-    });
-    return response.body;
+    const response = await fetch('/api/extract', {
+      method: 'POST',
+      body: JSON.stringify({ prompt: '...' }),
+    })
+    return response.body
   },
   response_model: {
     schema,
-    name: "ContentExtraction"
-  }
-});
+    name: 'ContentExtraction',
+  },
+})
 
 // Process with validation metadata
 for await (const chunk of stream) {
   console.log({
-    data: chunk,              // Partial extraction result
-    isValid: chunk._meta._isValid,    // Current validation state
-    activePath: chunk._meta._activePath,    // Currently processing path
-    completedPaths: chunk._meta._completedPaths  // Completed paths
-  });
+    data: chunk, // Partial extraction result
+    isValid: chunk._meta._isValid, // Current validation state
+    activePath: chunk._meta._activePath, // Currently processing path
+    completedPaths: chunk._meta._completedPaths, // Completed paths
+  })
 }
 ```
 
@@ -153,52 +153,56 @@ const schema = z.object({
     id: z.string(),
     preferences: z.object({
       theme: z.string(),
-      language: z.string()
-    })
+      language: z.string(),
+    }),
   }),
   content: z.object({
     title: z.string(),
     body: z.string(),
     metadata: z.object({
       keywords: z.array(z.string()),
-      category: z.string()
-    })
+      category: z.string(),
+    }),
   }),
-  recommendations: z.array(z.object({
-    id: z.string(),
-    score: z.number(),
-    reason: z.string()
-  }))
-});
+  recommendations: z.array(
+    z.object({
+      id: z.string(),
+      score: z.number(),
+      reason: z.string(),
+    })
+  ),
+})
 
 // Process data as it becomes available
 for await (const chunk of stream) {
   // Start personalizing UI as soon as user preferences are ready
   if (isPathComplete(['user', 'preferences'], chunk)) {
-    applyUserTheme(chunk.user.preferences.theme);
-    setLanguage(chunk.user.preferences.language);
+    applyUserTheme(chunk.user.preferences.theme)
+    setLanguage(chunk.user.preferences.language)
   }
 
   // Begin content indexing once we have title and keywords
-  if (isPathComplete(['content', 'metadata', 'keywords'], chunk) && 
-      isPathComplete(['content', 'title'], chunk)) {
+  if (
+    isPathComplete(['content', 'metadata', 'keywords'], chunk) &&
+    isPathComplete(['content', 'title'], chunk)
+  ) {
     indexContent({
       title: chunk.content.title,
-      keywords: chunk.content.metadata.keywords
-    });
+      keywords: chunk.content.metadata.keywords,
+    })
   }
 
   // Start fetching recommended content in parallel
-  chunk._meta._completedPaths.forEach(path => {
+  chunk._meta._completedPaths.forEach((path) => {
     if (path[0] === 'recommendations' && path.length === 2) {
-      const index = path[1] as number;
-      const recommendation = chunk.recommendations[index];
-      
+      const index = path[1] as number
+      const recommendation = chunk.recommendations[index]
+
       if (recommendation?.id) {
-        prefetchContent(recommendation.id);
+        prefetchContent(recommendation.id)
       }
     }
-  });
+  })
 }
 ```
 
@@ -244,19 +248,21 @@ Get typed stub objects for initialization:
 
 ```typescript
 const schema = z.object({
-  users: z.array(z.object({
-    name: z.string(),
-    age: z.number()
-  }))
-});
+  users: z.array(
+    z.object({
+      name: z.string(),
+      age: z.number(),
+    })
+  ),
+})
 
-const client = new ZodStream();
+const client = new ZodStream()
 const stub = client.getSchemaStub({
   schema,
   defaultData: {
-    users: [{ name: "loading...", age: 0 }]
-  }
-});
+    users: [{ name: 'loading...', age: 0 }],
+  },
+})
 ```
 
 ## Debug Logging
@@ -264,7 +270,7 @@ const stub = client.getSchemaStub({
 Enable detailed logging for debugging:
 
 ```typescript
-const client = new ZodStream({ debug: true });
+const client = new ZodStream({ debug: true })
 
 // Logs will include:
 // - Stream initialization
@@ -278,33 +284,33 @@ const client = new ZodStream({ debug: true });
 The `withResponseModel` helper configures OpenAI parameters based on your schema and chosen mode:
 
 ```typescript
-import { withResponseModel } from "zod-stream";
-import { z } from "zod";
+import { z } from 'zod'
+import { withResponseModel } from 'zod-stream'
 
 const schema = z.object({
   sentiment: z.string(),
   keywords: z.array(z.string()),
-  confidence: z.number()
-});
+  confidence: z.number(),
+})
 
 // Configure for OpenAI tools mode
 const params = withResponseModel({
   response_model: {
     schema,
-    name: "Analysis",
-    description: "Extract sentiment and keywords"
+    name: 'Analysis',
+    description: 'Extract sentiment and keywords',
   },
-  mode: "TOOLS",
+  mode: 'TOOLS',
   params: {
-    messages: [{ role: "user", content: "Analyze this text..." }],
-    model: "gpt-4"
-  }
-});
+    messages: [{ role: 'user', content: 'Analyze this text...' }],
+    model: 'gpt-4',
+  },
+})
 
 const completion = await oai.chat.completions.create({
   ...params,
-  stream: true
-});
+  stream: true,
+})
 ```
 
 ## Response Modes
@@ -312,16 +318,16 @@ const completion = await oai.chat.completions.create({
 `zod-stream` supports multiple modes for structured LLM responses:
 
 ```typescript
-import { MODE } from "zod-stream";
+import { MODE } from 'zod-stream'
 
 const modes = {
-  FUNCTIONS: "FUNCTIONS",   // OpenAI function calling
-  TOOLS: "TOOLS",          // OpenAI tools API
-  JSON: "JSON",            // Direct JSON response
-  MD_JSON: "MD_JSON",      // JSON in markdown blocks
-  JSON_SCHEMA: "JSON_SCHEMA", // JSON with schema validation
-  THINKING_MD_JSON: "THINKING_MD_JSON" // JSON with thinking in markdown blocks (deepseek r1)
-} as const;
+  FUNCTIONS: 'FUNCTIONS', // OpenAI function calling
+  TOOLS: 'TOOLS', // OpenAI tools API
+  JSON: 'JSON', // Direct JSON response
+  MD_JSON: 'MD_JSON', // JSON in markdown blocks
+  JSON_SCHEMA: 'JSON_SCHEMA', // JSON with schema validation
+  THINKING_MD_JSON: 'THINKING_MD_JSON', // JSON with thinking in markdown blocks (deepseek r1)
+} as const
 ```
 
 ### Mode-Specific Behaviors
@@ -381,22 +387,22 @@ const modes = {
 Built-in parsers handle different response formats:
 
 ```typescript
-import { 
-  OAIResponseParser,
-  OAIResponseToolArgsParser,
+import {
   OAIResponseFnArgsParser,
   OAIResponseJSONParser,
-  thinkingJsonParser
-} from "zod-stream";
+  OAIResponseParser,
+  OAIResponseToolArgsParser,
+  thinkingJsonParser,
+} from 'zod-stream'
 
 // Automatic format detection
-const result = OAIResponseParser(response);
+const result = OAIResponseParser(response)
 
 // Format-specific parsing
-const toolArgs = OAIResponseToolArgsParser(response);
-const fnArgs = OAIResponseFnArgsParser(response);
-const jsonContent = OAIResponseJSONParser(response);
-const thinkingJson = thinkingJsonParser(response);
+const toolArgs = OAIResponseToolArgsParser(response)
+const fnArgs = OAIResponseFnArgsParser(response)
+const jsonContent = OAIResponseJSONParser(response)
+const thinkingJson = thinkingJsonParser(response)
 ```
 
 ### Streaming Utilities
@@ -404,24 +410,22 @@ const thinkingJson = thinkingJsonParser(response);
 Handle streaming responses with built-in utilities:
 
 ```typescript
-import { OAIStream, readableStreamToAsyncGenerator } from "zod-stream";
+import { OAIStream, readableStreamToAsyncGenerator } from 'zod-stream'
 
 // Create streaming response
-app.post("/api/stream", async (req, res) => {
+app.post('/api/stream', async (req, res) => {
   const completion = await oai.chat.completions.create({
     ...params,
-    stream: true
-  });
+    stream: true,
+  })
 
-  return new Response(
-    OAIStream({ res: completion })
-  );
-});
+  return new Response(OAIStream({ res: completion }))
+})
 
 // Convert stream to async generator
-const generator = readableStreamToAsyncGenerator(stream);
+const generator = readableStreamToAsyncGenerator(stream)
 for await (const chunk of generator) {
-  console.log(chunk);
+  console.log(chunk)
 }
 ```
 
@@ -430,16 +434,16 @@ for await (const chunk of generator) {
 Monitor completion status of specific paths:
 
 ```typescript
-import { isPathComplete } from "zod-stream";
+import { isPathComplete } from 'zod-stream'
 
-const activePath = ["analysis", "sentiment"];
+const activePath = ['analysis', 'sentiment']
 const isComplete = isPathComplete(activePath, {
   _meta: {
-    _completedPaths: [["analysis", "sentiment"]],
-    _activePath: ["analysis", "keywords"],
-    _isValid: false
-  }
-});
+    _completedPaths: [['analysis', 'sentiment']],
+    _activePath: ['analysis', 'keywords'],
+    _isValid: false,
+  },
+})
 ```
 
 ## Error Handling
@@ -449,8 +453,8 @@ const isComplete = isPathComplete(activePath, {
 ```typescript
 const stream = await client.create({
   completionPromise: async () => response.body,
-  response_model: { schema }
-});
+  response_model: { schema },
+})
 
 let finalResult
 
@@ -458,8 +462,8 @@ let finalResult
 for await (const chunk of stream) {
   finalResult = chunk
   // Check which paths are complete
-  console.log("Completed paths:", chunk._meta._completedPaths);
-  console.log("Current path:", chunk._meta._activePath);
+  console.log('Completed paths:', chunk._meta._completedPaths)
+  console.log('Current path:', chunk._meta._activePath)
 }
 
 // Final validation happens after stream completes
@@ -473,45 +477,51 @@ const isValid = finalResult._meta._isValid
 ```typescript
 const analysisSchema = z.object({
   marketData: z.object({
-    trends: z.array(z.object({
-      metric: z.string(),
-      value: z.number()
-    })),
-    summary: z.string()
+    trends: z.array(
+      z.object({
+        metric: z.string(),
+        value: z.number(),
+      })
+    ),
+    summary: z.string(),
   }),
-  competitors: z.array(z.object({
-    name: z.string(),
-    strengths: z.array(z.string()),
-    weaknesses: z.array(z.string())
-  })),
+  competitors: z.array(
+    z.object({
+      name: z.string(),
+      strengths: z.array(z.string()),
+      weaknesses: z.array(z.string()),
+    })
+  ),
   recommendations: z.object({
     immediate: z.array(z.string()),
     longTerm: z.array(z.string()),
-    budget: z.number()
-  })
-});
+    budget: z.number(),
+  }),
+})
 
 for await (const chunk of stream) {
   // Start visualizing market trends immediately
   if (isPathComplete(['marketData', 'trends'], chunk)) {
-    initializeCharts(chunk.marketData.trends);
+    initializeCharts(chunk.marketData.trends)
   }
 
   // Begin competitor analysis in parallel
-  chunk._meta._completedPaths.forEach(path => {
+  chunk._meta._completedPaths.forEach((path) => {
     if (path[0] === 'competitors' && path.length === 2) {
-      const competitor = chunk.competitors[path[1] as number];
-      fetchCompetitorData(competitor.name);
+      const competitor = chunk.competitors[path[1] as number]
+      fetchCompetitorData(competitor.name)
     }
-  });
+  })
 
   // Start budget planning once we have immediate recommendations
-  if (isPathComplete(['recommendations', 'immediate'], chunk) && 
-      isPathComplete(['recommendations', 'budget'], chunk)) {
+  if (
+    isPathComplete(['recommendations', 'immediate'], chunk) &&
+    isPathComplete(['recommendations', 'budget'], chunk)
+  ) {
     planBudgetAllocation({
       actions: chunk.recommendations.immediate,
-      budget: chunk.recommendations.budget
-    });
+      budget: chunk.recommendations.budget,
+    })
   }
 }
 ```
@@ -523,54 +533,60 @@ const documentSchema = z.object({
   metadata: z.object({
     title: z.string(),
     author: z.string(),
-    topics: z.array(z.string())
+    topics: z.array(z.string()),
   }),
-  sections: z.array(z.object({
-    heading: z.string(),
-    content: z.string(),
-    annotations: z.array(z.object({
-      type: z.string(),
-      text: z.string(),
-      confidence: z.number()
-    }))
-  })),
+  sections: z.array(
+    z.object({
+      heading: z.string(),
+      content: z.string(),
+      annotations: z.array(
+        z.object({
+          type: z.string(),
+          text: z.string(),
+          confidence: z.number(),
+        })
+      ),
+    })
+  ),
   summary: z.object({
     abstract: z.string(),
     keyPoints: z.array(z.string()),
-    readingTime: z.number()
-  })
-});
+    readingTime: z.number(),
+  }),
+})
 
 for await (const chunk of stream) {
   // Start document indexing as soon as metadata is available
   if (isPathComplete(['metadata'], chunk)) {
     indexDocument({
       title: chunk.metadata.title,
-      topics: chunk.metadata.topics
-    });
+      topics: chunk.metadata.topics,
+    })
   }
 
   // Process sections as they complete
-  chunk._meta._completedPaths.forEach(path => {
+  chunk._meta._completedPaths.forEach((path) => {
     if (path[0] === 'sections' && isPathComplete([...path, 'annotations'], chunk)) {
-      const sectionIndex = path[1] as number;
-      const section = chunk.sections[sectionIndex];
-      
+      const sectionIndex = path[1] as number
+      const section = chunk.sections[sectionIndex]
+
       // Process annotations for each completed section
       processAnnotations({
         heading: section.heading,
-        annotations: section.annotations
-      });
+        annotations: section.annotations,
+      })
     }
-  });
+  })
 
   // Generate preview once we have abstract and reading time
-  if (isPathComplete(['summary', 'abstract'], chunk) && 
-      isPathComplete(['summary', 'readingTime'], chunk)) {
+  if (
+    isPathComplete(['summary', 'abstract'], chunk) &&
+    isPathComplete(['summary', 'readingTime'], chunk)
+  ) {
     generatePreview({
       abstract: chunk.summary.abstract,
-      readingTime: chunk.summary.readingTime
-    });
+      readingTime: chunk.summary.readingTime,
+    })
   }
 }
 ```
@@ -582,61 +598,67 @@ const productSchema = z.object({
   basic: z.object({
     id: z.string(),
     name: z.string(),
-    category: z.string()
+    category: z.string(),
   }),
   pricing: z.object({
     base: z.number(),
-    discounts: z.array(z.object({
-      type: z.string(),
-      amount: z.number()
-    })),
-    final: z.number()
+    discounts: z.array(
+      z.object({
+        type: z.string(),
+        amount: z.number(),
+      })
+    ),
+    final: z.number(),
   }),
   inventory: z.object({
     status: z.string(),
-    locations: z.array(z.object({
-      id: z.string(),
-      quantity: z.number()
-    }))
+    locations: z.array(
+      z.object({
+        id: z.string(),
+        quantity: z.number(),
+      })
+    ),
   }),
   enrichment: z.object({
     seoDescription: z.string(),
     searchKeywords: z.array(z.string()),
-    relatedProducts: z.array(z.string())
-  })
-});
+    relatedProducts: z.array(z.string()),
+  }),
+})
 
 for await (const chunk of stream) {
   // Start inventory checks as soon as basic info is available
   if (isPathComplete(['basic'], chunk)) {
-    initializeProductCard(chunk.basic);
+    initializeProductCard(chunk.basic)
   }
 
   // Update pricing as soon as final price is calculated
   if (isPathComplete(['pricing', 'final'], chunk)) {
-    updatePriceDisplay(chunk.pricing.final);
-    
+    updatePriceDisplay(chunk.pricing.final)
+
     // If we also have inventory, update buy button
     if (isPathComplete(['inventory', 'status'], chunk)) {
       updateBuyButton({
         price: chunk.pricing.final,
-        status: chunk.inventory.status
-      });
+        status: chunk.inventory.status,
+      })
     }
   }
 
   // Start SEO optimization in parallel
-  if (isPathComplete(['enrichment', 'seoDescription'], chunk) &&
-      isPathComplete(['enrichment', 'searchKeywords'], chunk)) {
+  if (
+    isPathComplete(['enrichment', 'seoDescription'], chunk) &&
+    isPathComplete(['enrichment', 'searchKeywords'], chunk)
+  ) {
     optimizeProductSEO({
       description: chunk.enrichment.seoDescription,
-      keywords: chunk.enrichment.searchKeywords
-    });
+      keywords: chunk.enrichment.searchKeywords,
+    })
   }
 
   // Prefetch related products as they're identified
   if (isPathComplete(['enrichment', 'relatedProducts'], chunk)) {
-    prefetchRelatedProducts(chunk.enrichment.relatedProducts);
+    prefetchRelatedProducts(chunk.enrichment.relatedProducts)
   }
 }
 ```
@@ -645,42 +667,44 @@ for await (const chunk of stream) {
 
 ```typescript
 // pages/api/extract.ts
-import { withResponseModel, OAIStream } from "zod-stream";
-import { z } from "zod";
+import { z } from 'zod'
+import { OAIStream, withResponseModel } from 'zod-stream'
 
 const schema = z.object({
   summary: z.string(),
   topics: z.array(z.string()),
   sentiment: z.object({
     score: z.number(),
-    label: z.string()
-  })
-});
+    label: z.string(),
+  }),
+})
 
 export default async function handler(req, res) {
-  const { content } = await req.json();
+  const { content } = await req.json()
 
   const params = withResponseModel({
-    response_model: { 
+    response_model: {
       schema,
-      name: "ContentAnalysis"
+      name: 'ContentAnalysis',
     },
-    mode: "TOOLS",
+    mode: 'TOOLS',
     params: {
-      messages: [{ 
-        role: "user", 
-        content: `Analyze: ${content}` 
-      }],
-      model: "gpt-4"
-    }
-  });
+      messages: [
+        {
+          role: 'user',
+          content: `Analyze: ${content}`,
+        },
+      ],
+      model: 'gpt-4',
+    },
+  })
 
   const stream = await oai.chat.completions.create({
     ...params,
-    stream: true
-  });
+    stream: true,
+  })
 
-  return new Response(OAIStream({ res: stream }));
+  return new Response(OAIStream({ res: stream }))
 }
 ```
 
@@ -698,10 +722,10 @@ const schema = z.object({
 function AnalysisComponent() {
   const [data, setData] = useState<z.infer<typeof schema>>();
 
-  const { 
-    loading, 
+  const {
+    loading,
     error,
-    startStream 
+    startStream
   } = useJsonStream({
     schema,
     onReceive: (data) => {
@@ -711,7 +735,7 @@ function AnalysisComponent() {
 
   return (
     <div>
-      <button 
+      <button
         onClick={() => startStream({
           url: "/api/extract",
           method: "POST",
@@ -724,7 +748,7 @@ function AnalysisComponent() {
 
       {loading && <LoadingState paths={data._meta._completedPaths} />}
       {error && <ErrorDisplay error={error} />}
-      
+
       <ProgressiveDisplay
         data={data}
         isComplete={data._meta._completedPaths.length > 0}

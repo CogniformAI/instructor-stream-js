@@ -23,7 +23,8 @@
     "decorators-legacy"
   ],
   "plugins": [
-    "@ianvs/prettier-plugin-sort-imports"
+    "@ianvs/prettier-plugin-sort-imports",
+    "@prettier/plugin-oxc"
   ],
   "printWidth": 100,
   "proseWrap": "never",

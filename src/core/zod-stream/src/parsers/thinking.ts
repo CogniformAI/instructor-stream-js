@@ -17,7 +17,7 @@ export function thinkingJsonParser(data: string | OpenAI.Chat.Completions.ChatCo
 } {
   const text =
     typeof data === 'string' ? data
-    : 'choices' in data && data.choices?.[0] ? (data.choices[0].message?.content ?? '')
+    : 'choices' in data && data.choices?.[0] ? data.choices[0].message?.content ?? ''
     : ''
 
   const thinkingRegex = /<think(?:ing)?>([\s\S]*?)(?:<\/think(?:ing)?>|\Z)/i

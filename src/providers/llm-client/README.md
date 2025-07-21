@@ -28,7 +28,7 @@
 **Native API Support Status:**
 
 | Provider API | Status | Chat | Basic Stream | Functions/Tool calling | Function streaming | Notes |
-|-------------|---------|------|--------------|---------------------|-----------------|--------|
+| --- | --- | --- | --- | --- | --- | --- |
 | OpenAI | ✅ | ✅ | ✅ | ✅ | ✅ | Direct SDK proxy |
 | Anthropic | ✅ | ✅ | ✅ | ❌ | ❌ | Claude models |
 | Google | ✅ | ✅ | ✅ | ✅ | ❌ | Gemini models + context caching |
@@ -48,12 +48,12 @@ Stream Types:
 
 These providers use the OpenAI SDK format, so they work directly with the OpenAI client configuration:
 
-| Provider | How to Use | Available Models |
-|----------|------------|------------------|
-| Together | Use OpenAI client with Together base URL | Mixtral, Llama, OpenChat, Yi, others |
-| Anyscale | Use OpenAI client with Anyscale base URL | Mistral, Llama, others |
-| Perplexity | Use OpenAI client with Perplexity base URL | pplx-* models |
-| Replicate | Use OpenAI client with Replicate base URL | Various open models |
+| Provider   | How to Use                                 | Available Models                     |
+| ---------- | ------------------------------------------ | ------------------------------------ |
+| Together   | Use OpenAI client with Together base URL   | Mixtral, Llama, OpenChat, Yi, others |
+| Anyscale   | Use OpenAI client with Anyscale base URL   | Mistral, Llama, others               |
+| Perplexity | Use OpenAI client with Perplexity base URL | pplx-\* models                       |
+| Replicate  | Use OpenAI client with Replicate base URL  | Various open models                  |
 
 ## Installation
 
@@ -69,19 +69,19 @@ npm install @google/generative-ai # For Google/Gemini
 ## Basic Usage
 
 ```typescript
-import { createLLMClient } from "llm-polyglot";
+import { createLLMClient } from 'llm-polyglot'
 
 // Initialize provider-specific client
 const client = createLLMClient({
-  provider: "anthropic" // or "google", "openai", etc.
-});
+  provider: 'anthropic', // or "google", "openai", etc.
+})
 
 // Use consistent OpenAI-style interface
 const completion = await client.chat.completions.create({
-  model: "claude-3-opus-20240229",
-  messages: [{ role: "user", content: "Hello!" }],
-  max_tokens: 1000
-});
+  model: 'claude-3-opus-20240229',
+  messages: [{ role: 'user', content: 'Hello!' }],
+  max_tokens: 1000,
+})
 ```
 
 ## Provider-Specific Features
@@ -97,42 +97,44 @@ The anthropic sdk is required when using the anthropic provider - we only use th
 ```
 
 ```typescript
-const client = createLLMClient({ provider: "anthropic" });
+const client = createLLMClient({ provider: 'anthropic' })
 
 // Standard completion
 const response = await client.chat.completions.create({
-  model: "claude-3-opus-20240229",
-  messages: [{ role: "user", content: "Hello!" }]
-});
+  model: 'claude-3-opus-20240229',
+  messages: [{ role: 'user', content: 'Hello!' }],
+})
 
 // Streaming
 const stream = await client.chat.completions.create({
-  model: "claude-3-opus-20240229",
-  messages: [{ role: "user", content: "Hello!" }],
-  stream: true
-});
+  model: 'claude-3-opus-20240229',
+  messages: [{ role: 'user', content: 'Hello!' }],
+  stream: true,
+})
 
 for await (const chunk of stream) {
-  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? '')
 }
 
 // Tool/Function calling
 const result = await client.chat.completions.create({
-  model: "claude-3-opus-20240229",
-  messages: [{ role: "user", content: "Analyze this data" }],
-  tools: [{
-    type: "function",
-    function: {
-      name: "analyze",
-      parameters: {
-        type: "object",
-        properties: {
-          sentiment: { type: "string" }
-        }
-      }
-    }
-  }]
-});
+  model: 'claude-3-opus-20240229',
+  messages: [{ role: 'user', content: 'Analyze this data' }],
+  tools: [
+    {
+      type: 'function',
+      function: {
+        name: 'analyze',
+        parameters: {
+          type: 'object',
+          properties: {
+            sentiment: { type: 'string' },
+          },
+        },
+      },
+    },
+  ],
+})
 ```
 
 ### Google (Gemini)
@@ -159,43 +161,45 @@ To use any of the above functionality, the schema matches OpenAI's format since 
 #### Basic Usage
 
 ```typescript
-const client = createLLMClient({ provider: "google" });
+const client = createLLMClient({ provider: 'google' })
 
 // Standard completion
 const completion = await client.chat.completions.create({
-  model: "gemini-1.5-flash-latest",
-  messages: [{ role: "user", content: "Hello!" }],
-  max_tokens: 1000
-});
+  model: 'gemini-1.5-flash-latest',
+  messages: [{ role: 'user', content: 'Hello!' }],
+  max_tokens: 1000,
+})
 
 // With grounding (Google Search)
 const groundedCompletion = await client.chat.completions.create({
-  model: "gemini-1.5-flash-latest",
-  messages: [{ role: "user", content: "What are the latest AI developments?" }],
+  model: 'gemini-1.5-flash-latest',
+  messages: [{ role: 'user', content: 'What are the latest AI developments?' }],
   groundingThreshold: 0.7,
-  max_tokens: 1000
-});
+  max_tokens: 1000,
+})
 
 // With safety settings
 const safeCompletion = await client.chat.completions.create({
-  model: "gemini-1.5-flash-latest",
-  messages: [{ role: "user", content: "Tell me a story" }],
+  model: 'gemini-1.5-flash-latest',
+  messages: [{ role: 'user', content: 'Tell me a story' }],
   additionalProperties: {
-    safetySettings: [{
-      category: "HARM_CATEGORY_HARASSMENT",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE"
-    }]
-  }
-});
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+    ],
+  },
+})
 
 // With session management
 const sessionCompletion = await client.chat.completions.create({
-  model: "gemini-1.5-flash-latest",
-  messages: [{ role: "user", content: "Remember this: I'm Alice" }],
+  model: 'gemini-1.5-flash-latest',
+  messages: [{ role: 'user', content: "Remember this: I'm Alice" }],
   additionalProperties: {
-    sessionId: "user-123"
-  }
-});
+    sessionId: 'user-123',
+  },
+})
 ```
 
 #### Context Caching
@@ -205,46 +209,50 @@ const sessionCompletion = await client.chat.completions.create({
 ```typescript
 // Create a cache
 const cache = await client.cacheManager.create({
-  model: "gemini-1.5-flash-8b",
-  messages: [{ role: "user", content: "Context to cache" }],
-  ttlSeconds: 3600 // Cache for 1 hour
-});
+  model: 'gemini-1.5-flash-8b',
+  messages: [{ role: 'user', content: 'Context to cache' }],
+  ttlSeconds: 3600, // Cache for 1 hour
+})
 
 // Use the cached context
 const completion = await client.chat.completions.create({
-  model: "gemini-1.5-flash-8b",
-  messages: [{ role: "user", content: "Follow-up question" }],
+  model: 'gemini-1.5-flash-8b',
+  messages: [{ role: 'user', content: 'Follow-up question' }],
   additionalProperties: {
-    cacheName: cache.name
-  }
-});
+    cacheName: cache.name,
+  },
+})
 ```
 
 #### Function/Tool Calling
 
 ```typescript
 const completion = await client.chat.completions.create({
-  model: "gemini-1.5-flash-latest",
-  messages: [{ role: "user", content: "Analyze this data" }],
-  tools: [{
-    type: "function",
-    function: {
-      name: "analyze",
-      parameters: {
-        type: "object",
-        properties: {
-          sentiment: { type: "string" }
-        }
-      }
-    }
-  }],
+  model: 'gemini-1.5-flash-latest',
+  messages: [{ role: 'user', content: 'Analyze this data' }],
+  tools: [
+    {
+      type: 'function',
+      function: {
+        name: 'analyze',
+        parameters: {
+          type: 'object',
+          properties: {
+            sentiment: { type: 'string' },
+          },
+        },
+      },
+    },
+  ],
   tool_choice: {
-    type: "function",
-    function: { name: "analyze" }
-  }
-});
+    type: 'function',
+    function: { name: 'analyze' },
+  },
+})
 ```
 
 ## Error Handling
+
+```
 
 ```

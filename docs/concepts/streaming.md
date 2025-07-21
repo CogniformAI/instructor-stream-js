@@ -9,9 +9,9 @@ To see an example of streaming in production checkout this [example](https://ss.
 The following TypeScript example demonstrates how to use an Async Generator for streaming responses. It includes a schema definition for extraction and iterates over a stream of data to incrementally update and display the extracted information.
 
 ```ts
-import Instructor from "@/instructor"
-import OpenAI from "openai"
-import { z } from "zod"
+import Instructor from '@/instructor'
+import OpenAI from 'openai'
+import { z } from 'zod'
 
 const ExtractionValuesSchema = z.object({
   users: z
@@ -19,26 +19,25 @@ const ExtractionValuesSchema = z.object({
       z.object({
         name: z.string(),
         email: z.string(),
-        twitter: z.string()
+        twitter: z.string(),
       })
     )
     .min(5),
   date: z.string(),
   location: z.string(),
   budget: z.number(),
-  deadline: z.string().min(1)
+  deadline: z.string().min(1),
 })
 
 const oai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY ?? undefined,
-  organization: process.env.OPENAI_ORG_ID ?? undefined
+  organization: process.env.OPENAI_ORG_ID ?? undefined,
 })
 
 const client = Instructor({
   client: oai,
-  mode: "TOOLS"
+  mode: 'TOOLS',
 })
-
 
 const textBlock = `
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference.
@@ -60,14 +59,14 @@ A follow-up meeting is scheduled for January 25th at 3 PM GMT to finalize the ag
 `
 
 const extractionStream = await client.chat.completions.create({
-  messages: [{ role: "user", content: textBlock }],
-  model: "gpt-4o",
+  messages: [{ role: 'user', content: textBlock }],
+  model: 'gpt-4o',
   response_model: {
     schema: ExtractionValuesSchema,
-    name: "value extraction"
+    name: 'value extraction',
   },
   stream: true,
-  seed: 1
+  seed: 1,
 })
 
 for await (const result of extractionStream) {
@@ -100,6 +99,7 @@ OpenAI's completion requests return responses using Server-Sent Events (SSE), a 
 ## Streaming to the Browser or other clients
 
 ### Challenges of Browser Streaming with Instructor
+
 Instructor, while powerful for server-side data validation and extraction, presents certain challenges when streaming directly to the browser:
 
 - **Complexity in Data Transfer**: Instructor's focus on full lifecycle validation means that streaming to the browser often involves transferring fully hydrated models. This can lead to larger data chunks, increasing the amount of data transferred.
@@ -107,17 +107,19 @@ Instructor, while powerful for server-side data validation and extraction, prese
 - **Handling Data Chunks in the UI**: When streaming complete objects, there's the added complexity of managing multiple chunks, splitting, diffing, etc. This can make real-time updates in the browser more challenging to implement efficiently.
 
 ### Utilizing WebSockets
+
 - **WebSocket Streaming**: A viable solution for streaming Instructor's data to the browser is through WebSockets. This allows for continuous streaming of the partially hydrated model, enabling immediate use in the UI.
 
 - **Ease of Use**: Using WebSockets, developers can stream the entire partially hydrated model to the client, simplifying the process of updating the UI in real time.
 
 ### Alternatives in Serverless Environments
+
 - **Challenges in Serverless**: In serverless environments or scenarios where WebSockets may not be feasible, streaming large, fully hydrated models becomes more complicated due to limitations in transferring large data chunks efficiently.
 
 ### Leveraging zod-stream and stream-hooks
+
 - **Integration with zod-stream**: Instructor is built on top of [`zod-stream`](https://island.novy.work/docs/zod-stream/introduction), a library that handles the streaming aspects provided by Instructor. [`zod-stream`](https://island.novy.work/docs/zod-stream/introduction) facilitates the construction of structured completions from an API endpoint, streamlining the data handling process, and provides a client for parsing the raw stream and producing the partially hydrated model.
 
 - **Simplifying UI Updates with stream-hooks**: For React applications, integrating [`stream-hooks` ](https://island.novy.work/docs/stream-hooks/introduction)with [`zod-stream`](https://island.novy.work/docs/zod-stream/introduction) can significantly simplify building dynamic UIs. [`stream-hooks` ](https://island.novy.work/docs/stream-hooks/introduction)manage the streaming connection and data updates efficiently, reducing overhead and complexity in real-time UI interactions.
-
 
 While Instructor provides robust server-side capabilities, streaming to the browser introduces complexities that can be effectively managed either through the use of WebSockets or [`zod-stream`](https://island.novy.work/docs/zod-stream/introduction), and `stream-hooks`. These tools complement Instructor's server-side strengths, enabling a more streamlined approach to building dynamic, real-time UIs in various environments, including serverless architectures.

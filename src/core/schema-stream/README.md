@@ -48,44 +48,46 @@ bun add schema-stream zod
 ## Basic Usage
 
 ```typescript
-import { SchemaStream } from 'schema-stream';
-import { z } from 'zod';
+import { SchemaStream } from 'schema-stream'
+import { z } from 'zod'
 
 // Define your schema
 const schema = z.object({
-  users: z.array(z.object({
-    name: z.string(),
-    age: z.number()
-  })),
+  users: z.array(
+    z.object({
+      name: z.string(),
+      age: z.number(),
+    })
+  ),
   metadata: z.object({
     total: z.number(),
-    page: z.number()
-  })
-});
+    page: z.number(),
+  }),
+})
 
 // Create parser with optional defaults
 const parser = new SchemaStream(schema, {
-  metadata: { total: 0, page: 1 }
-});
+  metadata: { total: 0, page: 1 },
+})
 
 // Track completion paths
 parser.onKeyComplete(({ completedPaths }) => {
-  console.log('Completed:', completedPaths);
-});
+  console.log('Completed:', completedPaths)
+})
 
 // Parse streaming data
-const stream = parser.parse();
-response.body.pipeThrough(stream);
+const stream = parser.parse()
+response.body.pipeThrough(stream)
 
 // Read results with full type inference
-const reader = stream.readable.getReader();
+const reader = stream.readable.getReader()
 while (true) {
-  const { value, done } = await reader.read();
-  if (done) break;
-  
-  const result = JSON.parse(decoder.decode(value));
+  const { value, done } = await reader.read()
+  if (done) break
+
+  const result = JSON.parse(decoder.decode(value))
   // result is fully typed as z.infer<typeof schema>
-  console.log(result);
+  console.log(result)
 }
 ```
 
@@ -109,44 +111,46 @@ const streamParser = new SchemaStream(response_model.schema, {
   typeDefaults: {
     string: null,
     number: null,
-    boolean: null
+    boolean: null,
   },
   onKeyComplete: ({ activePath, completedPaths }) => {
-    _activePath = activePath;
-    _completedPaths = completedPaths;
-  }
-});
+    _activePath = activePath
+    _completedPaths = completedPaths
+  },
+})
 
 // Create parser with validation stream
 const parser = streamParser.parse({
-  handleUnescapedNewLines: true
-});
+  handleUnescapedNewLines: true,
+})
 
 // Add validation in transform stream
 const validationStream = new TransformStream({
   transform: async (chunk, controller) => {
     try {
-      const parsedChunk = JSON.parse(decoder.decode(chunk));
-      const validation = await schema.safeParseAsync(parsedChunk);
-      
-      controller.enqueue(encoder.encode(JSON.stringify({
-        ...parsedChunk,
-        _meta: {
-          _isValid: validation.success,
-          _activePath,
-          _completedPaths
-        }
-      })));
+      const parsedChunk = JSON.parse(decoder.decode(chunk))
+      const validation = await schema.safeParseAsync(parsedChunk)
+
+      controller.enqueue(
+        encoder.encode(
+          JSON.stringify({
+            ...parsedChunk,
+            _meta: {
+              _isValid: validation.success,
+              _activePath,
+              _completedPaths,
+            },
+          })
+        )
+      )
     } catch (e) {
-      controller.error(e);
+      controller.error(e)
     }
-  }
-});
+  },
+})
 
 // Chain streams
-stream
-  .pipeThrough(parser)
-  .pipeThrough(validationStream);
+stream.pipeThrough(parser).pipeThrough(validationStream)
 ```
 
 ## Real-World Examples
@@ -158,67 +162,71 @@ const schema = z.object({
   analysis: z.object({
     sentiment: z.string(),
     keywords: z.array(z.string()),
-    summary: z.string()
+    summary: z.string(),
   }),
   metadata: z.object({
     processedAt: z.string(),
-    wordCount: z.number()
-  })
-});
+    wordCount: z.number(),
+  }),
+})
 
 const parser = new SchemaStream(schema, {
   // Show loading states initially
   defaultData: {
     analysis: {
-      sentiment: "analyzing...",
-      keywords: ["loading..."],
-      summary: "generating summary..."
-    }
+      sentiment: 'analyzing...',
+      keywords: ['loading...'],
+      summary: 'generating summary...',
+    },
   },
   onKeyComplete({ activePath, completedPaths }) {
     // Update UI loading states based on completion
-    updateLoadingStates(activePath, completedPaths);
-  }
-});
+    updateLoadingStates(activePath, completedPaths)
+  },
+})
 ```
 
 ### Nested Data Processing
 
 ```typescript
 const schema = z.object({
-  users: z.array(z.object({
-    id: z.string(),
-    profile: z.object({
-      name: z.string(),
-      email: z.string(),
-      preferences: z.object({
-        theme: z.string(),
-        notifications: z.boolean()
-      })
-    }),
-    activity: z.array(z.object({
-      timestamp: z.string(),
-      action: z.string()
-    }))
-  }))
-});
+  users: z.array(
+    z.object({
+      id: z.string(),
+      profile: z.object({
+        name: z.string(),
+        email: z.string(),
+        preferences: z.object({
+          theme: z.string(),
+          notifications: z.boolean(),
+        }),
+      }),
+      activity: z.array(
+        z.object({
+          timestamp: z.string(),
+          action: z.string(),
+        })
+      ),
+    })
+  ),
+})
 
-const parser = new SchemaStream(schema);
+const parser = new SchemaStream(schema)
 
 // Track specific paths for business logic
 parser.onKeyComplete(({ activePath, completedPaths }) => {
-  const path = activePath.join('.');
-  
+  const path = activePath.join('.')
+
   // Process user profiles as they complete
   if (path.match(/users\.\d+\.profile$/)) {
-    processUserProfile(/* ... */);
+    processUserProfile(/* ... */)
   }
-  
+
   // Process activity logs in batches
   if (path.match(/users\.\d+\.activity\.\d+$/)) {
-    batchActivityLog(/* ... */);
+    batchActivityLog(/* ... */)
   }
-});
+})
 ```
 
 ## API Reference
@@ -230,30 +238,27 @@ class SchemaStream<T extends ZodObject<any>> {
   constructor(
     schema: T,
     options?: {
-      defaultData?: NestedObject;
+      defaultData?: NestedObject
       typeDefaults?: {
-        string?: string | null | undefined;
-        number?: number | null | undefined;
-        boolean?: boolean | null | undefined;
-      };
+        string?: string | null | undefined
+        number?: number | null | undefined
+        boolean?: boolean | null | undefined
+      }
       onKeyComplete?: (info: {
-        activePath: (string | number | undefined)[];
-        completedPaths: (string | number | undefined)[][];
-      }) => void;
+        activePath: (string | number | undefined)[]
+        completedPaths: (string | number | undefined)[][]
+      }) => void
     }
   )
 
   // Create a stub instance of the schema with defaults
   getSchemaStub<T extends ZodRawShape>(
-    schema: SchemaType<T>, 
+    schema: SchemaType<T>,
     defaultData?: NestedObject
-  ): z.infer<typeof schema>;
+  ): z.infer<typeof schema>
 
   // Parse streaming JSON data
-  parse(options?: {
-    stringBufferSize?: number;
-    handleUnescapedNewLines?: boolean;
-  }): TransformStream;
+  parse(options?: { stringBufferSize?: number; handleUnescapedNewLines?: boolean }): TransformStream
 }
 ```
 
@@ -277,12 +282,12 @@ const schema = z.object({
   count: z.number().default(0),
   status: z.string().default('pending'),
   settings: z.object({
-    enabled: z.boolean().default(true)
+    enabled: z.boolean().default(true),
   }),
-  tags: z.array(z.string()).default(['default'])
-});
+  tags: z.array(z.string()).default(['default']),
+})
 
-const parser = new SchemaStream(schema);
+const parser = new SchemaStream(schema)
 ```
 
 ### 2. Via Constructor Options
@@ -325,10 +330,10 @@ const parser = new SchemaStream(schema, {
   onKeyComplete({ activePath, completedPaths }) {
     // activePath: Current path being processed
     // completedPaths: Array of all completed paths
-    console.log('Currently parsing:', activePath);
-    console.log('Completed paths:', completedPaths);
-  }
-});
+    console.log('Currently parsing:', activePath)
+    console.log('Completed paths:', completedPaths)
+  },
+})
 ```
 
 ### Parse Options
@@ -342,16 +347,18 @@ Create a typed stub of your schema with defaults:
 
 ```typescript
 const schema = z.object({
-  users: z.array(z.object({
-    name: z.string(),
-    age: z.number()
-  }))
-});
+  users: z.array(
+    z.object({
+      name: z.string(),
+      age: z.number(),
+    })
+  ),
+})
 
-const parser = new SchemaStream(schema);
+const parser = new SchemaStream(schema)
 const stub = parser.getSchemaStub(schema, {
-  users: [{ name: "default", age: 0 }]
-});
+  users: [{ name: 'default', age: 0 }],
+})
 // stub is fully typed as z.infer<typeof schema>
 ```
 
@@ -363,14 +370,14 @@ const stub = parser.getSchemaStub(schema, {
 
   ```typescript
   // Example of zod-stream using schema-stream
-  const zodStream = new ZodStream();
+  const zodStream = new ZodStream()
   const extraction = await zodStream.create({
     completionPromise: stream,
-    response_model: { 
+    response_model: {
       schema: yourSchema,
-      name: "Extract" 
-    }
-  });
+      name: 'Extract',
+    },
+  })
   ```
 
 - [`instructor`](https://www.npmjs.com/package/@instructor-ai/instructor): High-level extraction
@@ -378,13 +385,13 @@ const stub = parser.getSchemaStub(schema, {
   ```typescript
   const client = Instructor({
     client: oai,
-    mode: "TOOLS"
-  });
-  
+    mode: 'TOOLS',
+  })
+
   const result = await client.chat.completions.create({
-    response_model: { schema: yourSchema }
+    response_model: { schema: yourSchema },
     // ...
-  });
+  })
   ```
 
 - [`stream-hooks`](https://www.npmjs.com/package/stream-hooks): React hooks for JSON streams

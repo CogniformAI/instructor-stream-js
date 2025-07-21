@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// @ts-ignore
+// @ts-expect-error
 import { SchemaStream } from '../../schema-stream/src'
 import { readableStreamToAsyncGenerator } from './oai/stream'
 import {

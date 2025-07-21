@@ -5,9 +5,9 @@ _Streaming-first structured extraction in TypeScript, powered by LLMs, designed 
 ---
 
 > **⚠️ WORK IN PROGRESS ⚠️**
-> 
+>
 > This is a development fork of instructor-js focused on streaming performance and modern APIs. **This package is not ready for production use** and will have breaking changes.
-> 
+>
 > If you need a stable instructor package, please use the original [@instructor-ai/instructor](https://www.npmjs.com/package/@instructor-ai/instructor).
 
 ## About This Fork
@@ -15,7 +15,7 @@ _Streaming-first structured extraction in TypeScript, powered by LLMs, designed 
 This project is a **streaming-first fork** of the excellent [instructor-js](https://github.com/instructor-ai/instructor-js) library, created to address specific needs around:
 
 - **Real-time streaming performance** with minimal latency
-- **Clean data/metadata separation** in streaming responses  
+- **Clean data/metadata separation** in streaming responses
 - **Modern dependency management** (Zod 4, internalized critical dependencies)
 - **Enhanced developer experience** for streaming applications
 
@@ -49,7 +49,6 @@ See [PLAN.md](./PLAN.md) for the complete development roadmap.
 - [ ] Framework-agnostic client hooks
 - [ ] Documentation and examples cleanup
 
-
 ## Installation
 
 > **Note**: This package is not yet published. For production use, install the original instructor-js:
@@ -65,27 +64,27 @@ This fork is in active development. Current API is similar to instructor-js but 
 ### Example Usage (Current - Will Change)
 
 ```typescript
-import Instructor from "@cogniformai/instructor-stream-js";
-import OpenAI from "openai"
-import { z } from "zod"
+import Instructor from '@cogniformai/instructor-stream-js'
+import OpenAI from 'openai'
+import { z } from 'zod'
 
 // API similar to original instructor-js for now
 const client = Instructor({
   client: new OpenAI(),
-  mode: "TOOLS"
+  mode: 'TOOLS',
 })
 
 const UserSchema = z.object({
-  age: z.number().describe("The age of the user"), 
-  name: z.string()
+  age: z.number().describe('The age of the user'),
+  name: z.string(),
 })
 
 // Streaming extraction with enhanced metadata
 const stream = await client.chat.completions.create({
-  messages: [{ role: "user", content: "Jason Liu is 30 years old" }],
-  model: "gpt-4",
-  response_model: { schema: UserSchema, name: "User" },
-  stream: true
+  messages: [{ role: 'user', content: 'Jason Liu is 30 years old' }],
+  model: 'gpt-4',
+  response_model: { schema: UserSchema, name: 'User' },
+  stream: true,
 })
 
 for await (const chunk of stream) {
@@ -94,7 +93,6 @@ for await (const chunk of stream) {
   console.log(chunk._meta._type) // 'name' | 'age' | 'complete' | 'error'
 }
 ```
-
 
 ## Why This Fork?
 
@@ -108,7 +106,7 @@ for await (const chunk of stream) {
 ### Our Solutions
 
 1. **Clean Data Shape**: `{ data: T[], _meta }` separates content from metadata
-2. **Modern Stack**: Zod 4 native JSON Schema, internalized dependencies  
+2. **Modern Stack**: Zod 4 native JSON Schema, internalized dependencies
 3. **Performance First**: SAX-style parsing, memory optimization, WebSocket transport
 4. **Real-time Ready**: Progressive UI updates, interleaved responses, framework-agnostic hooks
 
@@ -116,7 +114,7 @@ for await (const chunk of stream) {
 
 See [PLAN.md](./PLAN.md) for detailed roadmap. Current focus:
 
-- **Phase 0**: Repository cleanup and dependency integration *(current)*
+- **Phase 0**: Repository cleanup and dependency integration _(current)_
 - **Phase 1**: Zod 4 migration and data shape restructuring
 - **Phase 2**: Performance optimization and XML streaming
 - **Phase 3**: WebSocket transport and agentic responses

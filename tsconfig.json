@@ -41,6 +41,7 @@
     "src/core/*/node_modules",
     "src/core/*/dist",
     "src/providers/*/node_modules", 
-    "src/providers/*/dist"
+    "src/providers/*/dist",
+    ".oxlintrc.json"
   ]
 }

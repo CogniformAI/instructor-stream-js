@@ -41,6 +41,7 @@ This cleanup phase prepares our fork of instructor-js for the larger refactoring
 ## Project Structure Changes
 
 ### Current Structure (Original instructor-js)
+
 ```
 src/
 ├── index.ts
@@ -50,6 +51,7 @@ src/
 ```
 
 ### New Structure (After Island AI Integration)
+
 ```
 src/
 ├── core/
@@ -64,7 +66,9 @@ src/
 ```
 
 ### Staged Changes
+
 The following Island AI packages have been staged and integrated:
+
 - `src/core/schema-stream/` - JSON streaming parser with Zod schema validation
 - `src/core/zod-stream/` - LLM stream interface with mode handling
 - `src/providers/llm-client/` - Multi-provider LLM client (anthropic, google, openai)
@@ -72,17 +76,20 @@ The following Island AI packages have been staged and integrated:
 ## Important Notes
 
 ### Attribution & Credit
+
 - Always acknowledge Jason Liu (original instructor-js creator)
 - Always acknowledge Dimitri Kennedy (Island AI toolkit creator)
 - Maintain MIT license with proper attribution
 - Make fork status clear in all documentation
 
 ### Breaking Changes
+
 - This fork will introduce breaking changes from original instructor-js
 - Version will start at 0.0.0 to indicate pre-release status
 - Migration guide will be provided when reaching 1.0
 
 ### Development Focus
+
 - Streaming-first approach
 - Performance optimization
 - Modern dependency management (Zod 4)
@@ -92,11 +99,13 @@ The following Island AI packages have been staged and integrated:
 ## Next Steps After Cleanup
 
 1. **Phase 1: Core Modernization**
+
    - Zod 4 migration
    - Data shape restructuring
    - Mode consolidation
 
 2. **Phase 2: Performance Optimization**
+
    - Tokenizer performance improvements
    - XML streaming support
    - Memory optimization

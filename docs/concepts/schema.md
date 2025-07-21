@@ -1,27 +1,29 @@
-# Zod Schemas 
+# Zod Schemas
 
 Zod is a TypeScript-first schema declaration and validation library. It is designed to be easy to use with TypeScript and to be a good fit for the language. It is the primary way of prompt engineering, just note that the room of response_model must be `z.object`.
 
 ## Basic Usage
 
 ```ts
-import { z } from 'zod';
+import { z } from 'zod'
 
 const schema = z.object({
   name: z.string(),
   age: z.number(),
-});
+})
 ```
 
 ## Descriptions are Prompts
 
-One of the core things about instructors is that it's able to use these descriptions as part of the prompt. 
+One of the core things about instructors is that it's able to use these descriptions as part of the prompt.
 
 ```ts
-const userDetails = z.object({
-  name: z.string().description('Your full name'),
-  age: z.number(),
-}).description('Fully extracted user detail');
+const userDetails = z
+  .object({
+    name: z.string().description('Your full name'),
+    age: z.number(),
+  })
+  .description('Fully extracted user detail')
 ```
 
 ## Inferred Types
@@ -32,9 +34,9 @@ We can also generate types using zod schemas.
 const schema = z.object({
   name: z.string(),
   age: z.number(),
-});
+})
 
-type SchemaType = z.infer<typeof schema>;
+type SchemaType = z.infer<typeof schema>
 ```
 
 ## Default Values
@@ -46,10 +48,10 @@ const schema = z.object({
   name: z.string(),
   age: z.number().optional(),
   isStudent: z.boolean().default(false),
-});
+})
 ```
 
-## Optional Values 
+## Optional Values
 
 We can also define optional values.
 
@@ -57,7 +59,7 @@ We can also define optional values.
 const schema = z.object({
   name: z.string(),
   age: z.number().optional(),
-});
+})
 ```
 
 ## Nested Schemas
@@ -71,7 +73,7 @@ const schema = z.object({
     street: z.string(),
     city: z.string(),
   }),
-});
+})
 ```
 
 ## Arrays
@@ -82,10 +84,10 @@ Arrays can be defined using the `z.array` method
 const schema = z.object({
   name: z.string(),
   friends: z.array(z.string()),
-});
+})
 ```
 
-## Enums 
+## Enums
 
 Enums can be defined using the `z.enum` method
 
@@ -93,5 +95,5 @@ Enums can be defined using the `z.enum` method
 const schema = z.object({
   name: z.string(),
   role: z.enum(['admin', 'user']),
-});
+})
 ```

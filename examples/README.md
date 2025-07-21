@@ -7,12 +7,15 @@ This directory contains examples demonstrating the streaming capabilities of ins
 ## Current Examples
 
 ### extract_user_stream/
+
 Demonstrates streaming extraction of user information with real-time updates.
 
 ### action_items/
+
 Shows streaming extraction of action items from meeting transcripts.
 
 ### knowledge-graph/
+
 Example of streaming knowledge graph construction.
 
 ## Coming Soon
