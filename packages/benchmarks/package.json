@@ -1,0 +1,33 @@
+{
+  "name": "@instructor-stream/benchmarks",
+  "version": "0.0.0",
+  "description": "Performance benchmarks for instructor-stream packages",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "vitest bench",
+    "clean": "rm -rf node_modules"
+  },
+  "repository": {
+    "directory": "packages/benchmarks",
+    "type": "git",
+    "url": "git+https://github.com/cogniformai/instructor-stream-js.git"
+  },
+  "keywords": [
+    "benchmarks",
+    "performance",
+    "llm",
+    "streaming"
+  ],
+  "author": "David Robertson <info@drobertson.pro> (https://x.com/davidalexr987)",
+  "license": "MIT",
+  "homepage": "https://github.com/cogniformai/instructor-stream-js",
+  "dependencies": {
+    "@instructor-stream/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.2.2",
+    "vitest": "^3.2.4"
+  }
+}

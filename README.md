@@ -37,7 +37,7 @@ We're grateful for their pioneering work in structured LLM extraction and stream
 - ⏳ New streaming data format implementation
 - ⏳ Performance optimization and benchmarking
 
-See [PLAN.md](./PLAN.md) for the complete development roadmap.
+See [PLAN.md](docs/roadmap/PLAN.md) for the complete development roadmap.
 
 ## Quick TODO List
 
@@ -82,7 +82,7 @@ const UserSchema = z.object({
 // Streaming extraction with enhanced metadata
 const stream = await client.chat.completions.create({
   messages: [{ role: 'user', content: 'Jason Liu is 30 years old' }],
-  model: 'gpt-4',
+  model: 'gpt-4.1-mini',
   response_model: { schema: UserSchema, name: 'User' },
   stream: true,
 })
@@ -112,7 +112,7 @@ for await (const chunk of stream) {
 
 ## Development Timeline
 
-See [PLAN.md](./PLAN.md) for detailed roadmap. Current focus:
+See [PLAN.md](docs/roadmap/PLAN.md) for detailed roadmap. Current focus:
 
 - **Phase 0**: Repository cleanup and dependency integration _(current)_
 - **Phase 1**: Zod 4 migration and data shape restructuring

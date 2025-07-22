@@ -16,8 +16,8 @@ The documentation is being rewritten to reflect the streaming-first architecture
 
 ## Development Resources
 
-- [PLAN.md](../PLAN.md) - Complete development roadmap
-- [CLEANUP.md](../CLEANUP.md) - Repository cleanup documentation
+- [PLAN.md](roadmap/PLAN.md) - Complete development roadmap
+- [CLEANUP.md](roadmap/CLEANUP.md) - Repository cleanup documentation
 - [CHANGELOG.md](../CHANGELOG.md) - Version history and changes
 
 For the original instructor-js documentation, see:

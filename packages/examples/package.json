@@ -1,0 +1,37 @@
+{
+  "name": "@instructor-stream/examples",
+  "version": "0.0.0",
+  "description": "Example applications and demos for instructor-stream",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --watch",
+    "clean": "rm -rf node_modules"
+  },
+  "repository": {
+    "directory": "packages/examples",
+    "type": "git",
+    "url": "git+https://github.com/cogniformai/instructor-stream-js.git"
+  },
+  "keywords": [
+    "examples",
+    "demos",
+    "llm",
+    "streaming",
+    "tutorials"
+  ],
+  "author": "David Robertson <info@drobertson.pro> (https://x.com/davidalexr987)",
+  "license": "MIT",
+  "homepage": "https://github.com/cogniformai/instructor-stream-js",
+  "dependencies": {
+    "@instructor-stream/core": "workspace:*",
+    "@instructor-stream/llm-client": "workspace:*"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "0.57.0",
+    "@types/node": "^22.16.5",
+    "openai": "5.10.1",
+    "typescript": "^5.8.3",
+    "zod": "^4.0.5"
+  }
+}

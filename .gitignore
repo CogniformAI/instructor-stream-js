@@ -76,7 +76,7 @@ site/
 CLAUDE.md
 
 # Core packages build artifacts
-src/core/*/dist/
-src/core/*/node_modules/
-src/providers/*/dist/
-src/providers/*/node_modules/
+packages/instructor-stream/src/core/*/dist/
+packages/instructor-stream/src/core/*/node_modules/
+packages/instructor-stream/src/providers/*/dist/
+packages/instructor-stream/src/providers/*/node_modules/

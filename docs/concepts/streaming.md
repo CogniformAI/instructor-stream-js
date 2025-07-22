@@ -69,10 +69,11 @@ const extractionStream = await client.chat.completions.create({
   seed: 1,
 })
 
-for await (const result of extractionStream) {
+for await (const chunk of extractionStream) {
   try {
     console.clear()
-    console.log(result)
+    console.log(chunk.data) // Array of partial objects
+    console.log(chunk._meta) // Completion metadata
   } catch (e) {
     console.log(e)
     break
@@ -84,11 +85,14 @@ for await (const result of extractionStream) {
 
 Enabling streaming alters the nature of the response you receive:
 
-**Response Type**: When streaming is enabled, the response becomes an Async Generator. This generator produces incremental updates until the final result is achieved.
+**Response Type**: When streaming is enabled, the response becomes an Async Generator that yields chunks in the format `{ data: T[], _meta: CompletionMeta }`.
 
-**Handling the Data**: As the Async Generator yields results, you can iterate over these incremental updates. It's important to note that the data from each yield is a complete snapshot of the current extraction state and is immediately usable.
+**Handling the Data**: Each chunk contains:
 
-**Final Value**: The last value yielded by the generator represents the completed extraction. This value should be used as the final result.
+- `data`: An array of partial objects representing the current extraction state
+- `_meta`: Completion metadata including active paths, completed paths, validation status, and usage information
+
+**Final Value**: The last chunk contains the complete extraction in `data[0]` with final metadata in `_meta`.
 
 ## Understanding OpenAI Completion Requests and Streaming Responses
 
