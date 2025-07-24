@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 import { Stream } from 'openai/streaming'
 import { z } from 'zod'
-import { MODE } from '../constants'
+import { MODE } from '@/constants'
 
 export type ActivePath = (string | number | undefined)[]
 export type CompletedPaths = ActivePath[]
@@ -103,7 +103,7 @@ export type ParseParams = {
   description?: string
 }
 
-export type ResponseModel<T extends z.ZodTypeAny> = {
+export type ResponseModel<T extends z.ZodType> = {
   schema: T
   name: string
   description?: string
@@ -119,12 +119,12 @@ export interface InstructorConfig<C> {
   retryAllErrors?: boolean
 }
 
-export type InstructorChatCompletionParams<T extends z.ZodTypeAny> = {
+export type InstructorChatCompletionParams<T extends z.ZodType> = {
   response_model: ResponseModel<T>
   max_retries?: number
 }
 
-export type ChatCompletionCreateParamsWithModel<T extends z.ZodTypeAny> =
+export type ChatCompletionCreateParamsWithModel<T extends z.ZodType> =
   InstructorChatCompletionParams<T> & GenericCreateParams
 
 export type ReturnTypeBasedOnParams<C, P> =
@@ -138,7 +138,7 @@ export type ReturnTypeBasedOnParams<C, P> =
     : OpenAI.Chat.Completions.ChatCompletion
   : Promise<unknown>
 
-export type ZodStreamCompletionParams<T extends z.ZodTypeAny> = {
+export type ZodStreamCompletionParams<T extends z.ZodType> = {
   response_model: { schema: T }
   data?: Record<string, unknown>
   completionPromise: (data?: Record<string, unknown>) => Promise<ReadableStream<Uint8Array>>
@@ -185,4 +185,4 @@ export type ModeParamsReturnType<T extends OpenAI.ChatCompletionCreateParams, M 
 
 export type ZCompletionMeta = BaseCompletionMeta
 export type ZMode = keyof typeof MODE
-export type ZResponseModel<T extends z.ZodTypeAny> = ResponseModel<T>
+export type ZResponseModel<T extends z.ZodType> = ResponseModel<T>
