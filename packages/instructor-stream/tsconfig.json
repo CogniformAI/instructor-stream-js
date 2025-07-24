@@ -24,7 +24,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "tests/**/*.ts"
+    "../../_ai/tests/**/*.ts"
   ],
   "exclude": [
     "node_modules",

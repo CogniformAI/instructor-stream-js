@@ -8,8 +8,8 @@
  *
  */
 
-import { BufferedString, NonBufferedString } from '@/stream/utils'
-import type { ParsedTokenInfo, StringBuilder } from '@/stream/utils'
+import { BufferedString, NonBufferedString } from '@/utils/index.ts'
+import type { ParsedTokenInfo, StringBuilder } from '@/utils/index.ts'
 import TokenType from './token-type.ts'
 import { charset, escapedSequences } from './utf-8.js'
 
@@ -656,7 +656,6 @@ export default class Tokenizer {
     if (this.state !== TokenizerStates.ENDED) {
       this.state = TokenizerStates.ERROR
     }
-
     this.onError(err)
   }
 

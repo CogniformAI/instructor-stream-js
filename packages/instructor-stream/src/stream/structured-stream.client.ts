@@ -8,7 +8,7 @@ import {
   ZodStreamCompletionParams,
 } from '@/types'
 import { z } from 'zod'
-import { SchemaStream } from '@/stream/utils/streaming-json-parser.ts'
+import { SchemaStream } from '@/utils/streaming-json-parser.ts'
 
 export default class ZodStream {
   readonly debug: boolean = false

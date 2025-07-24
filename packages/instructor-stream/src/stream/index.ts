@@ -5,6 +5,6 @@ export * from './oai/parser.ts'
 export * from './oai/stream.ts'
 export * from '@/types'
 export * from './create-agent.ts'
-export * from './utils'
+export * from '../utils'
 
 export default ZodStream

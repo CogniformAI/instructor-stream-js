@@ -94,7 +94,6 @@ export class SchemaStream {
       /** Empty object for records; keys appear only as stream provides them. */
       return {}
     }
-
     if (
       schema instanceof z.ZodOptional ||
       schema instanceof z.ZodNullable ||
@@ -136,7 +135,6 @@ export class SchemaStream {
     if (schema instanceof z.ZodObject) {
       const obj: NestedObject = {}
       const { shape } = schema
-
       for (const key in shape) {
         if (defaultData && Object.prototype.hasOwnProperty.call(defaultData, key)) {
           obj[key] = defaultData[key as keyof NestedObject] as NestedValue
@@ -217,11 +215,9 @@ export class SchemaStream {
         })
       }
     }
-
     try {
       const valuePath = this.getPathFromStack(stack, key)
       const lens = lensPath(valuePath)
-
       if (partial) {
         /** For partial string tokens, append incrementally. */
         const currentValue = (view(lens, this.schemaInstance) as string | undefined) ?? ''
@@ -286,13 +282,8 @@ export class SchemaStream {
     return new TransformStream({
       transform: async (chunk, controller): Promise<void> => {
         try {
-          if (parser.isEnded) {
-            controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
-            return
-          } else {
-            parser.write(chunk)
-            controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
-          }
+          parser.write(chunk)
+          controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
         } catch (e) {
           console.error(`Error in the json parser transform stream: parsing chunk`, e, chunk)
         }

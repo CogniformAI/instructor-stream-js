@@ -66,7 +66,6 @@ export default class JSONParser {
         TokenType.FALSE,
         TokenType.NULL,
       ]
-
       if (
         this.tokenParser.state === TokenParserState.VALUE &&
         valueTokenTypes.includes(parsedToken.token)
@@ -81,7 +80,6 @@ export default class JSONParser {
           tokenizer: parsedToken,
         })
       }
-
       this.tokenParser.write(parsedToken)
     }
   }

@@ -104,7 +104,6 @@ export default class TokenParser {
         return pathParts
       })
     }
-
     this.keepStack = true
     this.separator = opts.separator
   }

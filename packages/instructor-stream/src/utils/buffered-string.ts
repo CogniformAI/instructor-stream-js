@@ -23,6 +23,13 @@ export class NonBufferedString implements StringBuilder {
 
   public byteLength = 0
 
+  /**
+   * Constructs a new NonBufferedString instance.
+   *
+   * @param {Object} param0 - An object containing optional parameters.
+   * @param {(str: string) => void} [param0.onIncrementalString] - A callback function that is called with the incremental string updates.
+   */
+
   constructor({ onIncrementalString }: { onIncrementalString?: (str: string) => void }) {
     this.onIncrementalString = onIncrementalString ?? undefined
   }
