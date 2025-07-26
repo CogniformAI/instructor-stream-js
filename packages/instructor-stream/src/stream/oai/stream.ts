@@ -1,5 +1,4 @@
 import OpenAI from 'openai'
-
 import { OAIResponseParser } from './parser.ts'
 
 interface OaiStreamArgs {
@@ -30,28 +29,22 @@ export function OAIStream({ res }: OaiStreamArgs): ReadableStream<Uint8Array> {
       cancel = true
       return
     }
-
     for await (const part of res) {
       if (cancel) {
         break
       }
-
       if (!OAIResponseParser(part)) {
         continue
       }
-
       yield OAIResponseParser(part)
     }
   }
-
   const generator = generateStream(res)
-
   return new ReadableStream({
     async start(controller) {
       for await (const parsedData of generator) {
         controller.enqueue(encoder.encode(stripControlCharacters(parsedData)))
       }
-
       controller.close()
     },
     cancel() {
@@ -73,19 +66,14 @@ export async function* readableStreamToAsyncGenerator(
 ): AsyncGenerator<unknown> {
   const reader = stream.getReader()
   const decoder = new TextDecoder()
-
   while (true) {
     const { done, value } = await reader.read()
-
     if (done) {
       break
     }
-
-    // TODO: Is this necessary? Remove if not. Less to maintain. Especially with OAI Structured outputs
     // stripping a second time to be safe.
     const decodedString = stripControlCharacters(decoder.decode(value))
     yield JSON.parse(decodedString)
   }
-
   return
 }

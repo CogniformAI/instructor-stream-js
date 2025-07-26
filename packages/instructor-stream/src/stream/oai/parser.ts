@@ -35,7 +35,6 @@ export function OAIResponseToolArgsParser(
     | OpenAI.Chat.Completions.ChatCompletion
 ): string {
   const parsedData = typeof data === 'string' ? JSON.parse(data) : data
-
   return (
     parsedData.choices?.[0]?.delta?.tool_calls?.[0]?.function?.arguments ??
     parsedData.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments ??
@@ -58,13 +57,10 @@ export function OAIResponseJSONParser(
     | OpenAI.Chat.Completions.ChatCompletion
 ): string {
   const parsedData = typeof data === 'string' ? JSON.parse(data) : data
-
   const text =
     parsedData.choices?.[0]?.delta?.content ?? parsedData?.choices?.[0]?.message?.content ?? ''
-
   const jsonRegex = /```json\n([\s\S]*?)\n```/
   const match = text.match(jsonRegex)
-
   return match ? match[1] : text
 }
 
@@ -86,24 +82,19 @@ export function OAIResponseParser(
     | OpenAI.Chat.Completions.ChatCompletion
 ): string {
   const parsedData = typeof data === 'string' ? JSON.parse(data) : data
-
   const isFnCall =
     parsedData.choices?.[0]?.delta?.function_call?.arguments ||
     parsedData.choices?.[0]?.message?.function_call?.arguments ||
     false
-
   const isToolCall =
     parsedData.choices?.[0]?.delta?.tool_calls?.[0]?.function?.arguments ??
     parsedData.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments ??
     false
-
   if (isFnCall) {
     return OAIResponseFnArgsParser(data)
   }
-
   if (isToolCall) {
     return OAIResponseToolArgsParser(data)
   }
-
   return OAIResponseJSONParser(data)
 }

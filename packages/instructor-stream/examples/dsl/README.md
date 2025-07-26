@@ -18,11 +18,13 @@ export OPENAI_ORG_ID="your-org-id-here"  # Optional
 Demonstrates the `maybe` schema wrapper for extraction tasks where data may or may not be present.
 
 **Usage:**
+
 ```bash
 npx tsx examples/dsl/maybe-integration.ts
 ```
 
 **Features:**
+
 - Shows successful extraction from clear text
 - Demonstrates error handling for ambiguous content
 - Complex nested schema extraction
@@ -32,11 +34,13 @@ npx tsx examples/dsl/maybe-integration.ts
 Demonstrates LLM validation and content moderation with real API calls.
 
 **Usage:**
+
 ```bash
 npx tsx examples/dsl/validator-integration.ts
 ```
 
 **Features:**
+
 - LLM-based content validation against custom rules
 - OpenAI moderation API integration
 - Error handling and validation flow examples
@@ -63,6 +67,7 @@ The unit tests provide comprehensive coverage of the business logic without API 
 ## Cost Considerations
 
 These examples make real API calls which may incur costs:
+
 - GPT-4 calls for LLM validation
 - Moderation API calls (typically free tier available)
 - Token usage varies based on content complexity

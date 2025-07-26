@@ -129,9 +129,9 @@ export type ChatCompletionCreateParamsWithModel<T extends z.ZodType> =
 
 export type ReturnTypeBasedOnParams<C, P> =
   P extends { stream: true; response_model: ResponseModel<infer T> } ?
-    AsyncGenerator<{ data: Partial<T>[]; _meta: CompletionMeta }, void, unknown>
+    AsyncGenerator<{ data: Partial<z.output<T>>[]; _meta: CompletionMeta }, void, unknown>
   : P extends { response_model: ResponseModel<infer T> } ?
-    Promise<z.infer<T> & { _meta?: CompletionMeta }>
+    Promise<{ data: z.output<T>[]; _meta: CompletionMeta }>
   : C extends OpenAI ?
     P extends { stream: true } ?
       Stream<OpenAI.Chat.Completions.ChatCompletionChunk>

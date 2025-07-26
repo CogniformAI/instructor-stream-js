@@ -92,11 +92,9 @@ class Instructor<C> {
     if (this.logger) {
       this.logger(level, ...args)
     }
-
     if (!this.debug && level === 'debug') {
       return
     }
-
     const timestamp = new Date().toISOString()
     switch (level) {
       case 'debug':
@@ -114,14 +112,14 @@ class Instructor<C> {
     }
   }
 
-  private async chatCompletionStandard<T extends z.ZodAny>(
+  private async chatCompletionStandard<T extends z.ZodType>(
     {
       max_retries = MAX_RETRIES_DEFAULT,
       response_model,
       ...params
     }: ChatCompletionCreateParamsWithModel<T>,
     requestOptions?: ClientTypeChatCompletionRequestOptions<C>
-  ): Promise<z.infer<T>> {
+  ): Promise<{ data: z.output<T>[]; _meta: CompletionMeta }> {
     let attempts = 0
     let validationIssues = ''
     let lastMessage: OpenAI.ChatCompletionMessageParam | null = null
@@ -193,7 +191,7 @@ class Instructor<C> {
           thinking?: string
         }
         return {
-          ...data,
+          data: [data],
           _meta: {
             usage: completion?.usage ?? undefined,
             thinking: parsedCompletion?.thinking ?? undefined,
@@ -226,7 +224,7 @@ class Instructor<C> {
               content: JSON.stringify(data),
             }
             // @ts-expect-error - This will get simplified and fixed later
-            validationIssues = fromZodError(validation.error)?.message
+            validationIssues = fromZodError(validation.error)?.message ?? ''
             // TODO: Clean up exception thrown and caught locally
             throw validation.error
           } else {
@@ -234,7 +232,7 @@ class Instructor<C> {
             throw new Error('Validation failed.')
           }
         }
-        return { ...validation.data, _meta: data?._meta ?? {} }
+        return { data: [validation.data], _meta: data?._meta ?? {} }
       } catch (error) {
         if (!this.retryAllErrors && !(error instanceof ZodError)) {
           throw error
@@ -273,10 +271,10 @@ class Instructor<C> {
     return makeCompletionCallWithRetries()
   }
 
-  private async *chatCompletionStream<T extends z.ZodAny>(
+  private async *chatCompletionStream<T extends z.ZodType>(
     { max_retries, response_model, ...params }: ChatCompletionCreateParamsWithModel<T>,
     requestOptions?: ClientTypeChatCompletionRequestOptions<C>
-  ): AsyncGenerator<{ data: Partial<T>[]; _meta: CompletionMeta }, void, unknown> {
+  ): AsyncGenerator<{ data: Partial<z.output<T>>[]; _meta: CompletionMeta }, void, unknown> {
     if (max_retries) {
       this.log('warn', 'max_retries is not supported for streaming completions')
     }
@@ -358,13 +356,12 @@ class Instructor<C> {
           throw new Error('Unsupported client type')
         }
       },
-      response_model,
+      response_model: { schema: response_model.schema },
     })
     for await (const chunk of structuredStream) {
       yield {
         //TODO: This is partially correct, will determine if completion data
         // should be a part of the _meta or it's own property
-        //@ts-expect-error - This will get simplified and fixed later
         data: chunk.data,
         _meta: {
           usage: streamUsage ?? undefined,
@@ -374,7 +371,7 @@ class Instructor<C> {
     }
   }
 
-  private isChatCompletionCreateParamsWithModel<T extends z.ZodAny>(
+  private isChatCompletionCreateParamsWithModel<T extends z.ZodType>(
     params: ChatCompletionCreateParamsWithModel<T>
   ): params is ChatCompletionCreateParamsWithModel<T> {
     return 'response_model' in params
@@ -389,8 +386,8 @@ class Instructor<C> {
   public chat = {
     completions: {
       create: async <
-        T extends z.ZodAny,
-        P extends T extends z.ZodAny ? ChatCompletionCreateParamsWithModel<T>
+        T extends z.ZodType,
+        P extends T extends z.ZodType ? ChatCompletionCreateParamsWithModel<T>
         : ClientTypeChatCompletionParams<OpenAILikeClient<C>> & { response_model: never },
       >(
         params: P,

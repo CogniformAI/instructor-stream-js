@@ -1,4 +1,3 @@
-// oxlint-disable no-explicit-any
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { z } from 'zod'
 import {
@@ -11,6 +10,35 @@ import {
   LLMValidator,
   moderationValidator,
 } from '@/dsl/validator'
+import type { InstructorClient } from '@/instructor'
+import type OpenAI from 'openai'
+
+interface MockValidationCtx {
+  addIssue: ReturnType<typeof vi.fn>
+}
+
+interface MockInstructorClient {
+  chat: {
+    completions: {
+      create: ReturnType<typeof vi.fn>
+    }
+  }
+}
+
+interface MockOpenAIClient {
+  moderations: {
+    create: ReturnType<typeof vi.fn>
+  }
+}
+
+interface MockModerationResult {
+  flagged: boolean
+  categories: Record<string, boolean>
+}
+
+interface MockModerationResponse {
+  results: MockModerationResult[]
+}
 
 describe('validator', () => {
   describe('createValidationSchema', () => {
@@ -80,7 +108,7 @@ describe('validator', () => {
   })
 
   describe('processValidationResponse', () => {
-    let mockCtx: any
+    let mockCtx: MockValidationCtx
     beforeEach(() => {
       mockCtx = {
         addIssue: vi.fn(),
@@ -92,6 +120,7 @@ describe('validator', () => {
         isValid: true,
         reason: 'Input is acceptable',
       }
+      // @ts-expect-error - mocks
       processValidationResponse(validResponse, mockCtx)
       expect(mockCtx.addIssue).not.toHaveBeenCalled()
     })
@@ -101,6 +130,7 @@ describe('validator', () => {
         isValid: false,
         reason: 'Input contains inappropriate content',
       }
+      // @ts-expect-error - mocks
       processValidationResponse(invalidResponse, mockCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
@@ -112,6 +142,7 @@ describe('validator', () => {
       const invalidResponse = {
         isValid: false,
       }
+      // @ts-expect-error - mocks
       processValidationResponse(invalidResponse, mockCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
@@ -124,6 +155,7 @@ describe('validator', () => {
         isValid: false,
         reason: undefined,
       }
+      // @ts-expect-error - mocks
       processValidationResponse(invalidResponse, mockCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
@@ -146,13 +178,14 @@ describe('validator', () => {
           },
         ],
       }
-      // @ts-expect-error - mock
-      const categories = extractFlaggedCategories(response)
+      const categories = extractFlaggedCategories(
+        response as unknown as OpenAI.ModerationCreateResponse
+      )
       expect(categories).toEqual([])
     })
 
     test('shouldExtractFlaggedCategoriesFromSingleResult', () => {
-      const response = {
+      const response: MockModerationResponse = {
         results: [
           {
             flagged: true,
@@ -165,8 +198,9 @@ describe('validator', () => {
           },
         ],
       }
-      // @ts-expect-error - mock
-      const categories = extractFlaggedCategories(response)
+      const categories = extractFlaggedCategories(
+        response as unknown as OpenAI.ModerationCreateResponse
+      )
       expect(categories).toEqual(['hate', 'sexual'])
     })
 
@@ -205,8 +239,9 @@ describe('validator', () => {
           },
         ],
       }
-      // @ts-expect-error - mock
-      const categories = extractFlaggedCategories(response)
+      const categories = extractFlaggedCategories(
+        response as unknown as OpenAI.ModerationCreateResponse
+      )
       expect(categories).toEqual(['hate', 'harassment'])
     })
 
@@ -214,8 +249,9 @@ describe('validator', () => {
       const response = {
         results: [],
       }
-      // @ts-expect-error - mock
-      const categories = extractFlaggedCategories(response)
+      const categories = extractFlaggedCategories(
+        response as unknown as OpenAI.ModerationCreateResponse
+      )
       expect(categories).toEqual([])
     })
 
@@ -228,14 +264,15 @@ describe('validator', () => {
           },
         ],
       }
-      // @ts-expect-error - mock
-      const categories = extractFlaggedCategories(response)
+      const categories = extractFlaggedCategories(
+        response as unknown as OpenAI.ModerationCreateResponse
+      )
       expect(categories).toEqual([])
     })
   })
 
   describe('processModerationResponse', () => {
-    let mockCtx: any
+    let mockCtx: MockValidationCtx
     beforeEach(() => {
       mockCtx = {
         addIssue: vi.fn(),
@@ -254,8 +291,11 @@ describe('validator', () => {
           },
         ],
       }
-      // @ts-expect-error - mock
-      processModerationResponse(response, 'test input', mockCtx)
+      processModerationResponse(
+        response as unknown as OpenAI.ModerationCreateResponse,
+        'test input',
+        mockCtx as unknown as z.RefinementCtx
+      )
       expect(mockCtx.addIssue).not.toHaveBeenCalled()
     })
 
@@ -273,8 +313,11 @@ describe('validator', () => {
         ],
       }
       const testValue = 'inappropriate content'
-      // @ts-expect-error - mock
-      processModerationResponse(response, testValue, mockCtx)
+      processModerationResponse(
+        response as unknown as OpenAI.ModerationCreateResponse,
+        testValue,
+        mockCtx as unknown as z.RefinementCtx
+      )
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: `Moderation error, \`${testValue}\` was flagged for hate, harassment`,
@@ -302,11 +345,12 @@ describe('validator', () => {
           },
         ],
       }
-
       const testValue = 'harmful content'
-      // @ts-expect-error - mock
-      processModerationResponse(response, testValue, mockCtx)
-
+      processModerationResponse(
+        response as unknown as OpenAI.ModerationCreateResponse,
+        testValue,
+        mockCtx as unknown as z.RefinementCtx
+      )
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: `Moderation error, \`${testValue}\` was flagged for hate, violence, sexual`,
@@ -315,7 +359,7 @@ describe('validator', () => {
   })
 
   describe('handleModerationError', () => {
-    let mockCtx: any
+    let mockCtx: MockValidationCtx
     beforeEach(() => {
       mockCtx = {
         addIssue: vi.fn(),
@@ -324,7 +368,7 @@ describe('validator', () => {
 
     test('shouldHandleErrorWithMessage', () => {
       const error = new Error('API connection failed')
-      handleModerationError(error, mockCtx)
+      handleModerationError(error, mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: 'Unexpected error during moderation: API connection failed',
@@ -333,7 +377,7 @@ describe('validator', () => {
 
     test('shouldHandleNonErrorObjects', () => {
       const error = 'String error message'
-      handleModerationError(error, mockCtx)
+      handleModerationError(error, mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: 'Unexpected error during moderation: Unknown error',
@@ -342,7 +386,7 @@ describe('validator', () => {
 
     test('shouldHandleNullError', () => {
       const error = null
-      handleModerationError(error, mockCtx)
+      handleModerationError(error, mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: 'Unexpected error during moderation: Unknown error',
@@ -351,7 +395,7 @@ describe('validator', () => {
 
     test('shouldHandleUndefinedError', () => {
       const error = undefined
-      handleModerationError(error, mockCtx)
+      handleModerationError(error, mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: 'Unexpected error during moderation: Unknown error',
@@ -360,7 +404,7 @@ describe('validator', () => {
 
     test('shouldHandleObjectWithoutMessage', () => {
       const error = { status: 500, code: 'INTERNAL_ERROR' }
-      handleModerationError(error, mockCtx)
+      handleModerationError(error, mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: 'Unexpected error during moderation: Unknown error',
@@ -379,43 +423,46 @@ describe('validator', () => {
             }),
           },
         },
-      } as any
-
+      }
       const statement = 'must be polite'
-      const params = { model: 'gpt-4' }
-
+      const params = { model: 'gpt-4.1-mini' }
+      // @ts-expect-error - mocks
       const validator = LLMValidator(mockInstructor, statement, params)
-
       expect(typeof validator).toBe('function')
       expect(validator.constructor.name).toBe('AsyncFunction')
     })
 
     test('shouldCallInstructorWithCorrectParameters', async () => {
-      const mockInstructor = {
+      const mockInstructor: MockInstructorClient = {
         chat: {
           completions: {
             create: vi.fn().mockResolvedValue({
-              isValid: true,
-              reason: 'Input is valid',
+              data: [
+                {
+                  isValid: true,
+                  reason: 'Input is valid',
+                },
+              ],
+              _meta: {},
             }),
           },
         },
-      } as any
-
-      const mockCtx = {
+      }
+      const mockCtx: MockValidationCtx = {
         addIssue: vi.fn(),
       }
-
       const statement = 'must be polite'
-      const params = { model: 'gpt-4' }
+      const params = { model: 'gpt-4.1-mini' }
       const value = 'test input'
-
-      const validator = LLMValidator(mockInstructor, statement, params)
-      await validator(value, mockCtx)
-
+      const validator = LLMValidator(
+        mockInstructor as unknown as InstructorClient<OpenAI>,
+        statement,
+        params
+      )
+      await validator(value, mockCtx as unknown as z.RefinementCtx)
       expect(mockInstructor.chat.completions.create).toHaveBeenCalledWith({
         max_retries: 0,
-        model: 'gpt-4',
+        model: 'gpt-4.1-mini',
         response_model: {
           schema: expect.any(Object),
           name: 'Validator',
@@ -439,20 +486,26 @@ describe('validator', () => {
         chat: {
           completions: {
             create: vi.fn().mockResolvedValue({
-              isValid: false,
-              reason: 'Input is inappropriate',
+              data: [
+                {
+                  isValid: false,
+                  reason: 'Input is inappropriate',
+                },
+              ],
+              _meta: {},
             }),
           },
         },
-      } as any
-
-      const mockCtx = {
+      }
+      const mockCtx: MockValidationCtx = {
         addIssue: vi.fn(),
       }
-
-      const validator = LLMValidator(mockInstructor, 'test statement', { model: 'gpt-4' })
-      await validator('test value', mockCtx)
-
+      const validator = LLMValidator(
+        mockInstructor as unknown as InstructorClient<OpenAI>,
+        'test statement',
+        { model: 'gpt-4' }
+      )
+      await validator('test value', mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: 'Input is inappropriate',
@@ -462,20 +515,18 @@ describe('validator', () => {
 
   describe('moderationValidator', () => {
     test('shouldReturnAsyncValidatorFunction', () => {
-      const mockClient = {
+      const mockClient: MockOpenAIClient = {
         moderations: {
           create: vi.fn(),
         },
-      } as any
-
-      const validator = moderationValidator(mockClient)
-
+      }
+      const validator = moderationValidator(mockClient as unknown as InstructorClient<OpenAI>)
       expect(typeof validator).toBe('function')
       expect(validator.constructor.name).toBe('AsyncFunction')
     })
 
     test('shouldCallModerationAPIWithCorrectInput', async () => {
-      const mockClient = {
+      const mockClient: MockOpenAIClient = {
         moderations: {
           create: vi.fn().mockResolvedValue({
             results: [
@@ -486,24 +537,20 @@ describe('validator', () => {
             ],
           }),
         },
-      } as any
-
-      const mockCtx = {
+      }
+      const mockCtx: MockValidationCtx = {
         addIssue: vi.fn(),
       }
-
-      const validator = moderationValidator(mockClient)
+      const validator = moderationValidator(mockClient as unknown as InstructorClient<OpenAI>)
       const testValue = 'test content'
-
-      await validator(testValue, mockCtx)
-
+      await validator(testValue, mockCtx as unknown as z.RefinementCtx)
       expect(mockClient.moderations.create).toHaveBeenCalledWith({
         input: testValue,
       })
     })
 
     test('shouldProcessModerationResponseCorrectly', async () => {
-      const mockClient = {
+      const mockClient: MockOpenAIClient = {
         moderations: {
           create: vi.fn().mockResolvedValue({
             results: [
@@ -512,43 +559,36 @@ describe('validator', () => {
                 categories: {
                   hate: true,
                   violence: false,
+                  harassment: true,
                 },
               },
             ],
           }),
         },
-      } as any
-
-      const mockCtx = {
+      }
+      const mockCtx: MockValidationCtx = {
         addIssue: vi.fn(),
       }
-
-      const validator = moderationValidator(mockClient)
+      const validator = moderationValidator(mockClient as unknown as InstructorClient<OpenAI>)
       const testValue = 'harmful content'
-
-      await validator(testValue, mockCtx)
-
+      await validator(testValue, mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
-        message: `Moderation error, \`${testValue}\` was flagged for hate`,
+        message: `Moderation error, \`${testValue}\` was flagged for hate, harassment`,
       })
     })
 
     test('shouldHandleErrorsCorrectly', async () => {
-      const mockClient = {
+      const mockClient: MockOpenAIClient = {
         moderations: {
           create: vi.fn().mockRejectedValue(new Error('API error')),
         },
-      } as any
-
-      const mockCtx = {
+      }
+      const mockCtx: MockValidationCtx = {
         addIssue: vi.fn(),
       }
-
-      const validator = moderationValidator(mockClient)
-
-      await validator('test content', mockCtx)
-
+      const validator = moderationValidator(mockClient as unknown as InstructorClient<OpenAI>)
+      await validator('test content', mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({
         code: 'custom',
         message: 'Unexpected error during moderation: API error',

@@ -16,8 +16,7 @@ export default class ZodStream {
   constructor({ debug = false }: ClientConfig = {}) {
     this.debug = debug
   }
-  // TODO: Determine if this is the same logger as the one in instructor
-  // Only keep one if so.
+  // TODO: Determine if this is the same logger as the one in instructor file
   private log<T extends unknown[]>(level: LogLevel, ...args: T) {
     if (!this.debug && level === 'debug') {
       return
@@ -39,12 +38,12 @@ export default class ZodStream {
     }
   }
 
-  private async chatCompletionStream<T extends z.ZodAny>({
+  private async chatCompletionStream<T extends z.ZodType>({
     completionPromise,
     data,
     response_model,
   }: ZodStreamCompletionParams<T>): Promise<
-    AsyncGenerator<Partial<z.infer<T>> & { _meta: CompletionMeta }, void, unknown>
+    AsyncGenerator<{ data: Partial<z.infer<T>>[]; _meta: CompletionMeta }, void, unknown>
   > {
     let _activePath: ActivePath = []
     let _completedPaths: CompletedPaths = []
@@ -79,7 +78,6 @@ export default class ZodStream {
       const textDecoder = new TextDecoder()
 
       const validationStream = new TransformStream({
-        // TODO: Is this being used anywhere else?
         transform: async (chunk, controller): Promise<void> => {
           try {
             const parsedChunk = JSON.parse(textDecoder.decode(chunk))
@@ -91,11 +89,12 @@ export default class ZodStream {
             controller.enqueue(
               textEncoder.encode(
                 JSON.stringify({
-                  ...parsedChunk,
+                  data: [parsedChunk],
                   _meta: {
                     _isValid: validation.success,
                     _activePath,
                     _completedPaths,
+                    _type: 'default',
                   },
                 })
               )
@@ -121,7 +120,7 @@ export default class ZodStream {
       parser.readable.pipeThrough(validationStream)
 
       return readableStreamToAsyncGenerator(validationStream.readable) as AsyncGenerator<
-        Partial<z.infer<T>> & { _meta: CompletionMeta },
+        { data: Partial<z.infer<T>>[]; _meta: CompletionMeta },
         void,
         unknown
       >
@@ -130,7 +129,6 @@ export default class ZodStream {
       throw error
     }
   }
-  // TODO: Determine if this is being used anywhere else if not remove
   public getSchemaStub({
     schema,
     defaultData = {},
@@ -150,11 +148,11 @@ export default class ZodStream {
     return streamParser.getSchemaStub(schema, defaultData)
   }
 
-  public async create<P extends ZodStreamCompletionParams<z.ZodAny>>(
+  public async create<P extends ZodStreamCompletionParams<z.ZodType>>(
     params: P
   ): Promise<
     AsyncGenerator<
-      Partial<z.infer<P['response_model']['schema']>> & { _meta: CompletionMeta },
+      { data: Partial<z.infer<P['response_model']['schema']>>[]; _meta: CompletionMeta },
       void,
       unknown
     >

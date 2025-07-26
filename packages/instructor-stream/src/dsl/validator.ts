@@ -176,13 +176,16 @@ export const LLMValidator = <C extends GenericClient | OpenAI>(
   return async (value, ctx) => {
     const schema = createValidationSchema()
     const messages = buildValidationMessages(value, statement)
-    const validated = await instructor.chat.completions.create({
+    const completion = (await instructor.chat.completions.create({
       max_retries: 0,
       ...params,
       response_model: { schema, name: 'Validator' },
       stream: false,
       messages,
-    })
+    })) as { data: ValidationResponse[]; _meta: unknown }
+
+    const validated = completion.data[0]
+
     processValidationResponse(validated, ctx)
   }
 }

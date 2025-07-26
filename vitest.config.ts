@@ -32,7 +32,7 @@ export default defineConfig({
         root: './packages/instructor-stream',
         test: {
           name: 'instructor-stream',
-          include: ['tests/**/*.test.{ts,tsx}'],
+          include: ['__tests__/**/*.test.{ts,tsx}'],
         },
       },
       {

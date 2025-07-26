@@ -18,11 +18,9 @@ export function OAIBuildFunctionParams<T extends OpenAI.ChatCompletionCreatePara
   params: T
 ): FunctionParamsReturnType<T> {
   const { name, description, ...definitionParams } = definition
-
   const function_call: OpenAI.ChatCompletionFunctionCallOption = {
     name,
   }
-
   const functions: OpenAI.FunctionDefinition[] = [
     ...(params?.functions ?? []),
     {
@@ -31,7 +29,6 @@ export function OAIBuildFunctionParams<T extends OpenAI.ChatCompletionCreatePara
       parameters: definitionParams,
     },
   ]
-
   return {
     ...params,
     function_call,
@@ -44,12 +41,10 @@ export function OAIBuildToolFunctionParams<T extends OpenAI.ChatCompletionCreate
   params: T
 ): ToolFunctionParamsReturnType<T> {
   const { name, description, ...definitionParams } = definition
-
   const tool_choice: OpenAI.ChatCompletionToolChoiceOption = {
     type: 'function',
     function: { name },
   }
-
   const tools: OpenAI.ChatCompletionTool[] = [
     {
       type: 'function',
@@ -70,7 +65,6 @@ export function OAIBuildToolFunctionParams<T extends OpenAI.ChatCompletionCreate
       })
     ) ?? []),
   ]
-
   return {
     ...params,
     tool_choice,
