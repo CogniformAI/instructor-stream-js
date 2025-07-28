@@ -1,0 +1,251 @@
+{
+  "summary": {
+    "totalTests": 6,
+    "passed": 6,
+    "failed": 0,
+    "startTime": "2025-07-28T10:44:02.962Z",
+    "endTime": "2025-07-28T10:44:08.010Z",
+    "totalDuration": 5048
+  },
+  "results": [
+    {
+      "testName": "Extract user from clear text",
+      "success": true,
+      "result": {
+        "extractedData": {
+          "data": [
+            {
+              "result": {
+                "age": 30,
+                "name": "Jason Liu"
+              },
+              "error": false
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 107,
+              "completion_tokens": 16,
+              "total_tokens": 123,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        },
+        "isSuccess": true,
+        "extractedName": "Jason Liu",
+        "extractedAge": 30
+      },
+      "timestamp": "2025-07-28T10:44:02.962Z",
+      "duration": 744
+    },
+    {
+      "testName": "Extract user from ambiguous text",
+      "success": true,
+      "result": {
+        "extractedData": {
+          "data": [
+            {
+              "result": {
+                "age": 0,
+                "name": "Unknown user"
+              },
+              "error": false
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 104,
+              "completion_tokens": 16,
+              "total_tokens": 120,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        },
+        "isError": false,
+        "hasMessage": false
+      },
+      "timestamp": "2025-07-28T10:44:03.706Z",
+      "duration": 653
+    },
+    {
+      "testName": "Complex nested extraction",
+      "success": true,
+      "result": {
+        "extractedData": {
+          "data": [
+            {
+              "result": {
+                "name": "John Smith",
+                "contact": {
+                  "email": "john@example.com",
+                  "phone": "555-1234"
+                },
+                "age": 25
+              },
+              "error": false
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 202,
+              "completion_tokens": 32,
+              "total_tokens": 234,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        },
+        "isSuccess": true,
+        "extractedPerson": {
+          "name": "John Smith",
+          "contact": {
+            "email": "john@example.com",
+            "phone": "555-1234"
+          },
+          "age": 25
+        }
+      },
+      "timestamp": "2025-07-28T10:44:04.360Z",
+      "duration": 1259
+    },
+    {
+      "testName": "Extract from empty content",
+      "success": true,
+      "result": {
+        "extractedData": {
+          "data": [
+            {
+              "result": {
+                "age": 0,
+                "name": ""
+              },
+              "error": true,
+              "message": "No context provided to extract data from"
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 101,
+              "completion_tokens": 23,
+              "total_tokens": 124,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        },
+        "isError": false
+      },
+      "timestamp": "2025-07-28T10:44:05.619Z",
+      "duration": 856
+    },
+    {
+      "testName": "Extract from numbers only",
+      "success": true,
+      "result": {
+        "extractedData": {
+          "data": [
+            {
+              "result": {
+                "age": 25,
+                "name": "30 40"
+              },
+              "error": false
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 106,
+              "completion_tokens": 18,
+              "total_tokens": 124,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        },
+        "isError": false
+      },
+      "timestamp": "2025-07-28T10:44:06.475Z",
+      "duration": 769
+    },
+    {
+      "testName": "Extract from partial information",
+      "success": true,
+      "result": {
+        "extractedData": {
+          "data": [
+            {
+              "result": {
+                "age": 0,
+                "name": "Alice"
+              },
+              "error": false
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 107,
+              "completion_tokens": 15,
+              "total_tokens": 122,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        },
+        "isPartialSuccess": true,
+        "extractedName": "Alice"
+      },
+      "timestamp": "2025-07-28T10:44:07.244Z",
+      "duration": 766
+    }
+  ]
+}

@@ -16,11 +16,11 @@ This fork of instructor-js addresses key limitations in the original project whi
 
 ## Development Phases
 
-### Phase 0: Bootstrap & Foundation (Current)
+### Phase 0: Bootstrap & Foundation ✅ _Completed_
 
 **Goal**: Clean repository and establish development foundation
 
-#### 0.0 - Repository Cleanup ✅ _In Progress_
+#### 0.0 - Repository Cleanup ✅ _Completed_
 
 - [x] Mark package as private to prevent accidental publishing
 - [x] Reset version to 0.0.0 and update package name
@@ -28,38 +28,48 @@ This fork of instructor-js addresses key limitations in the original project whi
 - [x] Update README with WIP warning and acknowledgments
 - [x] Establish project structure with internalized dependencies
 
-#### 0.1 - Core Dependencies Integration
+#### 0.1 - Core Dependencies Integration ✅ _Completed_
 
 - [x] Fully integrate Island AI packages (`zod-stream`, `schemaStream`, `llm-client`)
 - [x] Update all imports to use local versions
 - [x] Remove external dependency references
 - [x] Verify build system works with new structure
+- [x] Switch to PNPM workspaces from Bun
 
-### Phase 1: Core Modernization
+### Phase 1: Core Modernization ✅ _Completed_
 
 **Goal**: Upgrade dependencies and implement new data structures
 
-#### 1.0 - Zod 4 Migration
+#### 1.0 - Zod 4 Migration ✅ _Completed_
 
-- [ ] Replace `zod-to-json-schema` with Zod 4's native `.toJSONSchema()`
-- [ ] Update all Zod type handling for Zod 4 changes
-- [ ] Remove deprecated API usage (e.g., `invalid_type_error`, `required_error`)
-- [ ] Leverage Zod 4 performance improvements (3x faster parsing, 57% smaller bundle)
+- [x] Replace `zod-to-json-schema` with Zod 4's native `.toJSONSchema()`
+- [x] Update all Zod type handling for Zod 4 changes
+- [x] Remove deprecated API usage (e.g., `invalid_type_error`, `required_error`)
+- [x] Leverage Zod 4 performance improvements (3x faster parsing, 57% smaller bundle)
 
-#### 1.1 - Data Shape Restructuring
+#### 1.1 - Data Shape Restructuring ✅ _Completed_
 
-- [ ] Implement new streaming format: `{ data: T[], _meta: CompletionMeta }`
-- [ ] Add dynamic `_type` field to metadata (`'outline' | 'detailed' | 'complete' | 'error'`)
-- [ ] Preserve `_completedPaths` and `_activePath` in metadata
-- [ ] Ensure backward compatibility documentation for migration
+- [x] Implement new streaming format: `{ data: T[], _meta: CompletionMeta }`
+- [x] Add dynamic `_type` field to metadata (`'outline' | 'detailed' | 'complete' | 'error'`)
+- [x] Preserve `_completedPaths` and `_activePath` in metadata
+- [x] Fix validation system to work with new data structure
+- [x] Ensure backward compatibility documentation for migration
 
-#### 1.2 - Mode Consolidation
+#### 1.2 - Validation System Integration ✅ _Completed_
+
+- [x] Integrate LLM-based validators for content validation
+- [x] Integrate OpenAI moderation validators
+- [x] Fix core validation bug in instructor.ts
+- [x] Update unit tests for new message formats
+- [x] Verify integration tests pass with real API calls
+
+#### 1.3 - Mode Consolidation _Deferred_
 
 - [ ] Remove non-streaming modes (MD_JSON, deprecated function calling)
 - [ ] Unify to two core modes: `tools()` for function calling, `structured()` for JSON/XML
 - [ ] Clean up mode-specific code and simplify API surface
 
-### Phase 2: Performance Optimization
+### Phase 2: Performance Optimization (Current)
 
 **Goal**: Implement high-performance streaming parser
 

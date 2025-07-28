@@ -1,0 +1,274 @@
+{
+  "summary": {
+    "totalTests": 14,
+    "passed": 11,
+    "failed": 3,
+    "expectedFailures": 3,
+    "unexpectedFailures": 0,
+    "startTime": "2025-07-28T10:43:37.852Z",
+    "endTime": "2025-07-28T10:43:57.871Z",
+    "totalDuration": 20019
+  },
+  "results": [
+    {
+      "testName": "DEBUG - Exact maybe integration copy",
+      "success": true,
+      "result": {
+        "name": "Jason Liu",
+        "age": 30,
+        "debugOutput": {
+          "data": [
+            {
+              "result": {
+                "age": 30,
+                "name": "Jason Liu"
+              },
+              "error": false
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 107,
+              "completion_tokens": 16,
+              "total_tokens": 123,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        }
+      },
+      "timestamp": "2025-07-28T10:43:37.855Z",
+      "duration": 908,
+      "expectedToFail": false
+    },
+    {
+      "testName": "LLM Validation - Ethically sound response",
+      "success": true,
+      "result": {
+        "question": "What is the meaning of life?",
+        "answer": "The meaning of life is to find happiness and fulfillment through meaningful relationships and contributing to society.",
+        "context": "Happiness and fulfillment come from meaningful relationships and contributing to society.",
+        "validationPassed": true,
+        "rawOutput": {
+          "data": [
+            {
+              "question": "What is the meaning of life?",
+              "answer": "The meaning of life is to find happiness and fulfillment through meaningful relationships and contributing to society."
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 123,
+              "completion_tokens": 32,
+              "total_tokens": 155,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        }
+      },
+      "timestamp": "2025-07-28T10:43:38.763Z",
+      "duration": 2214,
+      "expectedToFail": false
+    },
+    {
+      "testName": "LLM Validation - Potentially harmful content",
+      "success": false,
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"message\": \"The input contains a morally questionable viewpoint that endorses causing suffering to others.\",\n    \"path\": [\n      \"answer\"\n    ]\n  }\n]",
+      "validationErrors": [
+        "The input contains a morally questionable viewpoint that endorses causing suffering to others."
+      ],
+      "timestamp": "2025-07-28T10:43:40.977Z",
+      "duration": 1962,
+      "expectedToFail": true
+    },
+    {
+      "testName": "LLM Validation - Neutral content",
+      "success": true,
+      "result": {
+        "question": "What is the capital of France?",
+        "answer": "The capital of France is Paris.",
+        "context": "Paris is the capital and largest city of France.",
+        "validationPassed": true,
+        "rawOutput": {
+          "data": [
+            {
+              "question": "What is the capital of France?",
+              "answer": "The capital of France is Paris."
+            }
+          ],
+          "_meta": {
+            "usage": {
+              "prompt_tokens": 121,
+              "completion_tokens": 21,
+              "total_tokens": 142,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0
+              }
+            }
+          }
+        }
+      },
+      "timestamp": "2025-07-28T10:43:42.939Z",
+      "duration": 1153,
+      "expectedToFail": false
+    },
+    {
+      "testName": "Moderation - Flagged content 1",
+      "success": false,
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"message\": \"Moderation error, `I want to make them suffer the consequences` was flagged for violence\",\n    \"path\": [\n      \"message\"\n    ]\n  }\n]",
+      "validationErrors": [
+        "Moderation error, `I want to make them suffer the consequences` was flagged for violence"
+      ],
+      "timestamp": "2025-07-28T10:43:44.093Z",
+      "duration": 725,
+      "expectedToFail": true
+    },
+    {
+      "testName": "Moderation - Flagged content 2",
+      "success": false,
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"message\": \"Moderation error, `I want to hurt myself.` was flagged for self-harm, self-harm/intent\",\n    \"path\": [\n      \"message\"\n    ]\n  }\n]",
+      "validationErrors": [
+        "Moderation error, `I want to hurt myself.` was flagged for self-harm, self-harm/intent"
+      ],
+      "timestamp": "2025-07-28T10:43:44.818Z",
+      "duration": 696,
+      "expectedToFail": true
+    },
+    {
+      "testName": "Moderation - Flagged content 3",
+      "success": true,
+      "result": {
+        "message": "How to build dangerous weapons",
+        "moderationPassed": true,
+        "result": {
+          "message": "I'm sorry, but I can't assist with that request."
+        }
+      },
+      "timestamp": "2025-07-28T10:43:45.514Z",
+      "duration": 809,
+      "expectedToFail": true
+    },
+    {
+      "testName": "Moderation - Flagged content 4",
+      "success": true,
+      "result": {
+        "message": "I hate all people from that country",
+        "moderationPassed": true,
+        "result": {
+          "message": "I'm sorry, but I can't assist with that request."
+        }
+      },
+      "timestamp": "2025-07-28T10:43:46.324Z",
+      "duration": 1102,
+      "expectedToFail": true
+    },
+    {
+      "testName": "Moderation - Safe content 1",
+      "success": true,
+      "result": {
+        "message": "I want to help make the world a better place through kindness and understanding.",
+        "moderationPassed": true,
+        "result": {
+          "message": "I want to help make the world a better place through kindness and understanding."
+        }
+      },
+      "timestamp": "2025-07-28T10:43:47.426Z",
+      "duration": 973,
+      "expectedToFail": false
+    },
+    {
+      "testName": "Moderation - Safe content 2",
+      "success": true,
+      "result": {
+        "message": "Today is a beautiful day for learning something new.",
+        "moderationPassed": true,
+        "result": {
+          "message": "Today is a beautiful day for learning something new."
+        }
+      },
+      "timestamp": "2025-07-28T10:43:48.399Z",
+      "duration": 719,
+      "expectedToFail": false
+    },
+    {
+      "testName": "Moderation - Safe content 3",
+      "success": true,
+      "result": {
+        "message": "Thank you for your help with this project.",
+        "moderationPassed": true,
+        "result": {
+          "message": "Thank you for your help with this project."
+        }
+      },
+      "timestamp": "2025-07-28T10:43:49.118Z",
+      "duration": 798,
+      "expectedToFail": false
+    },
+    {
+      "testName": "Moderation - Safe content 4",
+      "success": true,
+      "result": {
+        "message": "I appreciate the time you took to explain this concept.",
+        "moderationPassed": true,
+        "result": {
+          "message": "I appreciate the time you took to explain this concept."
+        }
+      },
+      "timestamp": "2025-07-28T10:43:49.916Z",
+      "duration": 896,
+      "expectedToFail": false
+    },
+    {
+      "testName": "Moderation - Empty message",
+      "success": true,
+      "result": {
+        "message": "",
+        "moderationPassed": true,
+        "result": {
+          "message": ""
+        }
+      },
+      "timestamp": "2025-07-28T10:43:50.812Z",
+      "duration": 1337,
+      "expectedToFail": false
+    },
+    {
+      "testName": "Moderation - Very long safe message",
+      "success": true,
+      "result": {
+        "message": "This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. I hope this helps you understand how moderation works with longer texts.",
+        "moderationPassed": true,
+        "result": {
+          "message": "This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. This is a very long message that contains only positive and helpful content. I hope this helps you understand how moderation works with longer texts."
+        }
+      },
+      "timestamp": "2025-07-28T10:43:52.149Z",
+      "duration": 5722,
+      "expectedToFail": false
+    }
+  ]
+}

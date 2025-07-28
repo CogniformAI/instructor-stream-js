@@ -215,7 +215,7 @@ class Instructor<C> {
     const makeCompletionCallWithRetries = async () => {
       try {
         const data = await makeCompletionCall()
-        const validation = await response_model.schema.safeParseAsync(data)
+        const validation = await response_model.schema.safeParseAsync(data.data[0])
         this.log('debug', response_model.name, 'Completion validation: ', validation)
         if (!validation.success) {
           if ('error' in validation) {
@@ -223,8 +223,29 @@ class Instructor<C> {
               role: 'assistant',
               content: JSON.stringify(data),
             }
-            // @ts-expect-error - This will get simplified and fixed later
-            validationIssues = fromZodError(validation.error)?.message ?? ''
+            // Fix for Zod 4: use issues instead of errors, and handle error structure properly
+            try {
+              if (
+                validation.error &&
+                validation.error.issues &&
+                Array.isArray(validation.error.issues) &&
+                validation.error.issues.length > 0
+              ) {
+                validationIssues =
+                  fromZodError(validation.error)?.message ??
+                  'Validation failed with valid error structure'
+              } else {
+                validationIssues = 'Validation failed: error structure missing or invalid'
+                this.log('debug', 'Validation error structure:', JSON.stringify(validation.error))
+              }
+            } catch (fromZodErrorException) {
+              // Fallback: extract first issue message directly
+              validationIssues = `Validation failed: ${
+                validation.error?.issues?.[0]?.message ?? 'unknown validation error'
+              }`
+              this.log('debug', 'fromZodError failed:', fromZodErrorException)
+              this.log('debug', 'Original validation error:', JSON.stringify(validation.error))
+            }
             // TODO: Clean up exception thrown and caught locally
             throw validation.error
           } else {

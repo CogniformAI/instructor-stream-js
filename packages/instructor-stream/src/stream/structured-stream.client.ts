@@ -47,9 +47,7 @@ export default class ZodStream {
   > {
     let _activePath: ActivePath = []
     let _completedPaths: CompletedPaths = []
-
     this.log('debug', 'Starting completion stream')
-
     const streamParser = new SchemaStream(response_model.schema, {
       onKeyComplete: ({
         activePath,
@@ -73,19 +71,14 @@ export default class ZodStream {
       const parser = streamParser.parse({
         handleUnescapedNewLines: true,
       })
-
       const textEncoder = new TextEncoder()
       const textDecoder = new TextDecoder()
-
       const validationStream = new TransformStream({
         transform: async (chunk, controller): Promise<void> => {
           try {
             const parsedChunk = JSON.parse(textDecoder.decode(chunk))
             const validation = await response_model.schema.safeParseAsync(parsedChunk)
-
             this.log('debug', 'Validation result', validation)
-            // TODO: Make this match the new data shape of the stream
-            // Make sure that this gets updated downstream as well
             controller.enqueue(
               textEncoder.encode(
                 JSON.stringify({
@@ -107,18 +100,14 @@ export default class ZodStream {
         // TODO: Determine if this is even being called
         flush() {},
       })
-
       const stream = await completionPromise(data)
-
       if (!stream) {
         this.log('error', 'Completion call returned no data')
         // TODO: Clean up exception thrown and caught locally
         throw new Error(stream)
       }
-
       stream.pipeThrough(parser)
       parser.readable.pipeThrough(validationStream)
-
       return readableStreamToAsyncGenerator(validationStream.readable) as AsyncGenerator<
         { data: Partial<z.infer<T>>[]; _meta: CompletionMeta },
         void,
@@ -129,6 +118,7 @@ export default class ZodStream {
       throw error
     }
   }
+
   public getSchemaStub({
     schema,
     defaultData = {},
@@ -144,7 +134,6 @@ export default class ZodStream {
         boolean: null,
       },
     })
-
     return streamParser.getSchemaStub(schema, defaultData)
   }
 

@@ -87,7 +87,9 @@ describe('validator', () => {
       expect(messages[1].role).toBe('user')
       expect(messages[1].content).toContain(value)
       expect(messages[1].content).toContain(statement)
-      expect(messages[1].content).toBe(`Does \`${value}\` follow the rules: ${statement}`)
+      expect(messages[1].content).toBe(
+        `Validate if the following value follows the rules and respond with JSON format {"isValid": boolean, "reason": "optional explanation"}.\n\nValue to validate: \`${value}\`\nRules: ${statement}`
+      )
     })
 
     test('shouldHandleSpecialCharactersInValue', () => {
@@ -95,7 +97,9 @@ describe('validator', () => {
       const statement = 'must be safe'
       const messages = buildValidationMessages(value, statement)
       expect(messages[1].content).toContain(value)
-      expect(messages[1].content).toBe(`Does \`${value}\` follow the rules: ${statement}`)
+      expect(messages[1].content).toBe(
+        `Validate if the following value follows the rules and respond with JSON format {"isValid": boolean, "reason": "optional explanation"}.\n\nValue to validate: \`${value}\`\nRules: ${statement}`
+      )
     })
 
     test('shouldHandleEmptyValues', () => {
@@ -103,7 +107,9 @@ describe('validator', () => {
       const statement = ''
       const messages = buildValidationMessages(value, statement)
       expect(messages).toHaveLength(2)
-      expect(messages[1].content).toBe('Does `` follow the rules: ')
+      expect(messages[1].content).toBe(
+        'Validate if the following value follows the rules and respond with JSON format {"isValid": boolean, "reason": "optional explanation"}.\n\nValue to validate: ``\nRules: '
+      )
     })
   })
 
@@ -475,7 +481,7 @@ describe('validator', () => {
           },
           {
             role: 'user',
-            content: `Does \`${value}\` follow the rules: ${statement}`,
+            content: `Validate if the following value follows the rules and respond with JSON format {"isValid": boolean, "reason": "optional explanation"}.\n\nValue to validate: \`${value}\`\nRules: ${statement}`,
           },
         ],
       })
@@ -503,7 +509,7 @@ describe('validator', () => {
       const validator = LLMValidator(
         mockInstructor as unknown as InstructorClient<OpenAI>,
         'test statement',
-        { model: 'gpt-4' }
+        { model: 'gpt-4.1-mini' }
       )
       await validator('test value', mockCtx as unknown as z.RefinementCtx)
       expect(mockCtx.addIssue).toHaveBeenCalledWith({

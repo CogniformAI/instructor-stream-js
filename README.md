@@ -32,18 +32,22 @@ We're grateful for their pioneering work in structured LLM extraction and stream
 ## Current Status
 
 - ✅ Repository cleanup and fork setup
-- 🔄 Island AI packages integration (zod-stream, schemaStream, llm-client)
-- ⏳ Zod 4 migration and dependency modernization
-- ⏳ New streaming data format implementation
+- ✅ Island AI packages integration (zod-stream, schemaStream, llm-client)
+- ✅ Zod 4 migration and dependency modernization
+- ✅ New streaming data format implementation
+- ✅ PNPM workspaces migration
+- ✅ Validation system integration (LLM + moderation)
 - ⏳ Performance optimization and benchmarking
 
 See [PLAN.md](docs/roadmap/PLAN.md) for the complete development roadmap.
 
 ## Quick TODO List
 
-- [ ] Complete Island AI packages integration
-- [ ] Implement new `{ data: T[], _meta }` streaming format
-- [ ] Migrate to Zod 4 with native JSON Schema support
+- [x] Complete Island AI packages integration
+- [x] Implement new `{ data: T[], _meta }` streaming format
+- [x] Migrate to Zod 4 with native JSON Schema support
+- [x] Switch to PNPM workspaces from Bun
+- [x] Fix validation system (LLM + moderation validators)
 - [ ] Performance optimization (SAX-style parsing, memory management)
 - [ ] WebSocket-native transport layer
 - [ ] Framework-agnostic client hooks
@@ -103,20 +107,21 @@ for await (const chunk of stream) {
 3. **Maintenance**: 6+ months between updates, limited active development
 4. **Vendor Lock**: External dependencies for core streaming functionality
 
-### Our Solutions
+### Our Solutions ✅
 
-1. **Clean Data Shape**: `{ data: T[], _meta }` separates content from metadata
-2. **Modern Stack**: Zod 4 native JSON Schema, internalized dependencies
-3. **Performance First**: SAX-style parsing, memory optimization, WebSocket transport
-4. **Real-time Ready**: Progressive UI updates, interleaved responses, framework-agnostic hooks
+1. **Clean Data Shape**: `{ data: T[], _meta }` separates content from metadata ✅
+2. **Modern Stack**: Zod 4 native JSON Schema, internalized dependencies ✅
+3. **Validation System**: LLM-based and moderation validators integrated ✅
+4. **PNPM Workspaces**: Modern dependency management and build system ✅
+5. **Performance First**: SAX-style parsing, memory optimization, WebSocket transport (in progress)
 
 ## Development Timeline
 
-See [PLAN.md](docs/roadmap/PLAN.md) for detailed roadmap. Current focus:
+See [PLAN.md](docs/roadmap/PLAN.md) for detailed roadmap. Progress:
 
-- **Phase 0**: Repository cleanup and dependency integration _(current)_
-- **Phase 1**: Zod 4 migration and data shape restructuring
-- **Phase 2**: Performance optimization and XML streaming
+- **Phase 0**: Repository cleanup and dependency integration ✅ _(completed)_
+- **Phase 1**: Zod 4 migration and data shape restructuring ✅ _(completed)_
+- **Phase 2**: Performance optimization and XML streaming _(current)_
 - **Phase 3**: WebSocket transport and agentic responses
 - **Phase 4**: Client-side hooks and dynamic UI
 

@@ -47,11 +47,11 @@ export const buildValidationMessages = (
     {
       role: 'system',
       content:
-        'You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.',
+        'You are a world class validation model. You must respond with a JSON object containing two fields: "isValid" (boolean) and "reason" (optional string). The "isValid" field indicates whether the input follows the given rules. If "isValid" is false, provide a "reason" explaining why it failed validation.',
     },
     {
       role: 'user',
-      content: `Does \`${value}\` follow the rules: ${statement}`,
+      content: `Validate if the following value follows the rules and respond with JSON format {"isValid": boolean, "reason": "optional explanation"}.\n\nValue to validate: \`${value}\`\nRules: ${statement}`,
     },
   ]
 }
@@ -68,7 +68,6 @@ export const buildValidationMessages = (
  * and an optional reason for invalidation.
  * @param ctx - The refinement context used to add issues if the validation fails.
  */
-
 export const processValidationResponse = (
   validated: ValidationResponse,
   ctx: RefinementCtx
@@ -101,7 +100,6 @@ export const extractFlaggedCategories = (response: ModerationResponse): string[]
       }
     )
   })
-
   return flaggedCategories
 }
 
@@ -183,9 +181,7 @@ export const LLMValidator = <C extends GenericClient | OpenAI>(
       stream: false,
       messages,
     })) as { data: ValidationResponse[]; _meta: unknown }
-
     const validated = completion.data[0]
-
     processValidationResponse(validated, ctx)
   }
 }
