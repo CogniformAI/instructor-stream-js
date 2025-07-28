@@ -30,15 +30,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20.9.0
-          
-      - name: Setup bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
+          cache: 'pnpm'
 
       - name: Setup npmrc
         run: echo "//npm.pkg.github.com/:_authToken=$NPM_TOKEN" > .npmrc
@@ -46,12 +47,12 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install Dependencies
-        run: bun i
+        run: pnpm install --frozen-lockfile
 
       - name: Create version PR
         uses: changesets/action@v1
         with:
-          version: bun run version-packages
+          version: pnpm run version-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

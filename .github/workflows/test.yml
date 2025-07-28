@@ -21,19 +21,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          bun-version: latest
+          version: latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20.9.0
+          cache: 'pnpm'
 
       - name: Install Dependencies
-        run: bun i
+        run: pnpm install --frozen-lockfile
 
-      - run: bun run type-check
-      - run: bun run lint
-      - run: bun test --timeout=25000
+      - run: pnpm run type-check
+      - run: pnpm run lint
+      - run: pnpm test
