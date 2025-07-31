@@ -2,7 +2,7 @@ import { omit } from '../../instructor-stream/src/lib'
 import Anthropic from '@anthropic-ai/sdk'
 import { describe, expect, test } from 'vitest'
 
-import { createLLMClient } from '../../instructor-stream/src'
+import createLLMClient from '../../instructor-stream/src'
 
 for await (const model of ['claude-3-5-sonnet-latest', 'claude-3-opus-latest'] as const) {
   await createTestCase(model)
@@ -52,7 +52,6 @@ async function createTestCase(model: Anthropic.CompletionCreateParams['model']) 
           ],
         })
 
-        //@ts-expect-error fails because its optionally undefiened, which is fine - if we fail we fail
         expect(omit(['id'], completion?.choices?.[0]?.message.tool_calls?.[0])).toEqual({
           type: 'function',
           function: {
@@ -237,7 +236,7 @@ async function createTestCase(model: Anthropic.CompletionCreateParams['model']) 
           final += message.choices?.[0].delta?.content ?? ''
         }
 
-        expect(final).toInclude('Paris')
+        expect(final).toContain('Paris')
       })
     })
 
@@ -276,7 +275,7 @@ async function createTestCase(model: Anthropic.CompletionCreateParams['model']) 
         final += message.choices?.[0].delta?.content ?? ''
       }
 
-      expect(final).toBeString()
+      expect(typeof final).toBe('string')
     })
 
     resolve()

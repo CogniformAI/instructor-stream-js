@@ -45,7 +45,7 @@ interface ModelConfig {
   systemInstruction?: string | Content | undefined
 }
 interface GroundingMetadataExtended extends GroundingMetadata {
-  webSearchQueries: string[]
+  webSearchQueries?: string[]
   groundingChunks?: Array<{
     web?: {
       uri: string
@@ -55,7 +55,7 @@ interface GroundingMetadataExtended extends GroundingMetadata {
   searchEntryPoint?: {
     renderedContent: string
   }
-  groundingSupports?: Array<{
+  groundingAttributions?: Array<{
     segment: {
       startIndex?: number
       endIndex?: number
@@ -436,7 +436,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
         return transformedResult as ExtendedCompletionGoogle
       }
     } catch (error) {
-      this.logger.log(this.logLevel, new Error('Error in Google API request:', { cause: error }))
+      this.logger.log(this.logLevel, 'Error in Google API request:', error)
       throw error
     }
   }

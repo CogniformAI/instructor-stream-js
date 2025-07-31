@@ -1,4 +1,4 @@
-import { createLLMClient } from '@/index'
+import createLLMClient from '@/index'
 
 const googleClient = createLLMClient({
   provider: 'google',

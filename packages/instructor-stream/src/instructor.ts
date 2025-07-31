@@ -123,7 +123,6 @@ class Instructor<C> {
     let attempts = 0
     let validationIssues = ''
     let lastMessage: OpenAI.ChatCompletionMessageParam | null = null
-    //@ts-expect-error - This will get simplified and fixed later
     const paramsTransformer = PROVIDER_PARAMS_TRANSFORMERS?.[this.provider]?.[this.mode]
     let completionParams = withResponseModel({
       params: {
@@ -180,7 +179,6 @@ class Instructor<C> {
         )
         throw error
       }
-      // @ts-expect-error - Will fix these types later
       const responseParser = MODE_TO_RESPONSE_PARSER?.[this.mode] ?? OAIResponseParser
       const parsedCompletion = responseParser(completion as OpenAI.Chat.Completions.ChatCompletion)
 
@@ -299,7 +297,6 @@ class Instructor<C> {
     if (max_retries) {
       this.log('warn', 'max_retries is not supported for streaming completions')
     }
-    //@ts-expect-error - This will get simplified and fixed later
     const paramsTransformer = PROVIDER_PARAMS_TRANSFORMERS?.[this.provider]?.[this.mode]
 
     let completionParams = withResponseModel({
@@ -355,7 +352,6 @@ class Instructor<C> {
           if (
             this.provider !== 'OAI' &&
             completionParams?.stream &&
-            //@ts-expect-error - This will get simplified and fixed later
             completion?.[Symbol.asyncIterator]
           ) {
             const [completion1, completion2] = await iterableTee(
