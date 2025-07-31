@@ -47,6 +47,6 @@ export function createLLMClient<P extends Providers>(
     logLevel?: string
   } = { provider: 'openai' as P }
 ): OpenAILikeClient<P> {
-  const client = new LLMClient<P>(opts)
+  const client = new LLMClient<P>(opts as ClientOptions & { provider: P })
   return client.getProviderInstance()
 }

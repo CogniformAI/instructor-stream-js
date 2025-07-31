@@ -21,7 +21,7 @@ import {
 export class AnthropicProvider extends Anthropic implements OpenAILikeClient<'anthropic'> {
   public apiKey: string
   public logLevel: LogLevel = (process.env?.['LOG_LEVEL'] as LogLevel) ?? 'info'
-  private logger: ProviderLogger
+  public logger: ProviderLogger
 
   /**
    * Constructs a new instance of the AnthropicProvider class.
@@ -320,7 +320,7 @@ export class AnthropicProvider extends Anthropic implements OpenAILikeClient<'an
         return transformedResult as ExtendedCompletionAnthropic
       }
     } catch (error) {
-      this.logger.error(new Error('Error in Anthropic API request:', { cause: error }))
+      this.logger.error('Error in Anthropic API request:', error)
       throw error
     }
   }

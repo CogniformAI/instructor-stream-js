@@ -322,9 +322,9 @@ describe('createInstructor', () => {
         response_model: { schema: UserSchema, name: 'User' },
         stream: true,
       })
-      const chunks = []
+      const chunks: { data: Partial<{ age: number; name: string; }>[]; _meta: CompletionMeta; }[] = []
       for await (const chunk of stream) {
-        chunks.push(chunk)
+        chunks.push(chunk as never)
         expect(chunk).toHaveProperty('data')
         expect(chunk).toHaveProperty('_meta')
         expect(Array.isArray(chunk.data)).toBe(true)
@@ -359,9 +359,9 @@ describe('createInstructor', () => {
         response_model: { schema: UserSchema, name: 'User' },
         stream: true,
       })
-      const chunks = []
+      const chunks: { data: Partial<{ age: number; name: string; }>[]; _meta: CompletionMeta; }[] = []
       for await (const chunk of stream) {
-        chunks.push(chunk)
+        chunks.push(chunk as never)
       }
       expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
         expect.objectContaining({
