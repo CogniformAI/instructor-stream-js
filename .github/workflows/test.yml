@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   test-main:
-    if: github.repository == 'cogniformai/instructor-stream-js' && github.ref == 'refs/heads/main'
+    if: github.repository == 'CogniformAI/instructor-stream-js' && github.ref == 'refs/heads/main'
     name: run-tests
     runs-on: ubuntu-latest
     environment: TEST-MAIN

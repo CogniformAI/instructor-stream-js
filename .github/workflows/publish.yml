@@ -9,7 +9,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions: {} #reset
 jobs:
   publish:
-    if: github.repository == 'cogniformai/instructor-stream-js' && github.event.pull_request.merged == true && (startsWith(github.head_ref, 'changeset-release/main') || startsWith(github.head_ref, '_publish-trigger'))
+    if: github.repository == 'CogniformAI/instructor-stream-js' && github.event.pull_request.merged == true && (startsWith(github.head_ref, 'changeset-release/main') || startsWith(github.head_ref, '_publish-trigger'))
     permissions:
       contents: write
       pull-requests: write
