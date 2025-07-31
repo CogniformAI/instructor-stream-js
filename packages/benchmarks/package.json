@@ -23,7 +23,7 @@
   "license": "MIT",
   "homepage": "https://github.com/cogniformai/instructor-stream-js",
   "dependencies": {
-    "@instructor-stream/core": "workspace:*"
+    "@cogniformai/instructor-stream": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
