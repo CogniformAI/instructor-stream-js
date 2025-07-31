@@ -8,15 +8,15 @@ describe('streaming-json-parser.ts', () => {
     test('shouldCreateCorrectBlankObjectFromZodSchema', () => {
       /** Test various Zod schema types */
       const userSchema = z.object({
-        name: z.string().default('Anonymous'),
+        name: z.string().prefault('Anonymous'),
         age: z.number().optional(),
-        isActive: z.boolean().default(true),
-        tags: z.array(z.string()).default([]),
+        isActive: z.boolean().prefault(true),
+        tags: z.array(z.string()).prefault([]),
         metadata: z.object({
-          created: z.string().default('2024-01-01'),
+          created: z.string().prefault('2024-01-01'),
           updated: z.string().optional(),
         }),
-        settings: z.record(z.string(), z.any()).default({}),
+        settings: z.record(z.string(), z.any()).prefault({}),
       })
       const schemaStream = new SchemaStream(userSchema)
       /** Access the private schemaInstance through getSchemaStub method */
@@ -56,13 +56,13 @@ describe('streaming-json-parser.ts', () => {
 
     test('shouldHandleNestedSchemasCorrectly', () => {
       const addressSchema = z.object({
-        street: z.string().default('Main St'),
+        street: z.string().prefault('Main St'),
         city: z.string(),
         zipCode: z.string().optional(),
       })
       const personSchema = z.object({
         name: z.string(),
-        addresses: z.array(addressSchema).default([]),
+        addresses: z.array(addressSchema).prefault([]),
         primaryAddress: addressSchema.optional(),
       })
       const schemaStream = new SchemaStream(personSchema)
@@ -81,10 +81,10 @@ describe('streaming-json-parser.ts', () => {
     test('parse_shouldProgressivelyPopulateObjectFromStream', async () => {
       const schema = z.object({
         user: z.object({
-          name: z.string().default('Unknown'),
-          age: z.number().default(0),
+          name: z.string().prefault('Unknown'),
+          age: z.number().prefault(0),
         }),
-        active: z.boolean().default(false),
+        active: z.boolean().prefault(false),
       })
       const schemaStream = new SchemaStream(schema)
       const transformStream = schemaStream.parse()
@@ -136,12 +136,12 @@ describe('streaming-json-parser.ts', () => {
       const schema = z.object({
         user: z.object({
           profile: z.object({
-            name: z.string().default(''),
-            email: z.string().default(''),
+            name: z.string().prefault(''),
+            email: z.string().prefault(''),
           }),
         }),
         settings: z.object({
-          theme: z.string().default('light'),
+          theme: z.string().prefault('light'),
         }),
       })
       const mockOnKeyComplete = vi.fn()
@@ -188,11 +188,11 @@ describe('streaming-json-parser.ts', () => {
           .array(
             z.object({
               id: z.number(),
-              name: z.string().default('Item'),
+              name: z.string().prefault('Item'),
             })
           )
-          .default([]),
-        tags: z.array(z.string()).default(['default']),
+          .prefault([]),
+        tags: z.array(z.string()).prefault(['default']),
       })
       const schemaStream = new SchemaStream(schema)
       const stub = schemaStream.getSchemaStub(schema)
@@ -208,7 +208,7 @@ describe('streaming-json-parser.ts', () => {
         optional: z.string().optional(),
         nullable: z.string().nullable(),
         optionalNullable: z.string().optional().nullable(),
-        withDefault: z.string().default('default_value'),
+        withDefault: z.string().prefault('default_value'),
       })
       const schemaStream = new SchemaStream(schema)
       const stub = schemaStream.getSchemaStub(schema)
@@ -223,13 +223,13 @@ describe('streaming-json-parser.ts', () => {
 
     test('shouldHandleRecordSchemas', () => {
       const schema = z.object({
-        metadata: z.record(z.string(), z.string()).default({}),
+        metadata: z.record(z.string(), z.string()).prefault({}),
         config: z.record(z.number(), z.string()),
         dynamicProps: z.record(
           z.string(),
           z.object({
             value: z.string(),
-            type: z.string().default('text'),
+            type: z.string().prefault('text'),
           })
         ),
       })
@@ -246,7 +246,7 @@ describe('streaming-json-parser.ts', () => {
       const schema = z.object({
         name: z.string(),
         age: z.number(),
-        city: z.string().default('Unknown'),
+        city: z.string().prefault('Unknown'),
       })
       const defaultData = {
         name: 'DefaultName',
@@ -270,12 +270,12 @@ describe('streaming-json-parser.ts', () => {
                 id: z.number(),
                 profile: z.object({
                   name: z.string(),
-                  contacts: z.array(z.string()).default([]),
+                  contacts: z.array(z.string()).prefault([]),
                 }),
               })
             )
-            .default([]),
-          metadata: z.record(z.string(), z.unknown()).default({}),
+            .prefault([]),
+          metadata: z.record(z.string(), z.unknown()).prefault({}),
         }),
       })
       const schemaStream = new SchemaStream(schema)
@@ -356,7 +356,7 @@ describe('streaming-json-parser.ts', () => {
     })
 
     test('shouldHandleNonObjectRootSchemas', () => {
-      const stringSchema = z.string().default('default string')
+      const stringSchema = z.string().prefault('default string')
       const schemaStream = new SchemaStream(stringSchema)
       const stub = schemaStream.getSchemaStub(stringSchema)
       /** Should return empty object for non-object-like defaults in constructor */
@@ -372,7 +372,7 @@ describe('streaming-json-parser.ts', () => {
     })
 
     test('shouldHandleArrayRootSchema', () => {
-      const arraySchema = z.array(z.string()).default(['item1', 'item2'])
+      const arraySchema = z.array(z.string()).prefault(['item1', 'item2'])
       const schemaStream = new SchemaStream(arraySchema)
       const stub = schemaStream.getSchemaStub(arraySchema)
       /** Should return empty object since array is not object-like for our use case */
@@ -383,7 +383,7 @@ describe('streaming-json-parser.ts', () => {
       const enumSchema = z.enum(['option1', 'option2', 'option3'])
       const schema = z.object({
         status: enumSchema,
-        role: z.enum(['admin', 'user']).default('user' as const),
+        role: z.enum(['admin', 'user']).prefault('user' as const),
       })
       const schemaStream = new SchemaStream(schema)
       const stub = schemaStream.getSchemaStub(schema)
@@ -397,7 +397,7 @@ describe('streaming-json-parser.ts', () => {
       const refinedSchema = z.string().refine((s) => s.length > 0, 'Must not be empty')
       const schema = z.object({
         text: refinedSchema,
-        email: z.email().default('test@example.com'),
+        email: z.email().prefault('test@example.com'),
       })
       const schemaStream = new SchemaStream(schema)
       const stub = schemaStream.getSchemaStub(schema)
@@ -409,7 +409,7 @@ describe('streaming-json-parser.ts', () => {
 
     test('shouldHandleParseTransformStreamErrors', async () => {
       const schema = z.object({
-        name: z.string().default('test'),
+        name: z.string().prefault('test'),
       })
       const schemaStream = new SchemaStream(schema)
       const transformStream = schemaStream.parse()
@@ -438,7 +438,7 @@ describe('streaming-json-parser.ts', () => {
 
     test('shouldHandleFlushOperationCorrectly', async () => {
       const schema = z.object({
-        name: z.string().default('test'),
+        name: z.string().prefault('test'),
       })
       const mockOnKeyComplete = vi.fn()
       const schemaStream = new SchemaStream(schema, { onKeyComplete: mockOnKeyComplete })
@@ -470,7 +470,7 @@ describe('streaming-json-parser.ts', () => {
 
     test('shouldHandleParserEndStateCorrectly', async () => {
       const schema = z.object({
-        name: z.string().default('test'),
+        name: z.string().prefault('test'),
       })
       const schemaStream = new SchemaStream(schema)
       const transformStream = schemaStream.parse()
@@ -502,7 +502,7 @@ describe('streaming-json-parser.ts', () => {
 
     test('shouldLogErrorsInHandleTokenGracefully', () => {
       const schema = z.object({
-        name: z.string().default('test'),
+        name: z.string().prefault('test'),
       })
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       /** Create a schema stream with a problematic schema instance that will cause lens errors */
@@ -543,7 +543,7 @@ describe('streaming-json-parser.ts', () => {
     })
 
     test('shouldHandleZodBooleanDirectly', () => {
-      const booleanSchema = z.boolean().default(true)
+      const booleanSchema = z.boolean().prefault(true)
       const schema = z.object({
         flag: booleanSchema,
       })
@@ -555,7 +555,7 @@ describe('streaming-json-parser.ts', () => {
     })
 
     test('shouldHandleZodArrayDirectly', () => {
-      const arraySchema = z.array(z.string()).default(['default'])
+      const arraySchema = z.array(z.string()).prefault(['default'])
       const schema = z.object({
         items: arraySchema,
       })
@@ -583,7 +583,7 @@ describe('streaming-json-parser.ts', () => {
 
     test('shouldHandleInitialActivePathLengthZero', () => {
       const schema = z.object({
-        name: z.string().default('test'),
+        name: z.string().prefault('test'),
       })
       const mockOnKeyComplete = vi.fn()
       const schemaStream = new SchemaStream(schema, { onKeyComplete: mockOnKeyComplete })

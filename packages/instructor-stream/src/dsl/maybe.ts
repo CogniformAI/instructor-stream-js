@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export type Maybe<T extends z.ZodType> = z.ZodObject<{
   result: z.ZodOptional<T>
-  error: z.ZodDefault<z.ZodBoolean>
+  error: z.ZodPrefault<z.ZodBoolean>
   message: z.ZodOptional<z.ZodString>
 }>
 
@@ -18,7 +18,7 @@ export const maybe = <T extends z.ZodType>(schema: T): Maybe<T> =>
       .describe(
         'Correctly extracted result, if any, from the provided context, otherwise undefined'
       ),
-    error: z.boolean().default(false),
+    error: z.boolean().prefault(false),
     message: z
       .string()
       .optional()

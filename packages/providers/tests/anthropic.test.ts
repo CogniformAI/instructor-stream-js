@@ -1,4 +1,4 @@
-import { omit } from '@/lib'
+import { omit } from '../../instructor-stream/src/lib'
 import Anthropic from '@anthropic-ai/sdk'
 import { describe, expect, test } from 'vitest'
 

@@ -152,7 +152,7 @@ describe('maybe', () => {
   test('shouldPreserveOriginalSchemaTypeInference', () => {
     const originalSchema = z.object({
       id: z.uuid(),
-      count: z.number().int().positive(),
+      count: z.int().positive(),
     })
     const maybeSchema = maybe(originalSchema)
     /** Type inference test - this should compile without errors */

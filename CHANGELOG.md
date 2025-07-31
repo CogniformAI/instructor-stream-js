@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - ✅ Validator unit tests to match current message format and model references
 - ✅ Integration tests to properly apply validators using `.superRefine()`
 - ✅ Response parsing to correctly extract structured data from LLM responses
+- ✅ Use Zod 4 public API (`addIssue`) for custom validations, replacing internal `issues.push`
 
 ### Technical Debt (Next Phase)
 
@@ -58,11 +59,13 @@ This is a fork of [instructor-js](https://github.com/instructor-ai/instructor-js
 ### Major Milestones Completed
 
 **Phase 0: Bootstrap & Foundation** ✅ _Completed July 27, 2025_
+
 - Repository cleanup and project structure establishment
 - Island AI packages integration
 - PNPM workspaces migration
 
 **Phase 1: Core Modernization** ✅ _Completed July 28, 2025_
+
 - Zod 4 migration with native JSON Schema support
 - New streaming data format: `{ data: T[], _meta: CompletionMeta }`
 - Validation system integration (LLM + moderation validators)

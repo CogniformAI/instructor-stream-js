@@ -1,5 +1,5 @@
 ---
-"@cogniformai/instructor-stream": patch
+'@cogniformai/instructor-stream': patch
 ---
 
 Initial release of @cogniformai/instructor-stream

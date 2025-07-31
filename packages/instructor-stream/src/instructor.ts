@@ -232,7 +232,7 @@ class Instructor<C> {
                 validation.error.issues.length > 0
               ) {
                 validationIssues =
-                  fromZodError(validation.error)?.message ??
+                  fromZodError(validation.error as any)?.message ??
                   'Validation failed with valid error structure'
               } else {
                 validationIssues = 'Validation failed: error structure missing or invalid'
@@ -347,13 +347,11 @@ class Instructor<C> {
             completion instanceof Stream
           ) {
             const [completion1, completion2] = completion.tee()
-            // TODO: Is there a reason this doesn't have an await?
             checkForUsage(completion1)
             return OAIStream({
               res: completion2,
             })
           }
-          //check if async iterator
           if (
             this.provider !== 'OAI' &&
             completionParams?.stream &&
@@ -364,7 +362,6 @@ class Instructor<C> {
               completion as AsyncIterable<OpenAI.ChatCompletionChunk>,
               2
             )
-            // TODO: Is there a reason this doesn't have an await?
             checkForUsage(completion1)
             return OAIStream({
               res: completion2,
@@ -381,8 +378,6 @@ class Instructor<C> {
     })
     for await (const chunk of structuredStream) {
       yield {
-        //TODO: This is partially correct, will determine if completion data
-        // should be a part of the _meta or it's own property
         data: chunk.data,
         _meta: {
           usage: streamUsage ?? undefined,

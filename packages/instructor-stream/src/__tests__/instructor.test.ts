@@ -4,6 +4,8 @@ import createInstructor from '@/instructor'
 import type { InstructorClient } from '@/instructor'
 import type OpenAI from 'openai'
 
+const TEST_MODEL = 'gpt-4.1-mini'
+
 const UserSchema = z.object({
   age: z.number(),
   name: z.string(),
@@ -196,7 +198,7 @@ describe('createInstructor', () => {
       try {
         await instructor.chat.completions.create({
           messages: [{ role: 'user', content: 'Jason Liu is 30 years old' }],
-          model: 'gpt-4',
+          model: TEST_MODEL,
           response_model: { schema: UserSchema, name: 'User' },
           max_retries: 0,
         })
@@ -206,7 +208,7 @@ describe('createInstructor', () => {
       expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           messages: [{ role: 'user', content: 'Jason Liu is 30 years old' }],
-          model: 'gpt-4',
+          model: TEST_MODEL,
           stream: false,
           tools: expect.any(Array),
           tool_choice: expect.any(Object),
@@ -221,7 +223,7 @@ describe('createInstructor', () => {
       await expect(
         instructor.chat.completions.create({
           messages: [{ role: 'user', content: 'Test' }],
-          model: 'gpt-4',
+          model: TEST_MODEL,
           response_model: { schema: UserSchema, name: 'User' },
           max_retries: 0,
         })
@@ -316,7 +318,7 @@ describe('createInstructor', () => {
       mockClient.chat.completions.create.mockResolvedValue(mockStream)
       const stream = await instructor.chat.completions.create({
         messages: [{ role: 'user', content: 'Jason is 30 years old' }],
-        model: 'gpt-4.1-mini',
+        model: TEST_MODEL,
         response_model: { schema: UserSchema, name: 'User' },
         stream: true,
       })
@@ -353,7 +355,7 @@ describe('createInstructor', () => {
       mockClient.chat.completions.create.mockResolvedValue(mockStream)
       const stream = await instructor.chat.completions.create({
         messages: [{ role: 'user', content: 'Jason is 30 years old' }],
-        model: 'gpt-4',
+        model: TEST_MODEL,
         response_model: { schema: UserSchema, name: 'User' },
         stream: true,
       })
@@ -404,7 +406,7 @@ describe('createInstructor', () => {
       mockClient.chat.completions.create.mockResolvedValue(mockResponse)
       const result = await instructor.chat.completions.create({
         messages: [{ role: 'user', content: 'Say hello' }],
-        model: 'gpt-4.1-mini',
+        model: TEST_MODEL,
       })
       expect(result).toEqual(mockResponse)
       expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
@@ -426,7 +428,7 @@ describe('createInstructor', () => {
       mockClient.chat.completions.create.mockResolvedValue(mockStream)
       const result = await instructor.chat.completions.create({
         messages: [{ role: 'user', content: 'Say hello' }],
-        model: 'gpt-4.1-mini',
+        model: TEST_MODEL,
         stream: true,
       })
       expect(result).toEqual(mockStream)
@@ -458,7 +460,7 @@ describe('createInstructor', () => {
       await expect(
         instructor.chat.completions.create({
           messages: [{ role: 'user', content: 'Test' }],
-          model: 'gpt-4',
+          model: TEST_MODEL,
           response_model: { schema: UserSchema, name: 'User' },
         })
       ).rejects.toThrow('API Error')
