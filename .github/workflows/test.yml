@@ -8,14 +8,6 @@ jobs:
     if: github.repository == 'CogniformAI/instructor-stream-js' && github.ref == 'refs/heads/main'
     name: run-tests
     runs-on: ubuntu-latest
-    environment: TEST-MAIN
-    env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANYSCALE_API_KEY: ${{ secrets.ANYSCALE_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -29,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20.9.0
+          node-version: 22.17.1
           cache: 'pnpm'
 
       - name: Install Dependencies
