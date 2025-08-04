@@ -28,7 +28,7 @@ export class AnthropicProvider extends Anthropic implements OpenAILikeClient<'an
    * @param opts - An optional ClientOptions object containing the API key.
    */
   constructor(
-    opts?: ClientOptions & {
+    opts?: Omit<ClientOptions, 'logLevel'> & {
       logLevel?: LogLevel
     }
   ) {

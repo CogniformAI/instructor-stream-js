@@ -101,7 +101,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
   private activeChatSessions: Map<string, ChatSession> = new Map()
 
   constructor(
-    opts?: ClientOptions & {
+    opts?: Omit<ClientOptions, 'logLevel'> & {
       logLevel?: LogLevel
       groundingThreshold?: number
     }

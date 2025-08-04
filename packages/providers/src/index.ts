@@ -3,14 +3,15 @@ import { ClientOptions } from 'openai'
 import { AnthropicProvider } from './providers/anthropic'
 import { GoogleProvider } from './providers/google'
 import { OpenAIProvider } from './providers/openai'
-import { OpenAILikeClient, Providers } from './types'
+import { LogLevel, OpenAILikeClient, Providers } from './types'
 
 export class LLMClient<P extends Providers> {
   private providerInstance: OpenAILikeClient<P>
 
   constructor(
-    opts: ClientOptions & {
+    opts: Omit<ClientOptions, 'logLevel'> & {
       provider: P
+      logLevel?: LogLevel
     }
   ) {
     switch (opts?.provider) {
@@ -42,11 +43,11 @@ export class LLMClient<P extends Providers> {
 }
 
 export function createLLMClient<P extends Providers>(
-  opts: ClientOptions & {
+  opts: Omit<ClientOptions, 'logLevel'> & {
     provider: P
-    logLevel?: string
+    logLevel?: LogLevel
   } = { provider: 'openai' as P }
 ): OpenAILikeClient<P> {
-  const client = new LLMClient<P>(opts as ClientOptions & { provider: P })
+  const client = new LLMClient<P>(opts)
   return client.getProviderInstance()
 }
