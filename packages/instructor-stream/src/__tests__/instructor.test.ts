@@ -322,7 +322,7 @@ describe('createInstructor', () => {
         response_model: { schema: UserSchema, name: 'User' },
         stream: true,
       })
-      const chunks: { data: Partial<{ age: number; name: string; }>[]; _meta: CompletionMeta; }[] = []
+      const chunks: { data: Partial<{ age: number; name: string }>[]; _meta: CompletionMeta }[] = []
       for await (const chunk of stream) {
         chunks.push(chunk as never)
         expect(chunk).toHaveProperty('data')
@@ -359,7 +359,7 @@ describe('createInstructor', () => {
         response_model: { schema: UserSchema, name: 'User' },
         stream: true,
       })
-      const chunks: { data: Partial<{ age: number; name: string; }>[]; _meta: CompletionMeta; }[] = []
+      const chunks: { data: Partial<{ age: number; name: string }>[]; _meta: CompletionMeta }[] = []
       for await (const chunk of stream) {
         chunks.push(chunk as never)
       }

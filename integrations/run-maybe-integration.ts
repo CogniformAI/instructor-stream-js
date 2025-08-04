@@ -24,7 +24,7 @@ config()
 interface TestResult {
   testName: string
   success: boolean
-  result?: any
+  result?: unknown
   error?: string
   timestamp: string
   duration: number
@@ -69,7 +69,7 @@ async function maybeExtractUser(content: string) {
   })
 }
 
-async function runTest(testName: string, testFn: () => Promise<any>): Promise<TestResult> {
+async function runTest(testName: string, testFn: () => Promise<unknown>): Promise<TestResult> {
   const startTime = Date.now()
   const timestamp = new Date().toISOString()
 

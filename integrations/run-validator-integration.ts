@@ -25,7 +25,7 @@ config()
 interface TestResult {
   testName: string
   success: boolean
-  result?: any
+  result?: unknown
   error?: string
   validationErrors?: string[]
   timestamp: string
@@ -49,7 +49,7 @@ interface TestSuite {
 
 async function runTest(
   testName: string,
-  testFn: () => Promise<any>,
+  testFn: () => Promise<unknown>,
   expectedToFail: boolean = false
 ): Promise<TestResult> {
   const startTime = Date.now()

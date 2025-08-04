@@ -230,7 +230,7 @@ class Instructor<C> {
                 validation.error.issues.length > 0
               ) {
                 validationIssues =
-                  fromZodError(validation.error as any)?.message ??
+                  fromZodError(validation.error as ZodError)?.message ??
                   'Validation failed with valid error structure'
               } else {
                 validationIssues = 'Validation failed: error structure missing or invalid'
