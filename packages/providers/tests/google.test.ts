@@ -1,4 +1,4 @@
-import { createLLMClient } from '@/index'
+import createLLMClient from '@/index'
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
 import { describe, expect, test } from 'vitest'
 
@@ -55,7 +55,7 @@ describe(`LLMClient Gemini Provider`, () => {
     for await (const message of completion) {
       final += message.choices?.[0].delta?.content ?? ''
     }
-    expect(final).toBeString()
+    expect(typeof final).toBe('string')
   })
 
   test('Function calling', async () => {
@@ -144,7 +144,7 @@ describe(`LLMClient Gemini Provider`, () => {
       ],
     })
 
-    const toolCalls = []
+    const toolCalls: unknown[] = []
     for await (const message of completion) {
       const deltaCalls = message.choices?.[0]?.delta?.tool_calls
       if (deltaCalls) {

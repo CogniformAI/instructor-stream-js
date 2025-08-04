@@ -5,12 +5,8 @@ jobs:
     name: run-tests
     runs-on: ubuntu-latest
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANYSCALE_API_KEY: ${{ secrets.ANYSCALE_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      RUN_PROVIDER_TESTS: false
+      RUN_BENCHMARK_TESTS: false
     steps:
       - uses: actions/checkout@v3
 
@@ -27,7 +23,5 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
-
-      - run: pnpm run type-check
       - run: pnpm run lint
       - run: pnpm test

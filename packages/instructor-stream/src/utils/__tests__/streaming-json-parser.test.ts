@@ -483,7 +483,7 @@ describe('streaming-json-parser.ts', () => {
       })
       const transformedStream = stream.pipeThrough(transformStream)
       const reader = transformedStream.getReader()
-      let results = []
+      const results: any[] = []
       try {
         while (true) {
           const { done, value } = await reader.read()
@@ -497,7 +497,7 @@ describe('streaming-json-parser.ts', () => {
       /** Should have processed the data correctly */
       expect(results.length).toBeGreaterThan(0)
       const finalResult = results[results.length - 1]
-      expect(finalResult.name).toBe('John')
+      expect(finalResult?.name).toBe('John')
     })
 
     test('shouldLogErrorsInHandleTokenGracefully', () => {
