@@ -272,8 +272,9 @@ class Instructor<C> {
                 (validation.error as { issues?: unknown[] }).issues!.length > 0
               ) {
                 try {
+                  const errorForFormatting = validation.error as unknown as Parameters<typeof fromZodError>[0]
                   validationIssues =
-                    fromZodError(validation.error as unknown as ZodError)?.message ??
+                    fromZodError(errorForFormatting)?.message ??
                     'Validation failed with issues'
                 } catch {
                   const firstMsg = validation.error.issues?.[0]?.message
@@ -293,7 +294,7 @@ class Instructor<C> {
             // Propagate the original ZodError without introducing a new local error.
             throw new ValidationError(
               validation.error.issues,
-              validation.error as unknown as ZodError
+              validation.error
             )
           } else {
             // Propagate non-Zod validation failure by rethrowing as-is to avoid masking upstream errors.
@@ -564,8 +565,10 @@ function isGenericClient(client: unknown): client is GenericClient {
     client !== null &&
     'chat' in client &&
     typeof client.chat === 'object' &&
+    client.chat !== null &&
     'completions' in client.chat &&
     typeof client.chat.completions === 'object' &&
+    client.chat.completions !== null &&
     'create' in client.chat.completions &&
     typeof client.chat.completions.create === 'function'
   )

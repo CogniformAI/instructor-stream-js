@@ -43,6 +43,11 @@
     "packages/instructor-stream/src/core/*/dist",
     "packages/instructor-stream/src/providers/*/node_modules",
     "packages/instructor-stream/src/providers/*/dist",
-    ".oxlintrc.json"
+    ".oxlintrc.json",
+    "_ai/**",
+    "packages/examples/**",
+    "packages/providers/tests/**",
+    "packages/providers/examples/**",
+    "benchmarks/**"
   ]
 }

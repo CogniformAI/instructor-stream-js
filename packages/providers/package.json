@@ -46,7 +46,6 @@
   "license": "MIT",
   "author": "David Robertson <info@drobertson.pro> (https://x.com/davidalexr987)",
   "homepage": "https://github.com/cogniformai/instructor-stream-js",
-  "private": true,
   "dependencies": {
   },
   "peerDependencies": {

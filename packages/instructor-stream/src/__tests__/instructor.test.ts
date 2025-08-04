@@ -2,6 +2,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { z } from 'zod'
 import createInstructor from '@/instructor'
 import type { InstructorClient } from '@/instructor'
+import type { CompletionMeta } from '@/types'
 import type OpenAI from 'openai'
 
 const TEST_MODEL = 'gpt-4.1-mini'
