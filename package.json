@@ -42,9 +42,10 @@
     "prepare": "husky || true",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "publish-packages": "tsup && changeset publish",
+    "publish-packages": "pnpm build:workspace && changeset publish",
     "test-actions": "./scripts/test-actions.sh",
     "pre-push": "./scripts/pre-push.sh",
+    "test-release": "./scripts/test-release.sh",
     "validate-release": "pnpm pre-push && echo '✅ Ready for release'"
   },
   "repository": {
