@@ -73,11 +73,10 @@ export const processValidationResponse = (
   ctx: RefinementCtx
 ): void => {
   if (!validated.isValid) {
-    ctx.issues.push({
-            code: 'custom',
-            message: validated?.reason ?? 'Unknown reason',
-              input: ''
-          })
+    ctx.addIssue({
+      code: 'custom',
+      message: validated?.reason ?? 'Unknown reason',
+    })
   }
 }
 
@@ -125,11 +124,10 @@ export const processModerationResponse = (
 ): void => {
   const flaggedCategories = extractFlaggedCategories(response)
   if (flaggedCategories.length > 0) {
-    ctx.issues.push({
-            code: 'custom',
-            message: `Moderation error, \`${value}\` was flagged for ${flaggedCategories.join(', ')}`,
-              input: ''
-          })
+    ctx.addIssue({
+      code: 'custom',
+      message: `Moderation error, \`${value}\` was flagged for ${flaggedCategories.join(', ')}`,
+    })
   }
 }
 
@@ -147,11 +145,10 @@ export const processModerationResponse = (
  */
 
 export const handleModerationError = (error: unknown, ctx: RefinementCtx): void => {
-  ctx.issues.push({
-        code: 'custom',
-        message: `Unexpected error during moderation: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          input: ''
-    })
+  ctx.addIssue({
+    code: 'custom',
+    message: `Unexpected error during moderation: ${error instanceof Error ? error.message : 'Unknown error'}`,
+  })
 }
 
 /**

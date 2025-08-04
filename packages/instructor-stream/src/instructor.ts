@@ -123,7 +123,9 @@ class Instructor<C> {
     let attempts = 0
     let validationIssues = ''
     let lastMessage: OpenAI.ChatCompletionMessageParam | null = null
-    const paramsTransformer = PROVIDER_PARAMS_TRANSFORMERS?.[this.provider]?.[this.mode]
+    const paramsTransformer = (
+      PROVIDER_PARAMS_TRANSFORMERS?.[this.provider] as Record<string, unknown> | undefined
+    )?.[this.mode as unknown as string] as ((p: any) => unknown) | undefined
     let completionParams = withResponseModel({
       params: {
         ...params,
@@ -132,8 +134,8 @@ class Instructor<C> {
       mode: this.mode,
       response_model,
     })
-    if (!!paramsTransformer) {
-      completionParams = paramsTransformer(completionParams)
+    if (typeof paramsTransformer === 'function') {
+      completionParams = paramsTransformer(completionParams as any) as typeof completionParams
     }
 
     const makeCompletionCall = async () => {
@@ -179,7 +181,9 @@ class Instructor<C> {
         )
         throw error
       }
-      const responseParser = MODE_TO_RESPONSE_PARSER?.[this.mode] ?? OAIResponseParser
+      const responseParser =
+        MODE_TO_RESPONSE_PARSER?.[this.mode as unknown as keyof typeof MODE_TO_RESPONSE_PARSER] ??
+        OAIResponseParser
       const parsedCompletion = responseParser(completion as OpenAI.Chat.Completions.ChatCompletion)
 
       try {
@@ -213,31 +217,33 @@ class Instructor<C> {
     const makeCompletionCallWithRetries = async () => {
       try {
         const data = await makeCompletionCall()
-        const validation = await response_model.schema.safeParseAsync(data.data[0])
+        const validation = await response_model.schema.safeParseAsync(data.data[0] as unknown)
         this.log('debug', response_model.name, 'Completion validation: ', validation)
         if (!validation.success) {
-          if ('error' in validation) {
+          if ('error' in validation && validation.error instanceof ZodError) {
             lastMessage = {
               role: 'assistant',
               content: JSON.stringify(data),
             }
-            // Fix for Zod 4: use issues instead of errors, and handle error structure properly
             try {
               if (
                 validation.error &&
-                validation.error.issues &&
-                Array.isArray(validation.error.issues) &&
-                validation.error.issues.length > 0
+                Array.isArray((validation.error as { issues?: unknown[] }).issues) &&
+                (validation.error as { issues?: unknown[] }).issues!.length > 0
               ) {
-                validationIssues =
-                  fromZodError(validation.error as ZodError)?.message ??
-                  'Validation failed with valid error structure'
+                try {
+                  validationIssues =
+                    (fromZodError as (err: any) => { message: string })(validation.error)
+                      ?.message ?? 'Validation failed with issues'
+                } catch {
+                  const firstMsg = (validation.error as any).issues?.[0]?.message
+                  validationIssues = firstMsg ?? 'Validation failed with issues'
+                }
               } else {
                 validationIssues = 'Validation failed: error structure missing or invalid'
                 this.log('debug', 'Validation error structure:', JSON.stringify(validation.error))
               }
             } catch (fromZodErrorException) {
-              // Fallback: extract first issue message directly
               validationIssues = `Validation failed: ${
                 validation.error?.issues?.[0]?.message ?? 'unknown validation error'
               }`
@@ -297,7 +303,9 @@ class Instructor<C> {
     if (max_retries) {
       this.log('warn', 'max_retries is not supported for streaming completions')
     }
-    const paramsTransformer = PROVIDER_PARAMS_TRANSFORMERS?.[this.provider]?.[this.mode]
+    const paramsTransformer = (
+      PROVIDER_PARAMS_TRANSFORMERS?.[this.provider] as Record<string, unknown> | undefined
+    )?.[this.mode as unknown as string] as ((p: any) => unknown) | undefined
 
     let completionParams = withResponseModel({
       params: {
@@ -308,8 +316,8 @@ class Instructor<C> {
       mode: this.mode,
     })
 
-    if (paramsTransformer) {
-      completionParams = paramsTransformer(completionParams)
+    if (typeof paramsTransformer === 'function') {
+      completionParams = paramsTransformer(completionParams as any) as typeof completionParams
     }
 
     const streamClient = new ZodStream({
@@ -352,7 +360,7 @@ class Instructor<C> {
           if (
             this.provider !== 'OAI' &&
             completionParams?.stream &&
-            completion?.[Symbol.asyncIterator]
+            (completion as unknown as { [Symbol.asyncIterator]?: unknown })?.[Symbol.asyncIterator]
           ) {
             const [completion1, completion2] = await iterableTee(
               completion as AsyncIterable<OpenAI.ChatCompletionChunk>,
