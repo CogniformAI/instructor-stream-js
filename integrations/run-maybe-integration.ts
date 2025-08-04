@@ -16,7 +16,7 @@ import { join } from 'path'
 import { maybe } from '../packages/instructor-stream/src/dsl/maybe'
 import Instructor from '../packages/instructor-stream/src/instructor'
 import OpenAI from 'openai'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 // Load environment variables from .env file (if it exists)
 config()
@@ -141,7 +141,7 @@ async function runAllTests(): Promise<TestSuite> {
       const PersonSchema = z.object({
         name: z.string(),
         contact: z.object({
-          email: z.string().email(),
+          email: z.email(),
           phone: z.string().optional(),
         }),
         age: z.number(),

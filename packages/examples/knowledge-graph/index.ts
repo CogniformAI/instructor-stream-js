@@ -12,7 +12,7 @@ const EdgeSchema = z.object({
   source: z.number(),
   target: z.number(),
   label: z.string(),
-  color: z.string().default('black'),
+  color: z.string().prefault('black'),
 })
 
 const KnowledgeGraphSchema = z.object({
