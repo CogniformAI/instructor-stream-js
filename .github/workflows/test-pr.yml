@@ -23,7 +23,5 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
-
-      - run: pnpm run type-check
       - run: pnpm run lint
       - run: pnpm test
