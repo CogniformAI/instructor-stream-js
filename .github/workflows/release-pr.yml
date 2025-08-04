@@ -6,7 +6,10 @@ on:
       - main
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
-permissions: {}
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
 env:
   CI: true
 
