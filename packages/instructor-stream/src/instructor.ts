@@ -273,7 +273,7 @@ class Instructor<C> {
               ) {
                 try {
                   validationIssues =
-                    fromZodError(validation.error as any)?.message ??
+                    fromZodError(validation.error as unknown as ZodError)?.message ??
                     'Validation failed with issues'
                 } catch {
                   const firstMsg = validation.error.issues?.[0]?.message
@@ -291,7 +291,10 @@ class Instructor<C> {
               this.log('debug', 'Original validation error:', JSON.stringify(validation.error))
             }
             // Propagate the original ZodError without introducing a new local error.
-            throw new ValidationError(validation.error.issues, validation.error as any)
+            throw new ValidationError(
+              validation.error.issues,
+              validation.error as unknown as ZodError
+            )
           } else {
             // Propagate non-Zod validation failure by rethrowing as-is to avoid masking upstream errors.
             // Use the correct caught variable from this catch scope.
@@ -555,7 +558,7 @@ export default function createInstructor<C>(args: InstructorConfig<C>): Instruct
   return instructorWithProxy as InstructorClient<C>
 }
 
-function isGenericClient(client: any): client is GenericClient {
+function isGenericClient(client: unknown): client is GenericClient {
   return (
     typeof client === 'object' &&
     client !== null &&
