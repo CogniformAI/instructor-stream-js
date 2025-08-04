@@ -82,6 +82,7 @@ for await (const message of streamingChat) {
   console.log({ message })
   final += message.choices?.[0].delta?.content ?? ''
 }
+console.log({ final })
 
 ////////////////////////////////////////
 // content caching

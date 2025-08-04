@@ -4,10 +4,20 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+const runProviderTests = process.env.RUN_PROVIDER_TESTS === 'true'
+const runBenchmarkTests = process.env.RUN_BENCHMARK_TESTS === 'true'
+
+const projects = [
+  './packages/instructor-stream',
+  ...(runProviderTests ? ['./packages/providers'] : []),
+  ...(runBenchmarkTests ? ['./packages/benchmarks'] : []),
+]
+
 export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    passWithNoTests: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -21,35 +31,7 @@ export default defineConfig({
         'dist/**/*',
       ],
     },
-    projects: [
-      {
-        test: {
-          name: 'root',
-          include: ['tests/**/*.test.{ts,tsx}'],
-        },
-      },
-      {
-        root: './packages/instructor-stream',
-        test: {
-          name: 'instructor-stream',
-          include: ['__tests__/**/*.test.{ts,tsx}'],
-        },
-      },
-      {
-        root: './packages/providers',
-        test: {
-          name: 'providers',
-          include: ['tests/**/*.test.{ts,tsx}'],
-        },
-      },
-      {
-        root: './packages/benchmarks',
-        test: {
-          name: 'benchmarks',
-          include: ['**/*.bench.{ts,tsx}'],
-        },
-      },
-    ],
+    projects,
   },
   resolve: {
     alias: {

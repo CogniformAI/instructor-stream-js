@@ -144,7 +144,7 @@ describe(`LLMClient Gemini Provider`, () => {
       ],
     })
 
-    const toolCalls: any[] = []
+    const toolCalls: unknown[] = []
     for await (const message of completion) {
       const deltaCalls = message.choices?.[0]?.delta?.tool_calls
       if (deltaCalls) {

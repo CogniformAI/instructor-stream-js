@@ -63,13 +63,14 @@ export class AnthropicProvider extends Anthropic implements OpenAILikeClient<'an
     this.logger.log('debug', `Response: ${result}`)
 
     result.content.forEach((content) => {
-      content.type === 'tool_use' ?
+      if (content.type === 'tool_use') {
         this.logger.log('debug', `JSON Summary: ${JSON.stringify(content.input, null, 2)}`)
-      : this.logger.log(
+      } else {
+        this.logger.log(
           'debug',
-          `No JSON summary found in the response. 
-            ${JSON.stringify(content, null, 2)}`
+          `No JSON summary found in the response. ${JSON.stringify(content, null, 2)}`
         )
+      }
     })
 
     const transformedResponse = {
