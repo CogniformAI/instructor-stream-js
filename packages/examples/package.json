@@ -25,7 +25,7 @@
   "homepage": "https://github.com/cogniformai/instructor-stream-js",
   "dependencies": {
     "@cogniformai/instructor-stream": "workspace:*",
-    "@instructor-stream/llm-client": "workspace:*"
+    "@cogniformai/providers": "workspace:*"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "0.57.0",

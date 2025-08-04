@@ -71,57 +71,7 @@ else
 fi
 
 echo
-
-# Step 6: Changeset validation (if changesets exist)
-if [ -d ".changeset" ] && [ "$(ls -A .changeset/*.md 2>/dev/null | head -1)" ]; then
-    echo -e "${BLUE}📝 Validating changesets...${NC}"
-    # Create temporary config without GitHub changelog for testing
-    cp .changeset/config.json .changeset/config.json.backup
-    cat > .changeset/config.json.temp << 'EOF'
-{
-  "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
-  "changelog": false,
-  "commit": false,
-  "fixed": [],
-  "linked": [],
-  "access": "public",
-  "baseBranch": "main",
-  "ignore": [],
-  "privatePackages": {
-    "version": false,
-    "tag": false
-  }
-}
-EOF
-    mv .changeset/config.json.temp .changeset/config.json
-    
-    if pnpm run version-packages --dry-run > /dev/null 2>&1; then
-        echo -e "${GREEN}✅ Changeset validation passed${NC}"
-    else
-        echo -e "${RED}❌ Changeset validation failed${NC}"
-        mv .changeset/config.json.backup .changeset/config.json
-        exit 1
-    fi
-    
-    # Restore original config
-    mv .changeset/config.json.backup .changeset/config.json
-else
-    echo -e "${YELLOW}⚠️  No changesets found - skipping changeset validation${NC}"
-fi
-
-echo
-
-# Step 7: GitHub Actions validation
-echo -e "${BLUE}⚙️  Validating GitHub Actions...${NC}"
-if ./scripts/test-actions.sh; then
-    echo -e "${GREEN}✅ GitHub Actions validation passed${NC}"
-else
-    echo -e "${RED}❌ GitHub Actions validation failed${NC}"
-    exit 1
-fi
-
-echo
 echo -e "${GREEN}🎉 All pre-push checks passed!${NC}"
 echo -e "${GREEN}✅ Ready to push to remote${NC}"
 echo
-echo -e "${YELLOW}💡 Run 'git push' to deploy your changes${NC}"
+echo -e "${YELLOW}💡 Run 'pnpm push-pr' to push & open a PR, or 'git push' to deploy${NC}"

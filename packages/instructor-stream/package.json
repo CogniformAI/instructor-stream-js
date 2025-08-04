@@ -52,7 +52,7 @@
   "license": "MIT",
   "homepage": "https://github.com/cogniformai/instructor-stream-js",
   "dependencies": {
-    "@instructor-stream/llm-client": "workspace:*",
+    "@cogniformai/providers": "workspace:*",
     "zod-validation-error": "^3.5.3"
   },
   "peerDependencies": {
