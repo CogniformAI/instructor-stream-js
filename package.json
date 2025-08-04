@@ -41,6 +41,7 @@
     "clean:workspace": "pnpm -r clean && rm -rf node_modules",
     "prepare": "husky || true",
     "changeset": "changeset",
+    "release": "changeset",
     "version-packages": "changeset version",
     "publish-packages": "pnpm build:workspace && changeset publish",
     "test-actions": "./scripts/test-actions.sh",
