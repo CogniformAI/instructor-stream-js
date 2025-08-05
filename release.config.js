@@ -1,7 +1,3 @@
-import { createRequire } from 'node:module'
-
-const _require = createRequire(import.meta.url)
-
 export default {
   git: false,
   github: {
