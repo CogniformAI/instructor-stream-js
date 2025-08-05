@@ -41,7 +41,7 @@
     "clean:workspace": "pnpm -r clean && rm -rf node_modules",
     "prepare": "husky || true",
     "release": "pnpm build:workspace && bumpp && changelogen --release && release-it",
-    "push-pr": "pnpm pre-push && git push -u origin HEAD && gh pr create --fill --label auto-pr",
+    "push-pr": "pnpm pre-push && git push -u origin HEAD && gh pr create --fill",
     "test-actions": "./scripts/test-actions.sh",
     "pre-push": "./scripts/pre-push.sh",
     "test-release": "./scripts/test-release.sh",
