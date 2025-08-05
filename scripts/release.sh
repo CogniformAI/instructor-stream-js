@@ -3,7 +3,7 @@
 # Release script for instructor-stream-js workspace
 # Handles version bumping, changelog, git operations, and NPM publishing
 
-set -e
+set -euo pipefail
 
 echo "🚀 Starting release process..."
 echo "================================"
@@ -11,7 +11,6 @@ echo "================================"
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
@@ -39,29 +38,29 @@ echo
 
 # Step 3: Publish instructor-stream package
 echo -e "${BLUE}📦 Publishing @cogniformai/instructor-stream...${NC}"
-cd packages/instructor-stream
+pushd packages/instructor-stream > /dev/null
 if release-it --no-git --no-github; then
     echo -e "${GREEN}✅ @cogniformai/instructor-stream published${NC}"
 else
     echo -e "${RED}❌ Failed to publish @cogniformai/instructor-stream${NC}"
-    cd ../..
+    popd > /dev/null
     exit 1
 fi
-cd ../..
+popd > /dev/null
 
 echo
 
 # Step 4: Publish providers package
 echo -e "${BLUE}📦 Publishing @cogniformai/providers...${NC}"
-cd packages/providers
+pushd packages/providers > /dev/null
 if release-it --no-git --no-github; then
     echo -e "${GREEN}✅ @cogniformai/providers published${NC}"
 else
     echo -e "${RED}❌ Failed to publish @cogniformai/providers${NC}"
-    cd ../..
+    popd > /dev/null
     exit 1
 fi
-cd ../..
+popd > /dev/null
 
 echo
 echo -e "${GREEN}🎉 Release process completed successfully!${NC}"
