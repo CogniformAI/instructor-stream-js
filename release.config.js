@@ -9,7 +9,7 @@ export default {
     assets: false,
   },
   npm: {
-    publish: true,
+    publish: false, // Don't publish root package (it's private)
     tarballDir: 'release',
     ignoreScripts: false,
   },
