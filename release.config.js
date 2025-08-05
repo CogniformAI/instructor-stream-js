@@ -1,5 +1,9 @@
 export default {
-  git: false,
+  git: {
+    commitMessage: 'chore(release): release v${version}',
+    tagName: 'v${version}',
+    pushRepo: 'origin'
+  },
   github: {
     release: true,
     assets: false,
