@@ -22,8 +22,4 @@ export default {
   hooks: {
     'after:npm:release': 'rm -rf release',
   },
-  workspace: {
-    ignoreWorkspaceRootCheck: true,
-    workspaces: ['packages/instructor-stream', 'packages/providers'],
-  },
 }

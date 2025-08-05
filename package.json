@@ -40,7 +40,7 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist && pnpm -r clean",
     "clean:workspace": "pnpm -r clean && rm -rf node_modules",
     "prepare": "husky || true",
-    "release": "pnpm build:workspace && release-it",
+    "release": "./scripts/release.sh",
     "push-pr": "pnpm pre-push && git push -u origin HEAD && gh pr create --fill",
     "test-actions": "./scripts/test-actions.sh",
     "pre-push": "./scripts/pre-push.sh",
