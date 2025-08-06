@@ -361,8 +361,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
                 search_suggestion_html: groundingMetadata.searchEntryPoint?.renderedContent,
                 supports: groundingMetadata.groundingSupports?.map((support) => ({
                   text: (support.segment as unknown as { text: string })?.text,
-                  sources:
-                    support.groundingChunckIndices?.map((index) => sources[index]) ?? [],
+                  sources: support.groundingChunckIndices?.map((index) => sources[index]) ?? [],
                   confidence: support.confidenceScores,
                 })),
               },

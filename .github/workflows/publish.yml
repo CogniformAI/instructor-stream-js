@@ -9,6 +9,7 @@ jobs:
     if: >-
       startsWith(github.event.release.tag_name, 'instructor-stream@') ||
       startsWith(github.event.release.tag_name, 'providers@')
+
     runs-on: ubuntu-latest
     concurrency: ${{ github.workflow }}-${{ github.ref }}-npm
     permissions:
@@ -18,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: pnpm/action-setup@v3
-        with: { version: 9 }
+        with: { version: 10 }
       - uses: actions/setup-node@v4
         with:
           node-version: 22
