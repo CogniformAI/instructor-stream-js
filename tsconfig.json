@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "strict": false,
+    "strict": true,
     "strictNullChecks": true,
     "noEmit": true,
     "allowJs": true,
@@ -19,9 +19,9 @@
     "incremental": true,
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "paths": {
-      "@/*": ["./packages/instructor-stream/src/*", "./src/*"],
-      "@core/*": ["./src/core/*"],
-      "@providers/*": ["./src/providers/*"]
+      "@/*": ["./packages/instructor-stream/src/*"],
+      "@core/*": ["./packages/instructor-stream/src/core/*"],
+      "@providers/*": ["./packages/providers/src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
