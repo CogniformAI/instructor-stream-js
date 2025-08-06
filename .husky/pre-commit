@@ -2,6 +2,6 @@
 # bun run lint
 # bun run type-check
 
-echo "Pre-commit hooks temporarily disabled during development"
+# Pre-commit hooks temporarily disabled during development
 exit 0
 
