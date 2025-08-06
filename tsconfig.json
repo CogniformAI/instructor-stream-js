@@ -19,22 +19,12 @@
     "incremental": true,
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "paths": {
-      "@/*": [
-        "./packages/instructor-stream/src/*",
-        "./src/*"
-      ],
-      "@core/*": [
-        "./src/core/*"
-      ],
-      "@providers/*": [
-        "./src/providers/*"
-      ]
+      "@/*": ["./packages/instructor-stream/src/*", "./src/*"],
+      "@core/*": ["./src/core/*"],
+      "@providers/*": ["./src/providers/*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": [
     "node_modules",
     "dist",

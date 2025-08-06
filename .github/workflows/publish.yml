@@ -1,0 +1,33 @@
+name: Publish
+
+on:
+  release:
+    types: [created] # fires when a GitHub Release is cut by Release Please
+
+jobs:
+  publish:
+    if: >-
+      startsWith(github.event.release.tag_name, 'instructor-stream@') ||
+      startsWith(github.event.release.tag_name, 'providers@')
+    runs-on: ubuntu-latest
+    concurrency: ${{ github.workflow }}-${{ github.ref }}-npm
+    permissions:
+      contents: read
+      id-token: write # provenance for npm ≥ v9
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v3
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Publish changed workspaces
+        run: |
+          pnpm -r --filter "./packages/instructor-stream" --filter "./packages/providers" \
+            publish --access public --no-git-checks --tag latest --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

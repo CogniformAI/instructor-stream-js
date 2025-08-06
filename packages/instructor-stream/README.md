@@ -10,13 +10,13 @@ import { z } from 'zod'
 
 const schema = z.object({
   name: z.string(),
-  age: z.number()
+  age: z.number(),
 })
 
 for await (const result of instructor({
   model: 'gpt-4o-mini',
   response_model: { schema },
-  messages: [{ role: 'user', content: 'Extract: John is 25 years old' }]
+  messages: [{ role: 'user', content: 'Extract: John is 25 years old' }],
 })) {
   console.log('Streaming data:', result.data)
   console.log('Metadata:', result._meta)

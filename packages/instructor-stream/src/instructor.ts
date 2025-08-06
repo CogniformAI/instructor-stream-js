@@ -272,10 +272,11 @@ class Instructor<C> {
                 (validation.error as { issues?: unknown[] }).issues!.length > 0
               ) {
                 try {
-                  const errorForFormatting = validation.error as unknown as Parameters<typeof fromZodError>[0]
+                  const errorForFormatting = validation.error as unknown as Parameters<
+                    typeof fromZodError
+                  >[0]
                   validationIssues =
-                    fromZodError(errorForFormatting)?.message ??
-                    'Validation failed with issues'
+                    fromZodError(errorForFormatting)?.message ?? 'Validation failed with issues'
                 } catch {
                   const firstMsg = validation.error.issues?.[0]?.message
                   validationIssues = firstMsg ?? 'Validation failed with issues'
@@ -292,10 +293,7 @@ class Instructor<C> {
               this.log('debug', 'Original validation error:', JSON.stringify(validation.error))
             }
             // Propagate the original ZodError without introducing a new local error.
-            throw new ValidationError(
-              validation.error.issues,
-              validation.error
-            )
+            throw new ValidationError(validation.error.issues, validation.error)
           } else {
             // Propagate non-Zod validation failure by rethrowing as-is to avoid masking upstream errors.
             // Use the correct caught variable from this catch scope.

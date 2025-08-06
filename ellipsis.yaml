@@ -6,10 +6,10 @@ pr_review:
   confidence_threshold: 0.7
   rules:
     # Control what gets flagged during PR review with custom rules. Here are some to get you started:
-    - "Code should be DRY (Dont Repeat Yourself)"
-    - "Extremely Complicated Code Needs Comments"
-    - "Use Descriptive Variable and Constant Names"
-    - "Function and Method Naming Should Follow Consistent Patterns"
-    - "If library code changes, expect documentation to be updated"
-    - "If library code changes, check if tests are updated"
-    - "If a new `md` file is created in `docs` make sure its added to mkdocs.yml"
+    - "Code should be DRY (Don't Repeat Yourself)"
+    - 'Extremely Complicated Code Needs Comments'
+    - 'Use Descriptive Variable and Constant Names'
+    - 'Function and Method Naming Should Follow Consistent Patterns'
+    - 'If library code changes, expect documentation to be updated'
+    - 'If library code changes, check if tests are updated'
+    - 'If a new `md` file is created in `docs`, make sure it’s added to mkdocs.yml'
