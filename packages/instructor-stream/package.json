@@ -53,7 +53,7 @@
   "homepage": "https://github.com/cogniformai/instructor-stream-js",
   "dependencies": {
     "@cogniformai/providers": "workspace:*",
-    "zod-validation-error": "^2.4.0"
+    "zod-validation-error": "catalog:"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": ">=0.57.0",
