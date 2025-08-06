@@ -7,8 +7,8 @@ on:
 jobs:
   publish:
     if: >-
-      startsWith(github.event.release.tag_name, 'instructor-stream@') ||
-      startsWith(github.event.release.tag_name, 'providers@')
+      startsWith(github.event.release.tag_name, 'instructor-stream@') || startsWith(github.event.release.tag_name, 'providers@')
+
 
     runs-on: ubuntu-latest
     concurrency: ${{ github.workflow }}-${{ github.ref }}-npm
