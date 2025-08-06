@@ -27,7 +27,7 @@ echo
 
 # Step 2: Handle version bumping, changelog, and git operations at root level
 echo -e "${BLUE}📝 Updating version and changelog...${NC}"
-if release-it --no-npm; then
+if release-it; then
     echo -e "${GREEN}✅ Version and changelog updated${NC}"
 else
     echo -e "${RED}❌ Version update failed${NC}"
