@@ -1,10 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "import",
-    "typescript",
-    "unicorn"
-  ],
+  "plugins": ["import", "typescript", "unicorn"],
   "categories": {
     "correctness": "off"
   },
@@ -52,10 +48,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "*.test.ts",
-        "*.spec.ts"
-      ],
+      "files": ["*.test.ts", "*.spec.ts"],
       "rules": {
         "getter-return": "off",
         "no-class-assign": "off",

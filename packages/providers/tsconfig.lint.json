@@ -7,9 +7,6 @@
     },
     "rootDir": "."
   },
-  "include": [
-    "tests", "src", "turbo", "tsup.config.ts", "examples"],
-  "exclude": ["node_modules", "dist",
-    ".eslintrc.cjs"
-  ]
+  "include": ["tests", "src", "turbo", "tsup.config.ts", "examples"],
+  "exclude": ["node_modules", "dist", ".eslintrc.cjs"]
 }

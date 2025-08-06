@@ -10,7 +10,7 @@ theme:
   name: material
   icon:
     repo: fontawesome/brands/github
-    edit: material/pencil 
+    edit: material/pencil
     view: material/eye
     theme:
     admonition:
@@ -54,18 +54,18 @@ theme:
     - toc.follow
     # - toc.integrate
   palette:
-      - scheme: default
-        primary: black 
-        accent: indigo
-        toggle:
-          icon: material/brightness-7
-          name: Switch to dark mode
-      - scheme: slate
-        primary: black
-        accent: indigo
-        toggle:
-          icon: material/brightness-4
-          name: Switch to light mode
+    - scheme: default
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono
@@ -99,7 +99,7 @@ markdown_extensions:
   - pymdownx.magiclink:
       normalize_issue_symbols: true
       repo_url_shorthand: true
-      user: jxnl 
+      user: jxnl
       repo: instructor
   - pymdownx.mark
   - pymdownx.smartsymbols
@@ -121,30 +121,30 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
 nav:
-  - Introduction: 
-    - Welcome To Instructor: 'index.md'
-    - Why use Instructor?: 'why.md'
-    - Schema: 'concepts/schema.md'
-    - Patching: 'concepts/patching.md'
-    - Streaming: 'concepts/streaming.md'
-    - Logging: 'concepts/logging.md'
-    - Prompting Tips: 'tips/prompting.md'
-    - Philosophy: 'concepts/philosophy.md'
-    - Help with Instructor: 'help.md'
-    - Installation: 'installation.md'
-    - Contributing: 'contributing.md'
+  - Introduction:
+      - Welcome To Instructor: 'index.md'
+      - Why use Instructor?: 'why.md'
+      - Schema: 'concepts/schema.md'
+      - Patching: 'concepts/patching.md'
+      - Streaming: 'concepts/streaming.md'
+      - Logging: 'concepts/logging.md'
+      - Prompting Tips: 'tips/prompting.md'
+      - Philosophy: 'concepts/philosophy.md'
+      - Help with Instructor: 'help.md'
+      - Installation: 'installation.md'
+      - Contributing: 'contributing.md'
   - Cookbook:
-    - Overview: 'examples/index.md'
-    - Classification: 'examples/classification.md'
-    - Query Decomposition: 'examples/query_decomposition.md'
-    - Action Item and Dependency Mapping: 'examples/action_items.md'
-    - Self Correction: 'examples/self_correction.md'
-    - Citing Sources: 'examples/validated_citations.md'
-    - Content Moderation: 'examples/content_moderation.md'
-    - Expanding Search Queries (RAG): 'examples/segmenting_search.md'
+      - Overview: 'examples/index.md'
+      - Classification: 'examples/classification.md'
+      - Query Decomposition: 'examples/query_decomposition.md'
+      - Action Item and Dependency Mapping: 'examples/action_items.md'
+      - Self Correction: 'examples/self_correction.md'
+      - Citing Sources: 'examples/validated_citations.md'
+      - Content Moderation: 'examples/content_moderation.md'
+      - Expanding Search Queries (RAG): 'examples/segmenting_search.md'
   - Blog:
-    - "blog/index.md"
-  
+      - 'blog/index.md'
+
 plugins:
   - social
   - search:
@@ -160,12 +160,12 @@ plugins:
             show_bases: true
   - blog:
       enabled: !ENV CI
-      blog_dir: "blog"
+      blog_dir: 'blog'
       blog_toc: true
       post_dir: blog/posts
       post_date_format: yyyy/MM/dd
-      post_url_format: "{date}/{slug}"
-      authors_file: "{blog}/.authors.yml"
+      post_url_format: '{date}/{slug}'
+      authors_file: '{blog}/.authors.yml'
 extra:
   analytics:
     provider: google
@@ -178,15 +178,17 @@ extra:
           data: 1
           note: >-
             Thanks for your feedback!
+
+
         - icon: material/emoticon-sad-outline
           name: This page could be improved
           data: 0
-          note: >- 
-            Thanks for your feedback! Help us improve this page by
-            using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+          note: >-
+            Thanks for your feedback! Help us improve this page by using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+
+
   social:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/jxnlco
     - icon: fontawesome/brands/github
       link: https://github.com/jxnl
-copyright: Copyright &copy; 2024 Jason Liu

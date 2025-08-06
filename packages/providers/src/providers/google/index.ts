@@ -45,7 +45,6 @@ interface ModelConfig {
   systemInstruction?: string | Content | undefined
 }
 interface GroundingMetadataExtended extends GroundingMetadata {
-  webSearchQueries?: string[]
   groundingChunks?: Array<{
     web?: {
       uri: string
@@ -317,14 +316,16 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
       if (groundingMetadata.groundingSupports?.length) {
         contentWithGrounding += '\n\n**Grounded Segments**\n'
         groundingMetadata.groundingSupports.forEach((support) => {
-          const sourceIndices = support.groundingChunkIndices
-          const sourceTitles = sourceIndices
-            .map((index) => sources[index]?.title)
-            .filter(Boolean)
-            .join(', ')
+          const sourceIndices = support.groundingChunckIndices
+          const sourceTitles =
+            sourceIndices
+              ?.map((index) => sources[index]?.title)
+              .filter(Boolean)
+              .join(', ') ?? ''
           const avgConfidence =
-            support.confidenceScores.reduce((a, b) => a + b, 0) / support.confidenceScores.length
-          contentWithGrounding += `> "${support.segment.text}"\n`
+            (support.confidenceScores?.reduce((a, b) => a + b, 0) ?? 0) /
+            (support.confidenceScores?.length || 1)
+          contentWithGrounding += `> "${(support.segment as unknown as { text: string })?.text}"\n`
           contentWithGrounding += `> Sources: ${sourceTitles} (Confidence: ${(avgConfidence * 100).toFixed(1)}%)\n\n`
         })
       }
@@ -359,8 +360,8 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
                 sources: sources,
                 search_suggestion_html: groundingMetadata.searchEntryPoint?.renderedContent,
                 supports: groundingMetadata.groundingSupports?.map((support) => ({
-                  text: support.segment.text,
-                  sources: support.groundingChunkIndices.map((index) => sources[index]),
+                  text: (support.segment as unknown as { text: string })?.text,
+                  sources: support.groundingChunckIndices?.map((index) => sources[index]) ?? [],
                   confidence: support.confidenceScores,
                 })),
               },
@@ -436,7 +437,7 @@ export class GoogleProvider extends GoogleGenerativeAI implements OpenAILikeClie
         return transformedResult as ExtendedCompletionGoogle
       }
     } catch (error) {
-      this.logger.log(this.logLevel, 'Error in Google API request:', error)
+      this.logger.log(this.logLevel, 'Error in Google API request: ' + error)
       throw error
     }
   }

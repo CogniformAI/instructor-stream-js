@@ -321,7 +321,7 @@ export class AnthropicProvider extends Anthropic implements OpenAILikeClient<'an
         return transformedResult as ExtendedCompletionAnthropic
       }
     } catch (error) {
-      this.logger.error('Error in Anthropic API request:', error)
+      this.logger.error('Error in Anthropic API request: ' + error)
       throw error
     }
   }

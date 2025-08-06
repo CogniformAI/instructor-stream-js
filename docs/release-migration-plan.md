@@ -3,8 +3,8 @@
 This document describes how we will migrate the **instructor-stream-js** monorepo from Changesets-based releases to the UnJS toolchain (**bumpp + changelogen + release-it + release-action**) while keeping:
 
 - A **single shared semantic version** for the whole workspace
-- **Only two public packages** published to npm:  
-  - `@cogniformai/instructor-stream-js`  
+- **Only two public packages** published to npm:
+  - `@cogniformai/instructor-stream-js`
   - `@cogniformai/providers`
 
 ---
@@ -61,7 +61,7 @@ import { defineConfig } from 'bumpp'
 export default defineConfig({
   tag: true,
   commit: 'release: v%s',
-  push: false
+  push: false,
 })
 ```
 
@@ -71,9 +71,9 @@ export default defineConfig({
 import { defineConfig } from 'changelogen'
 export default defineConfig({
   github: {
-    repo: 'cogniformai/instructor-stream-js'
+    repo: 'cogniformai/instructor-stream-js',
   },
-  release: true
+  release: true,
 })
 ```
 
@@ -85,25 +85,22 @@ module.exports = {
   npm: {
     publish: true,
     tarballDir: 'release',
-    ignoreScripts: false
+    ignoreScripts: false,
   },
   plugins: {
     '@release-it/conventional-changelog': {
-      preset: 'conventionalcommits'
-    }
+      preset: 'conventionalcommits',
+    },
   },
   pkgFiles: ['package.json'],
   hooks: {
-    'after:npm:release': 'rm -rf release'
+    'after:npm:release': 'rm -rf release',
   },
   workspace: {
     ignoreWorkspaceRootCheck: true,
     // Only publish selected workspaces
-    workspaces: [
-      'packages/instructor-stream',
-      'packages/providers'
-    ]
-  }
+    workspaces: ['packages/instructor-stream', 'packages/providers'],
+  },
 }
 ```
 
@@ -140,7 +137,7 @@ jobs:
       - run: pnpm run release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GH_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ### 6. Husky Pre-Push
@@ -154,7 +151,7 @@ pnpm pre-push
 
 ### 7. Version Propagation
 
-- Root `package.json` keeps the actual version (e.g. `1.2.0`).  
+- Root `package.json` keeps the actual version (e.g. `1.2.0`).
 - Package `package.json` files set `"version": "workspace:*"` so bumpp only edits the root.
 
 ### 8. Secrets
@@ -172,6 +169,6 @@ Reverting is easy: restore the `.changeset` directory and previous workflows, re
 
 ## Next Steps
 
-1. Merge this plan.  
-2. Implement the file additions/removals.  
-3. Run `pnpm release --dry-run` locally once to validate.
+1. Merge this plan.
+2. Implement the file additions/removals.
+3. Run `pnpm release --dry-run` locally once to validate. As an optional next step, you can push to a temporary branch and run the `Release` workflow in dry-run mode to ensure that CI permissions and secrets are correctly configured prior to creating the release tag.

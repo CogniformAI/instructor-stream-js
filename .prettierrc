@@ -17,15 +17,8 @@
     "",
     "^[./]"
   ],
-  "importOrderParserPlugins": [
-    "typescript",
-    "jsx",
-    "decorators-legacy"
-  ],
-  "plugins": [
-    "@ianvs/prettier-plugin-sort-imports",
-    "@prettier/plugin-oxc"
-  ],
+  "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "@prettier/plugin-oxc"],
   "printWidth": 100,
   "proseWrap": "never",
   "quoteProps": "as-needed",

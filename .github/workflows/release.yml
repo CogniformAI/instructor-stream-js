@@ -1,52 +1,24 @@
-name: Release
+name: Release Please
 
 on:
   push:
-    branches: [main]
+    branches: [main] # a merge to main triggers the bot
+  workflow_dispatch: {} # manual button if you ever need it
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: write
   pull-requests: write
-  packages: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: Publish
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: google-github-actions/release-please-action@v4.1.2 # or @<commit-SHA>
+        id: release
         with:
-          fetch-depth: 0
-          fetch-tags: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: latest
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.17.1
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Run release
-        run: pnpm run release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          config-file: release-please-config.json
+          command: manifest

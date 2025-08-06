@@ -53,11 +53,11 @@
     "openai": "^5.10.1"
   },
   "devDependencies": {
-    "@google/genai": "^1.10.0",
-    "@types/node": "^22.16.5",
-    "ramda": "^0.31.3",
-    "tsup": "^8.5.0",
-    "typescript": "^5.8.3",
-    "zod": "^4.0.5"
+    "@google/genai": "catalog:",
+    "@types/node": "catalog:",
+    "ramda": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
   }
 }

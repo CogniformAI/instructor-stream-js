@@ -1,20 +1,54 @@
-node_modules
-.next
-dist
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.turbo/
+.next/
+
+# Generated files
 *.tsbuildinfo
-*.gitignore
-*.svg
-*.sql
+coverage/
+
+# Binary files
+*.png
 *.jpg
 *.jpeg
 *.gif
 *.ico
-*.sh
-Dockerfile
-.env
-.env.*
-LICENSE
-*.log
-.dockerignore
-*.toml
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot
 
+# Large data files
+*.json
+!package.json
+!tsconfig*.json
+!release-please-config.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# HTML files (usually generated)
+*.html
+
+# Other
+entityGraph.html
+integrations/results/
