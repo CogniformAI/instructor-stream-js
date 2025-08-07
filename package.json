@@ -29,7 +29,17 @@
     "test": "vitest run",
     "build": "pnpm -r run build",
     "publish:dry-run": "dotenv -- bash -c 'pnpm run format && pnpm run lint && pnpm run test && pnpm run build'",
-    "publish:local": "dotenv -- pnpm -r publish --access public --no-git-checks"
+    "publish:local": "dotenv -- pnpm -r publish --access public --no-git-checks",
+    "publish": "bash ./publish-now.sh",
+    "version:bump": "bumpp",
+    "version:patch": "bumpp patch",
+    "version:minor": "bumpp minor",
+    "version:major": "bumpp major",
+    "release:patch": "pnpm run version:patch && pnpm run publish",
+    "release:minor": "pnpm run version:minor && pnpm run publish",
+    "release:major": "pnpm run version:major && pnpm run publish",
+    "clean": "pnpm -r run clean",
+    "dev": "pnpm -r run dev"
   },
   "repository": {
     "type": "git",
@@ -55,7 +65,6 @@
   },
   "homepage": "https://github.com/cogniformai/instructor-stream-js#readme",
   "dependencies": {
-    "llm-polyglot": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -64,6 +73,7 @@
     "@prettier/plugin-oxc": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "bumpp": "^10.2.2",
     "dotenv": "catalog:",
     "dotenv-cli": "^10.0.0",
     "openai": "catalog:",
