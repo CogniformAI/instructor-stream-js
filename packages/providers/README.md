@@ -1,27 +1,32 @@
 <div align="center">
-  <h1>llm-polyglot</h1>
+  <h1>@cogniformai/providers</h1>
 </div>
 <br />
 
-<p align="center"><i>> Universal client for LLM providers with OpenAI-compatible interface</i></p>
+<p align="center"><i>Universal LLM client for instructor-stream with OpenAI-compatible interface</i></p>
 <br />
 
 <div align="center">
-  <a aria-label="NPM version" href="https://www.npmjs.com/package/llm-polyglot">
-    <img alt="llm-polyglot" src="https://img.shields.io/npm/v/llm-polyglot.svg?style=flat-square&logo=npm&labelColor=000000&label=llm-polyglot">
+  <a aria-label="NPM version" href="https://www.npmjs.com/package/@cogniformai/providers">
+    <img alt="@cogniformai/providers" src="https://img.shields.io/npm/v/@cogniformai/providers.svg?style=flat-square&logo=npm&labelColor=000000&label=@cogniformai/providers">
   </a>
-   <a aria-label="Island AI" href="https://github.com/hack-dance/island-ai">
-    <img alt="Island AI" src="https://img.shields.io/badge/Part of Island AI-000000.svg?style=flat-square&labelColor=000000&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTQuNjkgMjU5LjI0Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICAgIHN0cm9rZS13aWR0aDogMHB4OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0ibTEwMC42MSwxNzguNDVoMTMuOTd2LTE5LjYyaC0xMy45N3YxOS42MlptMC0xMDguOTZ2MjMuNzJoMTMuOTd2LTIzLjcyaC0xMy45N1ptLTIuNzksMTg5Ljc1aDE5LjU2bC0yLjc5LTI4LjkyaC0xMy45N2wtMi43OSwyOC45MlptMi43OS0xMzcuNjJoMTMuOTd2LTE5LjYyaC0xMy45N3YxOS42MlptMCwyOC40MWgxMy45N3YtMTkuNjJoLTEzLjk3djE5LjYyWiIvPgogICAgICAgIDxjaXJjbGUgY2xhc3M9ImNscy0xIiBjeD0iOTQuNSIgY3k9IjY5LjExIiByPSIxNC4yNCIvPgogICAgICAgIDxjaXJjbGUgY2xhc3M9ImNscy0xIiBjeD0iMTIwLjE5IiBjeT0iNjkuMTEiIHI9IjE0LjI0Ii8+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJtMjE0LjI1LDYyLjU5Yy0uNzktLjc1LTE4Ljc1LTE3LjQ4LTQ5LjQ2LTE5LjA0bDE1Ljc1LTUuODhjLTEuNjctMi40Ni00LjAxLTQuMTgtNi4zNS02LS4yMy0uMTgtLjAzLS41OC4yMy0uNTcsMy40NS4xNyw2LjgyLDEuNzUsMTAuMTIsMi42OCwxLjA2LjMsMi4wOS43MiwzLjA4LDEuMjRsMTkuNDUtNy4yNmMuNTMtLjIuOS0uNzEuOTEtMS4yOHMtLjMyLTEuMDktLjg1LTEuMzJjLTEuMDQtLjQ0LTI1Ljk2LTEwLjc2LTU3LjM1Ljk2LTEuMTkuNDQtMi4zNy45MS0zLjU0LDEuNDFsMTMuNTEtMTMuMTNjLTIuMTgtLjY3LTQuNC0uOTUtNi42My0xLjQ0LS4zOC0uMDgtLjQxLS43NSwwLS44MSwzLjEyLS40NCw2LjU0LS45OCw5Ljg3LS45MWw5LjEzLTguODdjLjQxLS40LjUzLTEuMDEuMzItMS41My0uMjItLjUzLS44LS43OS0xLjMxLS44Ny0uOTYuMDEtMjMuNy40OS00My45NiwyMC4xOCwwLDAsMCwwLDAsMGwtMjAuMDcsMTkuNzYtMTkuNTgtMTkuNzZDNjcuMjUuNDksNDQuNTEuMDEsNDMuNTUsMGMtLjU2LjA1LTEuMDkuMzQtMS4zMS44Ny0uMjIuNTMtLjA5LDEuMTQuMzIsMS41M2w1LjY3LDUuNTFjNS4xLjIyLDEwLjE0LjcxLDE0LjQzLDQsLjQyLjMyLjIsMS4xMi0uMzkuOTMtMi41OC0uODYtNi4wMi0uODctOS4zOS0uNGwxNS41NiwxNS4xMmMtMS4xNy0uNS0yLjM2LS45Ny0zLjU0LTEuNDEtMzEuNC0xMS43Mi01Ni4zLTEuNDEtNTcuMzUtLjk2LS41Mi4yMi0uODYuNzUtLjg1LDEuMzJzLjM3LDEuMDguOTEsMS4yOGwxMS4wNiw0LjEzYzQuNDYtMS40OCw4LjctMi4zOSwxMC40Mi0yLjU1LjU3LS4wNS41Ni43My4xMi45MS0xLjg2Ljc0LTMuNjEsMi4yOS01LjI3LDMuNjFsMjUuOTQsOS42OEMxOS4xOCw0NS4xMSwxLjIyLDYxLjg0LjQzLDYyLjU5Yy0uNDEuMzktLjU1LDEtLjM0LDEuNTMuMjEuNTMuNzMuODgsMS4zLjg4aDEzLjljLjE1LS4wOS4zMS0uMTkuNDUtLjI4LDUuNzktMy41OCwxMS45NC02LjE5LDE4LjE4LTguODcuNjgtLjI5LDEuMjguNjQuNiwxLjAzLTMuNTQsMi4wMy02LjU0LDUuMS05LjQ5LDguMTNoMTQuNTljNC4yNy0zLjExLDguODItNS43LDEzLjE2LTguNy41OS0uNDEsMS4yMi40OS43NS45Ny0yLjM1LDIuMzgtNC40NCw1LjA2LTYuNTMsNy43NGgxMTYuODNjLS45OS0zLjE5LTIuMDItNi4zNS00LjEzLTkuMDQtLjMzLS40Mi4xOC0uOTYuNTktLjU5LDMuMzYsMy4wMSw3LjM3LDYuMTUsMTEuMDIsOS42M2gxNS4zNGMtMS4zOC0zLjUyLTMuMDUtNi44Mi01LjcxLTguNjctLjU0LS4zNy0uMDgtMS4xNS41MS0uODcsNC40LDIuMDgsOC4yNyw1Ljg2LDExLjY1LDkuNTRoMjAuMmMuNTcsMCwxLjA5LS4zNSwxLjMtLjg4LjIxLS41My4wOC0xLjE0LS4zNC0xLjUzWiIvPgogICAgICA8L2c+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0ibTEwMS4wNiwyMjEuMzNoMTMuOTd2LTMzLjZoLTEzLjk3djMzLjZaIi8+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=">
+  <a aria-label="License" href="https://github.com/cogniformai/instructor-stream-js/blob/main/LICENSE">
+    <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-000000.svg?style=flat-square&labelColor=000000">
   </a>
-  <a aria-label="Made by hack.dance" href="https://hack.dance">
-    <img alt="docs" src="https://img.shields.io/badge/MADE%20BY%20HACK.DANCE-000000.svg?style=flat-square&labelColor=000000">
-  </a>
-  <a aria-label="Twitter" href="https://twitter.com/dimitrikennedy">
-    <img alt="follow" src="https://img.shields.io/twitter/follow/dimitrikennedy?style=social&labelColor=000000">
+  <a aria-label="GitHub" href="https://github.com/cogniformai/instructor-stream-js">
+    <img alt="GitHub" src="https://img.shields.io/badge/GitHub-instructor--stream--js-000000.svg?style=flat-square&labelColor=000000&logo=github">
   </a>
 </div>
 
-`llm-polyglot` extends the OpenAI SDK to provide a consistent interface across different LLM providers. Use the same familiar OpenAI-style API with Anthropic, Google, and others.
+The `@cogniformai/providers` package provides a universal LLM client that extends the OpenAI SDK to offer a consistent interface across different LLM providers. Use the same familiar OpenAI-style API with Anthropic, Google, and others while maintaining compatibility with the instructor-stream ecosystem.
+
+## Features
+
+- **Universal Interface**: Use OpenAI SDK patterns with any supported provider
+- **Streaming Support**: Full streaming capabilities across all providers
+- **Type Safety**: Complete TypeScript support with proper type inference
+- **Tool Calling**: Function/tool calling support where available
+- **Consistent Responses**: Normalized response format across providers
 
 ## Provider Support
 
@@ -30,229 +35,262 @@
 | Provider API | Status | Chat | Basic Stream | Functions/Tool calling | Function streaming | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | OpenAI | ✅ | ✅ | ✅ | ✅ | ✅ | Direct SDK proxy |
-| Anthropic | ✅ | ✅ | ✅ | ❌ | ❌ | Claude models |
+| Anthropic | ✅ | ✅ | ✅ | ✅ | ✅ | Claude models |
 | Google | ✅ | ✅ | ✅ | ✅ | ❌ | Gemini models + context caching |
-| Azure | 🚧 | ✅ | ✅ | ❌ | ❌ | OpenAI model hosting |
-| Cohere | ❌ | - | - | - | - | Not supported |
-| AI21 | ❌ | - | - | - | - | Not supported |
 
-Stream Types:
+**OpenAI-Compatible Providers:**
 
-- **Basic Stream**: Simple text streaming
-- **Partial JSON Stream**: Progressive JSON object construction during streaming
-- **Function Stream**: Streaming function/tool calls and their results
+These providers use the OpenAI SDK format and work directly with the OpenAI client configuration:
 
-<br />
-
-**OpenAI-Compatible Hosting Providers:**
-
-These providers use the OpenAI SDK format, so they work directly with the OpenAI client configuration:
-
-| Provider   | How to Use                                 | Available Models                     |
+| Provider   | Configuration                              | Available Models                     |
 | ---------- | ------------------------------------------ | ------------------------------------ |
-| Together   | Use OpenAI client with Together base URL   | Mixtral, Llama, OpenChat, Yi, others |
-| Anyscale   | Use OpenAI client with Anyscale base URL   | Mistral, Llama, others               |
-| Perplexity | Use OpenAI client with Perplexity base URL | pplx-\* models                       |
-| Replicate  | Use OpenAI client with Replicate base URL  | Various open models                  |
+| Together   | Set base URL to Together endpoint          | Mixtral, Llama, OpenChat, Yi, others |
+| Anyscale   | Set base URL to Anyscale endpoint          | Mistral, Llama, others               |
+| Perplexity | Set base URL to Perplexity endpoint        | pplx-* models                        |
+| Replicate  | Set base URL to Replicate endpoint         | Various open models                  |
 
 ## Installation
 
 ```bash
-# Base installation
-npm install llm-polyglot openai
+# Install the providers package
+npm install @cogniformai/providers
 
-# Provider-specific SDKs (as needed)
-npm install @anthropic-ai/sdk    # For Anthropic
-npm install @google/generative-ai # For Google/Gemini
+# Install required peer dependencies
+npm install openai  # Always required
+
+# Provider-specific SDKs (install as needed)
+npm install @anthropic-ai/sdk      # For Anthropic
+npm install @google/generative-ai  # For Google/Gemini
 ```
 
 ## Basic Usage
 
 ```typescript
-import { createLLMClient } from 'llm-polyglot'
+import { createLLMClient } from '@cogniformai/providers'
 
 // Initialize provider-specific client
 const client = createLLMClient({
-  provider: 'anthropic', // or "google", "openai", etc.
+  provider: 'anthropic', // 'openai' | 'anthropic' | 'google'
+  apiKey: 'your-api-key', // Optional if set via environment
 })
 
 // Use consistent OpenAI-style interface
 const completion = await client.chat.completions.create({
-  model: 'claude-3-opus-20240229',
+  model: 'claude-3-5-sonnet-20241022',
+  messages: [{ role: 'user', content: 'Hello!' }],
+  max_tokens: 1000,
+})
+
+console.log(completion.choices[0].message.content)
+```
+
+## Streaming
+
+```typescript
+const stream = await client.chat.completions.create({
+  model: 'claude-3-5-sonnet-20241022',
+  messages: [{ role: 'user', content: 'Write a poem about TypeScript' }],
+  stream: true,
+  max_tokens: 1000,
+})
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content
+  if (content) {
+    process.stdout.write(content)
+  }
+}
+```
+
+## Provider-Specific Usage
+
+### OpenAI
+
+```typescript
+const client = createLLMClient({
+  provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY,
+})
+
+const completion = await client.chat.completions.create({
+  model: 'gpt-4-turbo',
   messages: [{ role: 'user', content: 'Hello!' }],
   max_tokens: 1000,
 })
 ```
 
-## Provider-Specific Features
-
 ### Anthropic
 
-The llm-polyglot library provides support for Anthropic's API, including standard chat completions, streaming chat completions, and function calling. Both input paramaters and responses match exactly those of the OpenAI SDK - for more detailed documentation please see the OpenAI docs: [https://platform.openai.com/docs/api-reference](https://platform.openai.com/docs/api-reference)
-
-The anthropic sdk is required when using the anthropic provider - we only use the types provided by the sdk.
-
-```bash
-  pnpm add @anthropic-ai/sdk
-```
-
 ```typescript
-const client = createLLMClient({ provider: 'anthropic' })
-
-// Standard completion
-const response = await client.chat.completions.create({
-  model: 'claude-3-opus-20240229',
-  messages: [{ role: 'user', content: 'Hello!' }],
+const client = createLLMClient({
+  provider: 'anthropic',
+  apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
-// Streaming
-const stream = await client.chat.completions.create({
-  model: 'claude-3-opus-20240229',
+const completion = await client.chat.completions.create({
+  model: 'claude-3-5-sonnet-20241022',
   messages: [{ role: 'user', content: 'Hello!' }],
-  stream: true,
-})
-
-for await (const chunk of stream) {
-  process.stdout.write(chunk.choices[0]?.delta?.content ?? '')
-}
-
-// Tool/Function calling
-const result = await client.chat.completions.create({
-  model: 'claude-3-opus-20240229',
-  messages: [{ role: 'user', content: 'Analyze this data' }],
-  tools: [
-    {
-      type: 'function',
-      function: {
-        name: 'analyze',
-        parameters: {
-          type: 'object',
-          properties: {
-            sentiment: { type: 'string' },
-          },
-        },
-      },
-    },
-  ],
+  max_tokens: 1000,
 })
 ```
 
 ### Google (Gemini)
 
-The llm-polyglot library provides support for Google's Gemini API including:
-
-- Standard chat completions with OpenAI-compatible interface
-- Streaming chat completions with delta updates
-- Function/tool calling with automatic schema conversion
-- Context caching for token optimization (requires paid API key)
-- Grounding support with Google Search integration
-- Safety settings and model generation config
-- Session management for stateful conversations
-- Automatic response transformation with source attribution
-
-The Google generative-ai sdk is required when using the google provider:
-
-```bash
-  pnpm add @google/generative-ai
-```
-
-To use any of the above functionality, the schema matches OpenAI's format since we translate the OpenAI params spec into Gemini's model spec.
-
-#### Basic Usage
-
 ```typescript
-const client = createLLMClient({ provider: 'google' })
+const client = createLLMClient({
+  provider: 'google',
+  apiKey: process.env.GOOGLE_AI_API_KEY,
+})
 
-// Standard completion
 const completion = await client.chat.completions.create({
-  model: 'gemini-1.5-flash-latest',
+  model: 'gemini-1.5-pro',
   messages: [{ role: 'user', content: 'Hello!' }],
   max_tokens: 1000,
 })
-
-// With grounding (Google Search)
-const groundedCompletion = await client.chat.completions.create({
-  model: 'gemini-1.5-flash-latest',
-  messages: [{ role: 'user', content: 'What are the latest AI developments?' }],
-  groundingThreshold: 0.7,
-  max_tokens: 1000,
-})
-
-// With safety settings
-const safeCompletion = await client.chat.completions.create({
-  model: 'gemini-1.5-flash-latest',
-  messages: [{ role: 'user', content: 'Tell me a story' }],
-  additionalProperties: {
-    safetySettings: [
-      {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-    ],
-  },
-})
-
-// With session management
-const sessionCompletion = await client.chat.completions.create({
-  model: 'gemini-1.5-flash-latest',
-  messages: [{ role: 'user', content: "Remember this: I'm Alice" }],
-  additionalProperties: {
-    sessionId: 'user-123',
-  },
-})
 ```
 
-#### Context Caching
-
-[Context Caching](https://ai.google.dev/gemini-api/docs/caching) is a feature specific to Gemini that helps cut down on duplicate token usage by allowing you to create a cache with a TTL:
-
-```typescript
-// Create a cache
-const cache = await client.cacheManager.create({
-  model: 'gemini-1.5-flash-8b',
-  messages: [{ role: 'user', content: 'Context to cache' }],
-  ttlSeconds: 3600, // Cache for 1 hour
-})
-
-// Use the cached context
-const completion = await client.chat.completions.create({
-  model: 'gemini-1.5-flash-8b',
-  messages: [{ role: 'user', content: 'Follow-up question' }],
-  additionalProperties: {
-    cacheName: cache.name,
-  },
-})
-```
-
-#### Function/Tool Calling
+## Function/Tool Calling
 
 ```typescript
 const completion = await client.chat.completions.create({
-  model: 'gemini-1.5-flash-latest',
-  messages: [{ role: 'user', content: 'Analyze this data' }],
+  model: 'claude-3-5-sonnet-20241022',
+  messages: [
+    { role: 'user', content: 'What is the weather like in San Francisco?' }
+  ],
   tools: [
     {
       type: 'function',
       function: {
-        name: 'analyze',
+        name: 'get_weather',
+        description: 'Get current weather for a location',
         parameters: {
           type: 'object',
           properties: {
-            sentiment: { type: 'string' },
+            location: {
+              type: 'string',
+              description: 'The city and state, e.g. San Francisco, CA'
+            }
           },
-        },
-      },
-    },
+          required: ['location']
+        }
+      }
+    }
   ],
-  tool_choice: {
-    type: 'function',
-    function: { name: 'analyze' },
-  },
+  tool_choice: 'auto'
 })
+
+// Handle tool calls
+const toolCall = completion.choices[0].message.tool_calls?.[0]
+if (toolCall && toolCall.function.name === 'get_weather') {
+  const args = JSON.parse(toolCall.function.arguments)
+  // Call your weather function...
+}
 ```
+
+## Configuration Options
+
+```typescript
+interface LLMClientConfig {
+  provider: 'openai' | 'anthropic' | 'google'
+  apiKey?: string           // API key (can also use environment variables)
+  baseURL?: string          // Custom base URL for OpenAI-compatible providers
+  organization?: string     // OpenAI organization (OpenAI only)
+  project?: string          // OpenAI project (OpenAI only)
+  defaultHeaders?: Record<string, string>  // Custom headers
+  maxRetries?: number       // Max retry attempts (default: 2)
+  timeout?: number          // Request timeout in ms (default: 10 minutes)
+}
+```
+
+## Environment Variables
+
+The client will automatically use these environment variables if no `apiKey` is provided:
+
+- **OpenAI**: `OPENAI_API_KEY`
+- **Anthropic**: `ANTHROPIC_API_KEY`
+- **Google**: `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY`
 
 ## Error Handling
 
+```typescript
+import { createLLMClient } from '@cogniformai/providers'
+
+const client = createLLMClient({ provider: 'anthropic' })
+
+try {
+  const completion = await client.chat.completions.create({
+    model: 'claude-3-5-sonnet-20241022',
+    messages: [{ role: 'user', content: 'Hello!' }],
+    max_tokens: 1000,
+  })
+} catch (error) {
+  if (error.status === 401) {
+    console.error('Authentication failed - check your API key')
+  } else if (error.status === 429) {
+    console.error('Rate limit exceeded - please retry later')
+  } else {
+    console.error('Request failed:', error.message)
+  }
+}
 ```
 
+## Integration with instructor-stream
+
+This package is designed to work seamlessly with the instructor-stream ecosystem:
+
+```typescript
+import { createLLMClient } from '@cogniformai/providers'
+import { createInstructor } from '@cogniformai/instructor-stream'
+import { z } from 'zod'
+
+const client = createLLMClient({ provider: 'anthropic' })
+const instructor = createInstructor(client)
+
+const UserSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+  email: z.string().email(),
+})
+
+const user = await instructor.chat.completions.create({
+  model: 'claude-3-5-sonnet-20241022',
+  response_model: UserSchema,
+  messages: [
+    { role: 'user', content: 'Create a user profile for John Doe, age 30' }
+  ],
+})
 ```
+
+## TypeScript Support
+
+The package includes full TypeScript support with proper type inference for all providers:
+
+```typescript
+import type { ChatCompletion, ChatCompletionChunk } from '@cogniformai/providers'
+
+// Types are automatically inferred based on the streaming parameter
+const completion: ChatCompletion = await client.chat.completions.create({
+  model: 'claude-3-5-sonnet-20241022',
+  messages: [{ role: 'user', content: 'Hello!' }],
+  stream: false, // ChatCompletion
+})
+
+const stream: AsyncIterable<ChatCompletionChunk> = await client.chat.completions.create({
+  model: 'claude-3-5-sonnet-20241022',
+  messages: [{ role: 'user', content: 'Hello!' }],
+  stream: true, // ChatCompletionChunk
+})
+```
+
+## License
+
+MIT © [CogniForm AI](https://github.com/cogniformai)
+
+## Contributing
+
+This package is part of the instructor-stream-js monorepo. Please see the main repository for contribution guidelines.
+
+## Support
+
+- [GitHub Issues](https://github.com/cogniformai/instructor-stream-js/issues)
+- [Documentation](https://github.com/cogniformai/instructor-stream-js)

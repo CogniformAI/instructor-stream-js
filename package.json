@@ -27,7 +27,9 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "build": "pnpm -r run build"
+    "build": "pnpm -r run build",
+    "publish:dry-run": "dotenv -- bash -c 'pnpm run format && pnpm run lint && pnpm run test && pnpm run build'",
+    "publish:local": "dotenv -- pnpm -r publish --access public --no-git-checks"
   },
   "repository": {
     "type": "git",
@@ -63,6 +65,7 @@
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "dotenv": "catalog:",
+    "dotenv-cli": "^10.0.0",
     "openai": "catalog:",
     "oxlint": "catalog:",
     "prettier": "latest",
