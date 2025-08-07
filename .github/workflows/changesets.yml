@@ -17,6 +17,8 @@ env:
 
 jobs:
   version:
+    environment:
+      name: publish
     timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
@@ -36,6 +38,24 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Validate NPM_TOKEN is present
+        run: |
+          if [ -z "${NPM_TOKEN}" ]; then
+            echo "NPM_TOKEN is not available. Ensure it is defined as an Environment secret for 'publish' or a repo secret." >&2
+            exit 1
+          fi
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create user .npmrc
+        run: |
+          cat << 'EOF' > "$HOME/.npmrc"
+          //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+          always-auth=true
+          EOF
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create and publish versions
         uses: changesets/action@v1
