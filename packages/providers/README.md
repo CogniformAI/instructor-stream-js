@@ -42,12 +42,12 @@ The `@cogniformai/providers` package provides a universal LLM client that extend
 
 These providers use the OpenAI SDK format and work directly with the OpenAI client configuration:
 
-| Provider   | Configuration                              | Available Models                     |
-| ---------- | ------------------------------------------ | ------------------------------------ |
-| Together   | Set base URL to Together endpoint          | Mixtral, Llama, OpenChat, Yi, others |
-| Anyscale   | Set base URL to Anyscale endpoint          | Mistral, Llama, others               |
-| Perplexity | Set base URL to Perplexity endpoint        | pplx-* models                        |
-| Replicate  | Set base URL to Replicate endpoint         | Various open models                  |
+| Provider   | Configuration                       | Available Models                     |
+| ---------- | ----------------------------------- | ------------------------------------ |
+| Together   | Set base URL to Together endpoint   | Mixtral, Llama, OpenChat, Yi, others |
+| Anyscale   | Set base URL to Anyscale endpoint   | Mistral, Llama, others               |
+| Perplexity | Set base URL to Perplexity endpoint | pplx-\* models                       |
+| Replicate  | Set base URL to Replicate endpoint  | Various open models                  |
 
 ## Installation
 
@@ -154,9 +154,7 @@ const completion = await client.chat.completions.create({
 ```typescript
 const completion = await client.chat.completions.create({
   model: 'claude-3-5-sonnet-20241022',
-  messages: [
-    { role: 'user', content: 'What is the weather like in San Francisco?' }
-  ],
+  messages: [{ role: 'user', content: 'What is the weather like in San Francisco?' }],
   tools: [
     {
       type: 'function',
@@ -168,15 +166,15 @@ const completion = await client.chat.completions.create({
           properties: {
             location: {
               type: 'string',
-              description: 'The city and state, e.g. San Francisco, CA'
-            }
+              description: 'The city and state, e.g. San Francisco, CA',
+            },
           },
-          required: ['location']
-        }
-      }
-    }
+          required: ['location'],
+        },
+      },
+    },
   ],
-  tool_choice: 'auto'
+  tool_choice: 'auto',
 })
 
 // Handle tool calls
@@ -192,13 +190,13 @@ if (toolCall && toolCall.function.name === 'get_weather') {
 ```typescript
 interface LLMClientConfig {
   provider: 'openai' | 'anthropic' | 'google'
-  apiKey?: string           // API key (can also use environment variables)
-  baseURL?: string          // Custom base URL for OpenAI-compatible providers
-  organization?: string     // OpenAI organization (OpenAI only)
-  project?: string          // OpenAI project (OpenAI only)
-  defaultHeaders?: Record<string, string>  // Custom headers
-  maxRetries?: number       // Max retry attempts (default: 2)
-  timeout?: number          // Request timeout in ms (default: 10 minutes)
+  apiKey?: string // API key (can also use environment variables)
+  baseURL?: string // Custom base URL for OpenAI-compatible providers
+  organization?: string // OpenAI organization (OpenAI only)
+  project?: string // OpenAI project (OpenAI only)
+  defaultHeaders?: Record<string, string> // Custom headers
+  maxRetries?: number // Max retry attempts (default: 2)
+  timeout?: number // Request timeout in ms (default: 10 minutes)
 }
 ```
 
@@ -255,9 +253,7 @@ const UserSchema = z.object({
 const user = await instructor.chat.completions.create({
   model: 'claude-3-5-sonnet-20241022',
   response_model: UserSchema,
-  messages: [
-    { role: 'user', content: 'Create a user profile for John Doe, age 30' }
-  ],
+  messages: [{ role: 'user', content: 'Create a user profile for John Doe, age 30' }],
 })
 ```
 

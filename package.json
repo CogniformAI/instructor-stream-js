@@ -1,6 +1,6 @@
 {
   "name": "@cogniformai/instructor-stream",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "streaming-first structured outputs for llms",
   "publishConfig": {
@@ -38,6 +38,7 @@
     "release:patch": "pnpm run version:patch && pnpm run publish",
     "release:minor": "pnpm run version:minor && pnpm run publish",
     "release:major": "pnpm run version:major && pnpm run publish",
+    "pre-push": "pnpm run format && pnpm run lint && pnpm run test && pnpm run build",
     "clean": "pnpm -r run clean",
     "dev": "pnpm -r run dev"
   },

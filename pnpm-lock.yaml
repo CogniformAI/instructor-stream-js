@@ -128,7 +128,7 @@ importers:
     dependencies:
       '@cogniformai/instructor-stream':
         specifier: workspace:*
-        version: link:../instructor-stream
+        version: link:../..
     devDependencies:
       '@types/node':
         specifier: ^20.10.6
@@ -144,7 +144,7 @@ importers:
     dependencies:
       '@cogniformai/instructor-stream':
         specifier: workspace:*
-        version: link:../instructor-stream
+        version: link:../..
       '@cogniformai/providers':
         specifier: workspace:*
         version: link:../providers
@@ -167,9 +167,6 @@ importers:
 
   packages/instructor-stream:
     dependencies:
-      '@cogniformai/providers':
-        specifier: workspace:*
-        version: link:../providers
       zod:
         specifier: ^3.24.0 || ^4.0.0
         version: 4.0.15
