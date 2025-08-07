@@ -5,6 +5,7 @@ This document outlines the publishing process for the instructor-stream-js monor
 ## Overview
 
 This monorepo contains two main packages:
+
 - `@cogniformai/instructor-stream` - Core streaming functionality
 - `@cogniformai/providers` - Universal LLM client
 
@@ -15,16 +16,19 @@ This monorepo contains two main packages:
 Set up npm authentication using one of these methods:
 
 **Option A: Environment Variable (Recommended)**
+
 ```bash
 export NPM_TOKEN=npm_your_token_here
 ```
 
 **Option B: Direct Login**
+
 ```bash
 npm login
 ```
 
 **Option C: Manual .npmrc (Development Only)**
+
 ```bash
 echo "//registry.npmjs.org/:_authToken=npm_your_token_here" > ~/.npmrc
 ```
@@ -51,6 +55,7 @@ pnpm run publish
 ```
 
 **What it does:**
+
 1. ✅ Checks authentication
 2. ✅ Runs linting, type-checking, and tests
 3. ✅ Builds all packages
@@ -66,7 +71,7 @@ Use bumpp for automated version management:
 # Patch release (0.0.1 -> 0.0.2)
 pnpm run release:patch
 
-# Minor release (0.0.1 -> 0.1.0)  
+# Minor release (0.0.1 -> 0.1.0)
 pnpm run release:minor
 
 # Major release (0.0.1 -> 1.0.0)
@@ -101,12 +106,14 @@ The project uses `bumpp` for version management with the following configuration
 ### Version Strategies
 
 **Pre-1.0 (Current State)**
+
 - Breaking changes are acceptable
 - Use semantic versioning with `0.x.y` format
 - `0.x.0` for minor features and breaking changes
 - `0.x.y` for patches and fixes
 
 **Post-1.0 (Future)**
+
 - Strict semantic versioning
 - `x.0.0` for breaking changes
 - `x.y.0` for new features
@@ -117,6 +124,7 @@ The project uses `bumpp` for version management with the following configuration
 ### @cogniformai/instructor-stream
 
 Main streaming library:
+
 - Contains core functionality
 - Should be published first if both packages change
 - Version increments drive overall release versions
@@ -124,6 +132,7 @@ Main streaming library:
 ### @cogniformai/providers
 
 Universal LLM client:
+
 - Can be versioned independently
 - Contains provider adapters (OpenAI, Anthropic, Google)
 - May have different release cadence
@@ -133,33 +142,37 @@ Universal LLM client:
 ### Standard Release Process
 
 1. **Prepare Release Branch**
+
    ```bash
    git checkout -b release/v0.x.y
    ```
 
 2. **Run Pre-Release Checks**
+
    ```bash
    pnpm run publish:dry-run
    ```
 
 3. **Interactive Publishing**
+
    ```bash
    pnpm run publish
    ```
 
 4. **Post-Release Actions**
+
    ```bash
    # Commit version changes
    git add -A
    git commit -m "release: v0.x.y"
-   
+
    # Create tags
    git tag v0.x.y
-   
+
    # Push changes
    git push origin release/v0.x.y
    git push --tags
-   
+
    # Create PR to main
    ```
 
@@ -171,6 +184,7 @@ Universal LLM client:
 ### Emergency/Hotfix Release
 
 1. **Create Hotfix Branch**
+
    ```bash
    git checkout -b hotfix/fix-critical-issue
    ```
@@ -180,6 +194,7 @@ Universal LLM client:
    - Avoid feature additions
 
 3. **Patch Release**
+
    ```bash
    pnpm run release:patch
    ```
@@ -215,13 +230,14 @@ If a publish fails:
    - Network: Retry after delay
 
 2. **Common Fixes**
+
    ```bash
    # Re-authenticate
    npm login
-   
+
    # Bump version if conflict
    pnpm run version:patch
-   
+
    # Clean and rebuild
    pnpm run clean && pnpm run build
    ```
@@ -268,21 +284,27 @@ The project uses GitHub Actions for automated releases:
 ### Common Issues
 
 1. **Authentication Failures**
+
    ```bash
    Error: 401 Unauthorized
    ```
+
    **Solution**: Check NPM_TOKEN or re-run `npm login`
 
 2. **Version Conflicts**
+
    ```bash
    Error: Version already exists
    ```
+
    **Solution**: Bump version with `pnpm run version:patch`
 
 3. **Build Failures**
+
    ```bash
    Error: Build failed
    ```
+
    **Solution**: Run `pnpm run clean && pnpm install && pnpm run build`
 
 4. **Peer Dependency Warnings**
