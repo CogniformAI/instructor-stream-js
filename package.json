@@ -88,5 +88,6 @@
     "openai": "catalog:",
     "zod": "catalog:",
     "zod-validation-error": "catalog:"
-  }
+  },
+  "packageManager": "pnpm@10.14.0"
 }
