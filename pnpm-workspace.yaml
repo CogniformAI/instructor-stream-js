@@ -1,15 +1,17 @@
 packages:
   - packages/*
 catalog:
-  '@anthropic-ai/sdk': 0.57.0
+  '@anthropic-ai/sdk': ^0.57.0
   '@google/genai': ^1.10.0
-  '@ianvs/prettier-plugin-sort-imports': 4.5.1
+  '@ianvs/prettier-plugin-sort-imports': ^4.5.1
   '@prettier/plugin-oxc': ^0.0.4
   '@types/node': ^24.0.15
   '@types/ramda': ^0.30.2
   '@vitest/coverage-v8': ^3.2.4
+  '@changesets/cli': ^2.29.5
+  'dotenv-cli': ^10.0.0
   dotenv: ^17.2.1
-  openai: 5.10.1
+  openai: ^5.10.1
   oxlint: ^1.7.0
   ramda: ^0.31.3
   tiktoken: ^1.0.21
@@ -18,5 +20,5 @@ catalog:
   tsx: ^4.20.3
   typescript: ^5.8.3
   vitest: ^3.2.4
-  zod: ^4.0.5
-  zod-validation-error: ^3.5.3
+  zod: ^3.25.0 || ^4.0.0
+  zod-validation-error: ^4.0.1

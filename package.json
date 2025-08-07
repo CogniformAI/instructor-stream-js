@@ -28,13 +28,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "build": "pnpm -r run build",
+    "ci:publish": "pnpm --filter @cogniformai/instructor-stream run build && pnpm changeset publish",
     "publish:dry-run": "dotenv -- bash -c 'pnpm run format && pnpm run lint && pnpm run test && pnpm run build'",
     "publish:local": "dotenv -- pnpm -r publish --access public --no-git-checks",
-    "publish": "bash ./publish-now.sh",
-    "version:bump": "bumpp",
-    "version:patch": "bumpp patch",
-    "version:minor": "bumpp minor",
-    "version:major": "bumpp major",
     "release:patch": "pnpm run version:patch && pnpm run publish",
     "release:minor": "pnpm run version:minor && pnpm run publish",
     "release:major": "pnpm run version:major && pnpm run publish",
@@ -66,17 +62,18 @@
   },
   "homepage": "https://github.com/cogniformai/instructor-stream-js#readme",
   "dependencies": {
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zod-validation-error": "catalog:"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "catalog:",
+    "@changesets/cli": "catalog:",
     "@ianvs/prettier-plugin-sort-imports": "catalog:",
     "@prettier/plugin-oxc": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "bumpp": "^10.2.2",
     "dotenv": "catalog:",
-    "dotenv-cli": "^10.0.0",
+    "dotenv-cli": "catalog:",
     "openai": "catalog:",
     "oxlint": "catalog:",
     "prettier": "latest",
@@ -88,7 +85,8 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "openai": ">=5.10.1",
-    "zod": "^3.25.0 || ^4.0.0"
+    "openai": "catalog:",
+    "zod": "catalog:",
+    "zod-validation-error": "catalog:"
   }
 }
