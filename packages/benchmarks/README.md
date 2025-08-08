@@ -12,14 +12,19 @@ This package contains performance benchmarks for the streaming JSON parser and u
 ## Quick run (non-watch)
 
 - Vitest benchmark (default ~5s per case):
+
   ```bash
   pnpm -C packages/benchmarks run bench:ci
   ```
+
 - Longer run (e.g. ~15s per case):
+
   ```bash
   pnpm -C packages/benchmarks run bench:long
   ```
+
 - Simple table output (tinybench):
+
   ```bash
   pnpm -C packages/benchmarks run bench:simple
   # Custom duration
