@@ -28,7 +28,10 @@ async function collectAssignments(json: string): Promise<Array<{ path: Path; val
   const parser = new JSONParser({ stringBufferSize: 0, handleUnescapedNewLines: true })
   const assignments: Array<{ path: Path; value: unknown }> = []
   parser.onToken = ({ parser: p, tokenizer: t }) => {
-    const path = getPathFromStack(p.stack as Array<{ key: string | number | undefined }>, p.key as string | number)
+    const path = getPathFromStack(
+      p.stack as Array<{ key: string | number | undefined }>,
+      p.key as string | number
+    )
     assignments.push({ path, value: t.value })
   }
   parser.onValue = () => void 0

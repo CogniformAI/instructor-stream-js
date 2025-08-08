@@ -1,12 +1,10 @@
 import { bench, describe, beforeAll } from 'vitest'
 import { lensPath, set as rSet } from 'ramda'
-
 import JSONParser from '@core/utils/json-parser.ts'
 import { setDeep } from '@core/utils/path.ts'
 
 type Path = (string | number)[]
 const BENCH_TIME = Number.parseInt(process.env.BENCH_TIME ?? '5000', 10)
-
 
 const bigJson = JSON.stringify({
   user: { name: 'Alice', bio: 'Long bio '.repeat(1000), age: 42 },
@@ -20,25 +18,29 @@ function getPathFromStack(
   const stackLen = stack.length
   const pathLen = stackLen > 0 ? stackLen - 1 : 0
   const out: (string | number)[] = new Array(pathLen + 1)
-  for (let i = 1; i < stackLen; i += 1) {
+  for (let i = 1; i < stackLen; i++) {
     out[i - 1] = stack[i].key as string | number
   }
   out[pathLen] = key as string | number
   return out
 }
 
+const chunkSize = 1024
+
 async function collectAssignments(json: string): Promise<Array<{ path: Path; value: unknown }>> {
   const parser = new JSONParser({ stringBufferSize: 0, handleUnescapedNewLines: true })
   const assignments: Array<{ path: Path; value: unknown }> = []
   parser.onToken = ({ parser: p, tokenizer: t }) => {
-    const path = getPathFromStack(p.stack as Array<{ key: string | number | undefined }>, p.key as string | number)
+    const path = getPathFromStack(
+      p.stack as Array<{ key: string | number | undefined }>,
+      p.key as string | number
+    )
     assignments.push({ path, value: t.value })
   }
-  parser.onValue = () => void 0
+  parser.onValue = () => undefined
 
   const encoder = new TextEncoder()
   const data = encoder.encode(json)
-  const chunkSize = 1024
   for (let i = 0; i < data.length; i += chunkSize) {
     parser.write(data.slice(i, Math.min(i + chunkSize, data.length)))
   }
@@ -58,18 +60,24 @@ describe('update strategy benchmarks', () => {
     assignments = await collectAssignments(bigJson)
   })
 
-  bench('in-place setDeep assignments (large JSON)', { time: BENCH_TIME }, () => {
-    const target = clone(stub)
-    for (const a of assignments) setDeep(target as Record<string, unknown>, a.path, a.value)
-    return target
-  })
+  bench(
+    'in-place setDeep assignments (large JSON)',
+    () => {
+      const target = clone(stub)
+      for (const a of assignments) setDeep(target as Record<string, unknown>, a.path, a.value)
+    },
+    { time: BENCH_TIME }
+  )
 
-  bench('immutable Ramda set(assignments) (large JSON)', { time: BENCH_TIME }, () => {
-    let target: unknown = clone(stub)
-    for (const a of assignments) {
-      const lp = lensPath(a.path)
-      target = rSet(lp, a.value, target)
-    }
-    return target
-  })
+  bench(
+    'immutable Ramda set(assignments) (large JSON)',
+    () => {
+      let target: unknown = clone(stub)
+      for (const a of assignments) {
+        const lp = lensPath(a.path)
+        target = rSet(lp, a.value, target)
+      }
+    },
+    { time: BENCH_TIME }
+  )
 })

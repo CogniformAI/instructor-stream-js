@@ -69,10 +69,9 @@ const defaultOpts: TokenParserOptions = {
 }
 
 export class TokenParserError extends Error {
+  name = 'TokenParserError'
   constructor(message: string) {
     super(message)
-    // Typescript is broken. This is a workaround
-    Object.setPrototypeOf(this, TokenParserError.prototype)
   }
 }
 
@@ -150,8 +149,7 @@ export default class TokenParser {
   }
 
   private pop(): void {
-    // sourcery skip: use-object-destructuring
-    const value = this.value
+    const { value } = this
 
     let emit
     ;({
@@ -174,7 +172,7 @@ export default class TokenParser {
 
     if (emit) {
       this.onValue({
-        value: value,
+        value,
         key: this.key,
         parent: this.value,
         stack: this.stack,
@@ -200,130 +198,127 @@ export default class TokenParser {
       return
     }
 
-    try {
-      if (this.state === TokenParserState.VALUE) {
-        if (
-          token === TokenType.STRING ||
-          token === TokenType.NUMBER ||
-          token === TokenType.TRUE ||
-          token === TokenType.FALSE ||
-          token === TokenType.NULL
-        ) {
-          if (this.mode === TokenParserMode.OBJECT) {
-            ;(this.value as JsonObject)[this.key as string] = value
-            this.state = TokenParserState.COMMA
-          } else if (this.mode === TokenParserMode.ARRAY) {
-            ;(this.value as JsonArray).push(value)
-            this.state = TokenParserState.COMMA
-          }
-
-          this.emit(value, this.shouldEmit())
-          return
+    if (this.state === TokenParserState.VALUE) {
+      if (
+        token === TokenType.STRING ||
+        token === TokenType.NUMBER ||
+        token === TokenType.TRUE ||
+        token === TokenType.FALSE ||
+        token === TokenType.NULL
+      ) {
+        if (this.mode === TokenParserMode.OBJECT) {
+          ;(this.value as JsonObject)[this.key as string] = value
+          this.state = TokenParserState.COMMA
+        } else if (this.mode === TokenParserMode.ARRAY) {
+          ;(this.value as JsonArray).push(value)
+          this.state = TokenParserState.COMMA
         }
 
-        if (token === TokenType.LEFT_BRACE) {
-          this.push()
-          if (this.mode === TokenParserMode.OBJECT) {
-            this.value = (this.value as JsonObject)[this.key as string] = {}
-          } else if (this.mode === TokenParserMode.ARRAY) {
-            const val = {}
-            ;(this.value as JsonArray).push(val)
-            this.value = val
-          } else {
-            this.value = {}
-          }
-          this.mode = TokenParserMode.OBJECT
-          this.state = TokenParserState.KEY
-          this.key = undefined
-          return
-        }
-
-        if (token === TokenType.LEFT_BRACKET) {
-          this.push()
-          if (this.mode === TokenParserMode.OBJECT) {
-            this.value = (this.value as JsonObject)[this.key as string] = []
-          } else if (this.mode === TokenParserMode.ARRAY) {
-            const val: JsonArray = []
-            ;(this.value as JsonArray).push(val)
-            this.value = val
-          } else {
-            this.value = []
-          }
-          this.mode = TokenParserMode.ARRAY
-          this.state = TokenParserState.VALUE
-          this.key = 0
-          return
-        }
-
-        if (
-          this.mode === TokenParserMode.ARRAY &&
-          token === TokenType.RIGHT_BRACKET &&
-          (this.value as JsonArray).length === 0
-        ) {
-          this.pop()
-          return
-        }
-      }
-
-      if (this.state === TokenParserState.KEY) {
-        if (token === TokenType.STRING) {
-          this.key = value as string
-          this.state = TokenParserState.COLON
-          return
-        }
-
-        if (token === TokenType.RIGHT_BRACE && Object.keys(this.value as JsonObject).length === 0) {
-          this.pop()
-          return
-        }
-      }
-
-      if (this.state === TokenParserState.COLON && token === TokenType.COLON) {
-        this.state = TokenParserState.VALUE
+        this.emit(value, this.shouldEmit())
         return
       }
 
-      if (this.state === TokenParserState.COMMA) {
-        if (token === TokenType.COMMA) {
-          if (this.mode === TokenParserMode.ARRAY) {
-            this.state = TokenParserState.VALUE
-            ;(this.key as number) += 1
-            return
-          }
+      if (token === TokenType.LEFT_BRACE) {
+        this.push()
+        if (this.mode === TokenParserMode.OBJECT) {
+          this.value = (this.value as JsonObject)[this.key as string] = {}
+        } else if (this.mode === TokenParserMode.ARRAY) {
+          const val = {}
+          ;(this.value as JsonArray).push(val)
+          this.value = val
+        } else {
+          this.value = {}
+        }
+        this.mode = TokenParserMode.OBJECT
+        this.state = TokenParserState.KEY
+        this.key = undefined
+        return
+      }
 
-          if (this.mode === TokenParserMode.OBJECT) {
-            this.state = TokenParserState.KEY
-            return
-          }
+      if (token === TokenType.LEFT_BRACKET) {
+        this.push()
+        if (this.mode === TokenParserMode.OBJECT) {
+          this.value = (this.value as JsonObject)[this.key as string] = []
+        } else if (this.mode === TokenParserMode.ARRAY) {
+          const val: JsonArray = []
+          ;(this.value as JsonArray).push(val)
+          this.value = val
+        } else {
+          this.value = []
+        }
+        this.mode = TokenParserMode.ARRAY
+        this.state = TokenParserState.VALUE
+        this.key = 0
+        return
+      }
+
+      if (
+        this.mode === TokenParserMode.ARRAY &&
+        token === TokenType.RIGHT_BRACKET &&
+        (this.value as JsonArray).length === 0
+      ) {
+        this.pop()
+        return
+      }
+    }
+
+    if (this.state === TokenParserState.KEY) {
+      if (token === TokenType.STRING) {
+        this.key = value as string
+        this.state = TokenParserState.COLON
+        return
+      }
+
+      if (token === TokenType.RIGHT_BRACE && Object.keys(this.value as JsonObject).length === 0) {
+        this.pop()
+        return
+      }
+    }
+
+    if (this.state === TokenParserState.COLON && token === TokenType.COLON) {
+      this.state = TokenParserState.VALUE
+      return
+    }
+
+    if (this.state === TokenParserState.COMMA) {
+      if (token === TokenType.COMMA) {
+        if (this.mode === TokenParserMode.ARRAY) {
+          this.state = TokenParserState.VALUE
+          ;(this.key as number)++
+          return
         }
 
-        if (
-          (token === TokenType.RIGHT_BRACE && this.mode === TokenParserMode.OBJECT) ||
-          (token === TokenType.RIGHT_BRACKET && this.mode === TokenParserMode.ARRAY)
-        ) {
-          this.pop()
+        if (this.mode === TokenParserMode.OBJECT) {
+          this.state = TokenParserState.KEY
           return
         }
       }
 
       if (
-        this.state === TokenParserState.SEPARATOR &&
-        token === TokenType.SEPARATOR &&
-        value === this.separator
+        (token === TokenType.RIGHT_BRACE && this.mode === TokenParserMode.OBJECT) ||
+        (token === TokenType.RIGHT_BRACKET && this.mode === TokenParserMode.ARRAY)
       ) {
-        this.state = TokenParserState.VALUE
+        this.pop()
         return
       }
+    }
 
-      throw new TokenParserError(
+    if (
+      this.state === TokenParserState.SEPARATOR &&
+      token === TokenType.SEPARATOR &&
+      value === this.separator
+    ) {
+      this.state = TokenParserState.VALUE
+      return
+    }
+
+    return this.error(
+      new TokenParserError(
         `Unexpected ${TokenType[token]} (${JSON.stringify(
           value
         )}) in state ${TokenParserStateToString(this.state)}`
       )
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      this.error(err)
-    }
+    )
   }
 
   public error(err: Error): void {

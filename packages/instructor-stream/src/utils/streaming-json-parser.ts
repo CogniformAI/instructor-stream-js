@@ -1,7 +1,5 @@
-// Switch from Ramda (immutable) to imperative in-place helpers for performance
 import { setDeep, type Indexable } from './path.ts'
 import { z } from 'zod'
-
 import JSONParser from './json-parser.ts'
 import { ParsedTokenInfo, StackElement, TokenParserMode, TokenParserState } from '@/stream'
 
@@ -11,16 +9,13 @@ type TypeDefaults = {
   number?: number | null | undefined
   boolean?: boolean | null | undefined
 }
-
 type NestedPrimitive = string | number | boolean | null
 type NestedValue = NestedPrimitive | NestedObject | NestedValue[]
 type NestedObject = { [key: string]: NestedValue } & { [key: number]: NestedValue }
-
 type OnKeyCompleteCallbackParams = {
   activePath: (string | number | undefined)[]
   completedPaths: (string | number | undefined)[][]
 }
-
 type OnKeyCompleteCallback = (data: OnKeyCompleteCallbackParams) => void | undefined
 
 /**
@@ -166,7 +161,7 @@ export class SchemaStream {
     stack: StackElement[] = [],
     key: string | number | undefined
   ): (string | number)[] {
-    // Build path without intermediate array copies or shift
+    /** Build path without intermediate array copies or shift */
     const stackLen = stack.length
     const pathLen = stackLen > 0 ? stackLen - 1 : 0
     const out: (string | number)[] = new Array(pathLen + 1)
@@ -213,7 +208,6 @@ export class SchemaStream {
     const pathChanged =
       this.activePath.length === 0 ||
       !this.arePathsEqual(this.activePath as (string | number)[], nextPath)
-
     if (pathChanged) {
       this.activePath = nextPath
     }
@@ -226,13 +220,8 @@ export class SchemaStream {
         completedPaths: this.completedPaths,
       })
     }
-    try {
-      setDeep(this.schemaInstance as Indexable, nextPath, value)
-    } catch (e) {
-      console.error(`Error in the json parser onToken handler: token ${token} value ${value}`, e)
-    }
+    setDeep(this.schemaInstance as Indexable, nextPath, value)
   }
-
   /** Compare paths by value to avoid spurious updates on identical paths */
   private arePathsEqual(a: (string | number)[], b: (string | number)[]): boolean {
     if (a.length !== b.length) return false
@@ -281,23 +270,19 @@ export class SchemaStream {
     } = { stringBufferSize: 0, handleUnescapedNewLines: true }
   ) {
     const textEncoder = new TextEncoder()
-
     const parser = new JSONParser({
       stringBufferSize: opts.stringBufferSize ?? 0,
       handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true,
     })
-
     parser.onToken = this.handleToken.bind(this)
     parser.onValue = () => undefined
-
+    parser.onError = (err: Error) => {
+      console.error('Error in the json parser transform stream: parsing chunk', err)
+    }
     return new TransformStream({
       transform: async (chunk, controller): Promise<void> => {
-        try {
-          parser.write(chunk)
-          controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
-        } catch (e) {
-          console.error(`Error in the json parser transform stream: parsing chunk`, e, chunk)
-        }
+        parser.write(chunk)
+        controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
       },
       flush: () => {
         if (this.onKeyComplete) {
