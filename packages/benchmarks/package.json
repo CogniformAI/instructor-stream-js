@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "bench": "vitest bench",
+    "bench:ci": "vitest bench --run",
+    "bench:long": "BENCH_TIME=15000 vitest bench --run",
+    "bench:simple": "tsx simple-bench.ts",
     "clean": "rm -rf node_modules"
   },
   "repository": {
@@ -26,8 +29,12 @@
     "@cogniformai/instructor-stream": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
-    "typescript": "^5.2.2",
-    "vitest": "catalog:"
+    "@types/node": "catalog:",
+    "@types/ramda": "catalog:",
+    "ramda": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "tinybench": "^2.9.0",
+    "tsx": "catalog:"
   }
 }

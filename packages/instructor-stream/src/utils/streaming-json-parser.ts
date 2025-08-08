@@ -1,4 +1,5 @@
-import { lensPath, set, view } from 'ramda'
+// Switch from Ramda (immutable) to imperative in-place helpers for performance
+import { setDeep, type Indexable } from './path.ts'
 import { z } from 'zod'
 
 import JSONParser from './json-parser.ts'
@@ -136,11 +137,10 @@ export class SchemaStream {
       const obj: NestedObject = {}
       const { shape } = schema
       for (const key in shape) {
-        if (defaultData && Object.prototype.hasOwnProperty.call(defaultData, key)) {
-          obj[key] = defaultData[key as keyof NestedObject] as NestedValue
-        } else {
-          obj[key] = this.getDefaultValue(shape[key] as SchemaType, typeDefaults) as NestedValue
-        }
+        obj[key] =
+          defaultData && Object.prototype.hasOwnProperty.call(defaultData, key) ?
+            (defaultData[key as keyof NestedObject] as NestedValue)
+          : (this.getDefaultValue(shape[key] as SchemaType, typeDefaults) as NestedValue)
       }
       return obj
     }
@@ -166,9 +166,15 @@ export class SchemaStream {
     stack: StackElement[] = [],
     key: string | number | undefined
   ): (string | number)[] {
-    const valuePath = [...stack.map(({ key }) => key), key]
-    valuePath.shift()
-    return valuePath as (string | number)[]
+    // Build path without intermediate array copies or shift
+    const stackLen = stack.length
+    const pathLen = stackLen > 0 ? stackLen - 1 : 0
+    const out: (string | number)[] = new Array(pathLen + 1)
+    for (let i = 1; i < stackLen; i++) {
+      out[i - 1] = stack[i].key as string | number
+    }
+    out[pathLen] = key as string | number
+    return out
   }
 
   /**
@@ -203,32 +209,37 @@ export class SchemaStream {
     }
     tokenizer: ParsedTokenInfo
   }): void {
-    if (this.activePath !== this.getPathFromStack(stack, key) || this.activePath.length === 0) {
-      this.activePath = this.getPathFromStack(stack, key)
-      if (!partial) {
-        this.completedPaths.push(this.activePath)
-      }
-      if (this.onKeyComplete) {
-        this.onKeyComplete({
-          activePath: this.activePath,
-          completedPaths: this.completedPaths,
-        })
-      }
+    const nextPath = this.getPathFromStack(stack, key)
+    const pathChanged =
+      this.activePath.length === 0 ||
+      !this.arePathsEqual(this.activePath as (string | number)[], nextPath)
+
+    if (pathChanged) {
+      this.activePath = nextPath
+    }
+    if (!partial) {
+      this.completedPaths.push(nextPath)
+    }
+    if ((pathChanged || !partial) && this.onKeyComplete) {
+      this.onKeyComplete({
+        activePath: this.activePath,
+        completedPaths: this.completedPaths,
+      })
     }
     try {
-      const valuePath = this.getPathFromStack(stack, key)
-      const lens = lensPath(valuePath)
-      if (partial) {
-        /** For partial string tokens, append incrementally. */
-        const currentValue = (view(lens, this.schemaInstance) as string | undefined) ?? ''
-        const updatedValue = `${currentValue}${value}`
-        this.schemaInstance = set(lens, updatedValue, this.schemaInstance)
-      } else {
-        this.schemaInstance = set(lens, value, this.schemaInstance)
-      }
+      setDeep(this.schemaInstance as Indexable, nextPath, value)
     } catch (e) {
       console.error(`Error in the json parser onToken handler: token ${token} value ${value}`, e)
     }
+  }
+
+  /** Compare paths by value to avoid spurious updates on identical paths */
+  private arePathsEqual(a: (string | number)[], b: (string | number)[]): boolean {
+    if (a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false
+    }
+    return true
   }
 
   /**
@@ -277,7 +288,7 @@ export class SchemaStream {
     })
 
     parser.onToken = this.handleToken.bind(this)
-    parser.onValue = () => void 0
+    parser.onValue = () => undefined
 
     return new TransformStream({
       transform: async (chunk, controller): Promise<void> => {

@@ -125,6 +125,16 @@ See [PLAN.md](docs/roadmap/PLAN.md) for detailed roadmap. Progress:
 - **Phase 3**: WebSocket transport and agentic responses
 - **Phase 4**: Client-side hooks and dynamic UI
 
+## Performance & Benchmarks
+
+- We replaced Ramda-based immutable updates with in-place mutations in the streaming parser (`SchemaStream`), optimized path building, and reduced string allocations.
+- Benchmarks live in `packages/benchmarks`.
+- Quick run (non-watch):
+  - `pnpm -C packages/benchmarks run bench:ci` (vitest bench)
+  - `pnpm -C packages/benchmarks run bench:simple` (tinybench table)
+- Typical result on a laptop: in-place `setDeep` is ~10–20x faster than immutable Ramda `set` for large assignment workloads.
+- See `packages/benchmarks/README.md` for details and longer runs.
+
 ## Contributing
 
 This is currently a private fork under active development for CogniformAI's product needs. Once we reach a stable API (v1.0), we plan to open-source the project.

@@ -18,7 +18,7 @@ export interface StringBuilder {
 
 export class NonBufferedString implements StringBuilder {
   private decoder = new TextDecoder('utf-8')
-  private strings: Array<string> = []
+  private assembled = ''
   private readonly onIncrementalString?: (str: string) => void
 
   public byteLength = 0
@@ -35,30 +35,32 @@ export class NonBufferedString implements StringBuilder {
   }
 
   public appendChar(char: number): void {
-    this.strings.push(String.fromCharCode(char))
+    this.assembled += String.fromCharCode(char)
     this.byteLength += 1
     this.update()
   }
 
   public appendBuf(buf: Uint8Array, start = 0, end: number = buf.length): void {
-    this.strings.push(this.decoder.decode(buf.subarray(start, end)))
+    const chunk = this.decoder.decode(buf.subarray(start, end))
+    this.assembled += chunk
     this.byteLength += end - start
     this.update()
   }
 
   private update(): void {
     if (this.onIncrementalString) {
-      this.onIncrementalString(this.toString())
+      /** Emit the full string-so-far without extra joins */
+      this.onIncrementalString(this.assembled)
     }
   }
 
   public reset(): void {
-    this.strings = []
+    this.assembled = ''
     this.byteLength = 0
   }
 
   public toString(): string {
-    return this.strings.join('')
+    return this.assembled
   }
 }
 
@@ -81,7 +83,7 @@ export class BufferedString implements StringBuilder {
       this.flushStringBuffer()
     }
     this.buffer[this.bufferOffset++] = char
-    this.byteLength += 1
+    this.byteLength++
   }
 
   public appendBuf(buf: Uint8Array, start = 0, end: number = buf.length): void {
@@ -103,7 +105,8 @@ export class BufferedString implements StringBuilder {
 
   private update(): void {
     if (this.onIncrementalString) {
-      this.onIncrementalString(this.toString())
+      /** Avoid re-entrant flushes; emit the accumulated string directly */
+      this.onIncrementalString(this.string)
     }
   }
 
@@ -113,7 +116,9 @@ export class BufferedString implements StringBuilder {
     this.byteLength = 0
   }
   public toString(): string {
-    this.flushStringBuffer()
+    /**  Flush without notifying to avoid emitting an extra partial update */
+    this.string += this.decoder.decode(this.buffer.subarray(0, this.bufferOffset))
+    this.bufferOffset = 0
     return this.string
   }
 }
