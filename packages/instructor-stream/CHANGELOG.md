@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.0.6
+
+### Patch Changes
+
+- 331690e: Refactor: route tokenizer/parser errors via hooks (no local try/catch); simplify Error subclasses; streaming parser logs errors; fix Vitest bench usage.
+
 ## 0.0.5
 
 ### Patch Changes
