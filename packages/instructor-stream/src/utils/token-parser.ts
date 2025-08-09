@@ -149,15 +149,14 @@ export default class TokenParser {
   }
 
   private pop(): void {
-    const { value } = this
+    const value = this.value
 
     let emit
-    ;({
-      key: this.key,
-      value: this.value,
-      mode: this.mode,
-      emit,
-    } = this.stack.pop() as StackElement)
+    const popped = this.stack.pop() as StackElement
+    this.key = popped.key
+    this.value = popped.value
+    this.mode = popped.mode
+    emit = popped.emit
 
     this.state = this.mode !== undefined ? TokenParserState.COMMA : TokenParserState.VALUE
 

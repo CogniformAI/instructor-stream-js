@@ -194,7 +194,7 @@ export class SchemaStream {
    */
   private handleToken({
     parser: { key, stack },
-    tokenizer: { token, value, partial },
+    tokenizer: { value, partial },
   }: {
     parser: {
       state: TokenParserState
