@@ -56,7 +56,7 @@ export function setDeep(obj: Indexable, path: Path, value: unknown): void {
     const key = path[i]
     const nextKey = path[i + 1]
     if ((current as Indexable)[key] == null) {
-      // Decide container type based on next key
+      /** Decide container type based on next key */
       ;(current as Indexable)[key] = typeof nextKey === 'number' ? [] : {}
     }
     current = (current as Indexable)[key] as Indexable

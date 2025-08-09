@@ -36,7 +36,7 @@ export class NonBufferedString implements StringBuilder {
 
   public appendChar(char: number): void {
     this.assembled += String.fromCharCode(char)
-    this.byteLength += 1
+    this.byteLength++
     this.update()
   }
 
@@ -91,7 +91,6 @@ export class BufferedString implements StringBuilder {
     if (this.bufferOffset + size > this.buffer.length) {
       this.flushStringBuffer()
     }
-
     this.buffer.set(buf.subarray(start, end), this.bufferOffset)
     this.bufferOffset += size
     this.byteLength += size
@@ -115,6 +114,7 @@ export class BufferedString implements StringBuilder {
     this.bufferOffset = 0
     this.byteLength = 0
   }
+
   public toString(): string {
     /**  Flush without notifying to avoid emitting an extra partial update */
     this.string += this.decoder.decode(this.buffer.subarray(0, this.bufferOffset))
