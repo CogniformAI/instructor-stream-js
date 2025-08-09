@@ -311,14 +311,14 @@ export default class TokenParser {
       return
     }
 
-      this.error(
-        new TokenParserError(
-          `Unexpected ${TokenType[token]} (${JSON.stringify(
-            value
-          )}) in state ${TokenParserStateToString(this.state)}`
-        )
+    this.error(
+      new TokenParserError(
+        `Unexpected ${TokenType[token]} (${JSON.stringify(
+          value
+        )}) in state ${TokenParserStateToString(this.state)}`
       )
-      return
+    )
+    return
   }
 
   public error(err: Error): void {
