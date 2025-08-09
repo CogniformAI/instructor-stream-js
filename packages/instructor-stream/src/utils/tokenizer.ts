@@ -159,11 +159,12 @@ export default class Tokenizer {
       buffer = Uint8Array.from(input)
     } else {
       /** Signal error and exit early instead of throwing locally */
-      return this.error(
+      this.error(
         new TypeError(
           'Unexpected type. The `write` function only accepts Arrays, TypedArrays and Strings.'
         )
       )
+      return
     }
 
     for (let i = 0; i < buffer.length; i++) {
@@ -490,14 +491,13 @@ export default class Tokenizer {
           this.state = TokenizerStates.START
           this.emitNumber()
           continue
-        // @ts-expect error fall through case
         case TokenizerStates.NUMBER_AFTER_E:
           if (n === charset.PLUS_SIGN || n === charset.HYPHEN_MINUS) {
             this.bufferedNumber.appendChar(n)
             this.state = TokenizerStates.NUMBER_AFTER_E_AND_SIGN
             continue
           }
-        // @ts-expect error fall through case
+        /* falls through intentionally */
         case TokenizerStates.NUMBER_AFTER_E_AND_SIGN:
           if (n >= charset.DIGIT_ZERO && n <= charset.DIGIT_NINE) {
             this.bufferedNumber.appendChar(n)
@@ -624,13 +624,14 @@ export default class Tokenizer {
           }
       }
       // Signal error and stop processing
-      return this.error(
+      this.error(
         new TokenizerError(
           `Unexpected "${String.fromCharCode(
             n
           )}" at position "${i}" in state ${TokenizerStateToString(this.state)}`
         )
       )
+      return
     }
   }
 

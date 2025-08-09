@@ -281,8 +281,16 @@ export class SchemaStream {
     }
     return new TransformStream({
       transform: async (chunk, controller): Promise<void> => {
-        parser.write(chunk)
-        controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
+        try {
+          parser.write(chunk)
+          controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
+        } catch (err) {
+          if (typeof parser.onError === 'function') {
+            parser.onError(err as Error)
+          } else {
+            controller.error(err)
+          }
+        }
       },
       flush: () => {
         if (this.onKeyComplete) {
