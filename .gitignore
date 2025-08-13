@@ -80,3 +80,12 @@ packages/instructor-stream/src/core/*/dist/
 packages/instructor-stream/src/core/*/node_modules/
 packages/instructor-stream/src/providers/*/dist/
 packages/instructor-stream/src/providers/*/node_modules/
+
+
+
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

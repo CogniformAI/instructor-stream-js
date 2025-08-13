@@ -5,9 +5,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "bench": "vitest bench",
-    "bench:ci": "vitest bench --run",
-    "bench:long": "BENCH_TIME=15000 vitest bench --run",
+    "bench": "nx vite:test bench",
+    "bench:ci": "nx vite:test bench --run",
+    "bench:long": "BENCH_TIME=15000 nx vite:test bench --run",
     "bench:simple": "tsx simple-bench.ts",
     "clean": "rm -rf node_modules"
   },
