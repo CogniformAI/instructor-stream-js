@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.1.0
+
+### Minor Changes
+
+- 0e9073d: Add LangGraph adapter with multi-tag queue fan-out, fixtures, and documentation.
+
 ## 0.0.6
 
 ### Patch Changes
