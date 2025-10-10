@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.1.1
+
+### Patch Changes
+
+- Ensure LangGraph adapter is bundled and exported so `@cogniformai/instructor-stream/adapters/langgraph` resolves in released builds.
+
 ## 0.1.0
 
 ### Minor Changes

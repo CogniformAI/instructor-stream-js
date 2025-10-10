@@ -5,7 +5,10 @@ export default defineConfig((options) => {
     splitting: true,
     sourcemap: true,
     minify: true,
-    entry: ['src/index.ts'],
+    entry: {
+      index: 'src/index.ts',
+      'adapters/langgraph': 'src/adapters/langgraph/index.ts',
+    },
     target: 'es2020',
     format: ['cjs', 'esm'],
     clean: true,
