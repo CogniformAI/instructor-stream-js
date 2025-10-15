@@ -23,7 +23,7 @@ export const ContentBlock = z
     type: z.string(),
     text: z.string().optional(),
     args: z.string().optional(),
-    name: z.string().optional(),
+    name: z.union([z.string(), z.null()]).optional(),
     id: z.union([z.string(), z.null()]).optional(),
     index: z.union([z.number(), z.string()]).optional(),
   })
@@ -152,7 +152,7 @@ function normalizeContentBlocks(message: z.infer<typeof AIMessageChunk>): LangGr
     ]
   }
   if (Array.isArray(content)) {
-    return content.slice()
+    return content as LangGraphContentBlock[]
   }
   return []
 }
@@ -184,31 +184,66 @@ function coerceIndex(index: unknown): number {
  * An async queue to bridge the TransformStream readable side to an async generator.
  */
 class AsyncQueue<T> implements AsyncIterable<T> {
-  private q: T[] = []
+  private buffer: T[] = []
+  private head = 0
   private resolvers: ((v: IteratorResult<T>) => void)[] = []
+  private resolverHead = 0
   private ended = false
 
   shift(): IteratorResult<T> | null {
-    if (this.q.length) return { value: this.q.shift()!, done: false }
-    if (this.ended) return { value: undefined as any, done: true }
+    if (this.head < this.buffer.length) {
+      const value = this.buffer[this.head] as T
+      this.head += 1
+      if (this.head > 32 && this.head * 2 >= this.buffer.length) {
+        this.buffer = this.buffer.slice(this.head)
+        this.head = 0
+      }
+      return { value, done: false }
+    }
+    if (this.ended) {
+      return { value: undefined as any, done: true }
+    }
     return null
   }
 
   push(value: T) {
-    if (this.resolvers.length) this.resolvers.shift()!({ value, done: false })
-    else this.q.push(value)
+    const resolver = this.dequeueResolver()
+    if (resolver) {
+      resolver({ value, done: false })
+      return
+    }
+    this.buffer.push(value)
   }
   end() {
     this.ended = true
-    while (this.resolvers.length) this.resolvers.shift()!({ value: undefined as any, done: true })
+    let resolver: ((v: IteratorResult<T>) => void) | undefined
+    while ((resolver = this.dequeueResolver())) {
+      resolver({ value: undefined as any, done: true })
+    }
   }
   async next(): Promise<IteratorResult<T>> {
-    if (this.q.length) return { value: this.q.shift()!, done: false }
+    const immediate = this.shift()
+    if (immediate) return immediate
     if (this.ended) return { value: undefined as any, done: true }
-    return await new Promise((resolve) => this.resolvers.push(resolve))
+    return await new Promise((resolve) => {
+      this.resolvers.push(resolve)
+    })
   }
   [Symbol.asyncIterator]() {
     return this
+  }
+
+  private dequeueResolver(): ((v: IteratorResult<T>) => void) | undefined {
+    if (this.resolverHead < this.resolvers.length) {
+      const resolver = this.resolvers[this.resolverHead]
+      this.resolverHead += 1
+      if (this.resolverHead > 32 && this.resolverHead * 2 >= this.resolvers.length) {
+        this.resolvers = this.resolvers.slice(this.resolverHead)
+        this.resolverHead = 0
+      }
+      return resolver
+    }
+    return undefined
   }
 }
 
@@ -273,7 +308,10 @@ export async function* streamLangGraphEvents<
   const toolDefaults = toolTypeDefaults ?? typeDefaults
   const toolParsers = new Map<string, ToolParserState>()
   const toolContexts = new Map<string, ToolContext>()
-  const toolRawBuffers = new Map<string, string>()
+  const toolRawBuffers = new Map<string, { chunks: string[]; cache: string | null }>()
+  const toolKeyByMessageId = new Map<string, string>()
+  const toolNames = new Map<string, string>()
+  const toolCallIds = new Map<string, string | null>()
 
   const ensureToolParser = (key: string, toolName: string): ToolParserState => {
     if (toolParsers.has(key)) {
@@ -300,6 +338,138 @@ export async function* streamLangGraphEvents<
     const state: ToolParserState = { writer, queue }
     toolParsers.set(key, state)
     return state
+  }
+
+  const getToolBuffer = (key: string) => {
+    let record = toolRawBuffers.get(key)
+    if (!record) {
+      record = { chunks: [], cache: null }
+      toolRawBuffers.set(key, record)
+    }
+    return record
+  }
+
+  const appendToolChunk = (key: string, chunk: string) => {
+    if (!chunk) return
+    const buffer = getToolBuffer(key)
+    buffer.chunks.push(chunk)
+    buffer.cache = null
+  }
+
+  const readToolBuffer = (key: string): string => {
+    const buffer = toolRawBuffers.get(key)
+    if (!buffer) return ''
+    if (buffer.cache === null) {
+      buffer.cache = buffer.chunks.length === 1 ? buffer.chunks[0] : buffer.chunks.join('')
+      if (buffer.chunks.length > 1) {
+        buffer.chunks = [buffer.cache]
+      }
+    }
+    return buffer.cache ?? ''
+  }
+
+  const releaseToolState = (key: string, disposeParser = false) => {
+    if (disposeParser) {
+      toolParsers.delete(key)
+    }
+    toolContexts.delete(key)
+    toolRawBuffers.delete(key)
+    toolNames.delete(key)
+    toolCallIds.delete(key)
+    for (const [messageId, mappedKey] of toolKeyByMessageId.entries()) {
+      if (mappedKey === key) {
+        toolKeyByMessageId.delete(messageId)
+      }
+    }
+  }
+
+  const resolveToolName = (
+    key: string,
+    block: LangGraphContentBlock,
+    message: z.infer<typeof AIMessageChunk>
+  ): string => {
+    if (typeof block.name === 'string' && block.name.length > 0) {
+      toolNames.set(key, block.name)
+      return block.name
+    }
+    const existing = toolNames.get(key)
+    if (existing) return existing
+    const toolCalls = (message as { tool_calls?: Array<{ name?: string | null }> }).tool_calls
+    if (Array.isArray(toolCalls)) {
+      for (const call of toolCalls) {
+        if (call && typeof call.name === 'string' && call.name.length > 0) {
+          toolNames.set(key, call.name)
+          return call.name
+        }
+      }
+    }
+    const fallback =
+      typeof block.id === 'string' && block.id.length > 0 ?
+        block.id
+      : `tool-${String(block.index ?? 0)}`
+    toolNames.set(key, fallback)
+    return fallback
+  }
+
+  const resolveToolCallId = (
+    key: string,
+    block: LangGraphContentBlock,
+    message: z.infer<typeof AIMessageChunk>
+  ): string | null => {
+    const directId = typeof block.id === 'string' && block.id.length > 0 ? block.id : undefined
+    if (directId) {
+      toolCallIds.set(key, directId)
+      return directId
+    }
+    const messageCalls = (message as { tool_calls?: Array<{ id?: string | null }> }).tool_calls
+    if (Array.isArray(messageCalls)) {
+      for (const call of messageCalls) {
+        if (call && typeof call.id === 'string' && call.id.length > 0) {
+          toolCallIds.set(key, call.id)
+          return call.id
+        }
+      }
+    }
+    if (toolCallIds.has(key)) {
+      return toolCallIds.get(key) ?? null
+    }
+    return null
+  }
+
+  const resolveToolKey = (
+    block: LangGraphContentBlock,
+    message: z.infer<typeof AIMessageChunk>
+  ): string => {
+    const messageId = typeof message.id === 'string' && message.id.length > 0 ? message.id : null
+    if (typeof block.id === 'string' && block.id.length > 0) {
+      if (messageId) {
+        toolKeyByMessageId.set(messageId, block.id)
+      }
+      return block.id
+    }
+    if (messageId) {
+      const mapped = toolKeyByMessageId.get(messageId)
+      if (mapped) {
+        return mapped
+      }
+    }
+    let fallback = typeof block.name === 'string' && block.name.length > 0 ? block.name : null
+    if (!fallback) {
+      const calls = (message as { tool_calls?: Array<{ name?: string | null }> }).tool_calls
+      if (Array.isArray(calls)) {
+        for (const call of calls) {
+          if (call && typeof call.name === 'string' && call.name.length > 0) {
+            fallback = call.name
+            break
+          }
+        }
+      }
+    }
+    const key = fallback ?? `tool-${String(block.index ?? 0)}`
+    if (messageId) {
+      toolKeyByMessageId.set(messageId, key)
+    }
+    return key
   }
 
   let lastMessageContext: {
@@ -350,28 +520,41 @@ export async function* streamLangGraphEvents<
       }
 
       if (block.type === 'tool_call_chunk') {
-        const fallbackId = typeof block.id === 'string' && block.id.length > 0 ? block.id : 'tool'
-        const toolName = block.name ?? fallbackId
-        const toolKey = block.id ?? toolName
+        const toolKey = resolveToolKey(block, message)
+        const toolName = resolveToolName(toolKey, block, message)
         const parser = ensureToolParser(toolKey, toolName)
         const argsChunk = block.args ?? ''
-        if (argsChunk) {
-          toolRawBuffers.set(toolKey, (toolRawBuffers.get(toolKey) ?? '') + argsChunk)
+        const appendedThisTick = argsChunk.length > 0
+        if (appendedThisTick) {
+          appendToolChunk(toolKey, argsChunk)
           await parser.writer.write(argsChunk)
+        } else {
+          getToolBuffer(toolKey)
         }
 
+        const toolCallId = resolveToolCallId(toolKey, block, message)
         toolContexts.set(toolKey, {
           meta,
           tags,
           node,
           toolName,
-          toolCallId: block.id ?? null,
+          toolCallId: toolCallId ?? null,
         })
 
+        let finalizeAfterDrain = false
         while (true) {
           const dequeued = parser.queue.shift()
           if (!dequeued) break
           if (dequeued.done) break
+          const rawArgs = readToolBuffer(toolKey)
+          if (!finalizeAfterDrain && appendedThisTick && rawArgs.length > 0) {
+            try {
+              JSON.parse(rawArgs)
+              finalizeAfterDrain = true
+            } catch {
+              finalizeAfterDrain = false
+            }
+          }
           yield {
             kind: 'tool',
             identifier: toolName,
@@ -379,11 +562,37 @@ export async function* streamLangGraphEvents<
             tags,
             node,
             toolName,
-            toolCallId: block.id ?? null,
-            rawArgs: toolRawBuffers.get(toolKey) ?? '',
+            toolCallId: toolCallId ?? null,
+            rawArgs,
             data: dequeued.value as ToolDataUnion<TToolSchemas>,
             matchedTag,
           }
+        }
+        if (finalizeAfterDrain) {
+          await parser.writer.close()
+          const context = toolContexts.get(toolKey)
+          if (context) {
+            for await (const snapshot of parser.queue) {
+              yield {
+                kind: 'tool',
+                identifier: context.toolName,
+                meta: context.meta,
+                tags: context.tags,
+                node: context.node,
+                toolName: context.toolName,
+                toolCallId: context.toolCallId ?? null,
+                rawArgs: readToolBuffer(toolKey),
+                data: snapshot as ToolDataUnion<TToolSchemas>,
+                matchedTag:
+                  typeof tag === 'string' && context.tags.includes(tag) ? tag : matchedTag,
+              }
+            }
+          } else {
+            for await (const _ of parser.queue) {
+              // flushed with no context; nothing to emit
+            }
+          }
+          releaseToolState(toolKey, true)
         }
       }
     }
@@ -425,12 +634,14 @@ export async function* streamLangGraphEvents<
         node: context.node,
         toolName: context.toolName,
         toolCallId: context.toolCallId ?? null,
-        rawArgs: toolRawBuffers.get(toolKey) ?? '',
+        rawArgs: readToolBuffer(toolKey),
         data: snapshot as ToolDataUnion<TToolSchemas>,
         matchedTag: typeof tag === 'string' && context.tags.includes(tag) ? tag : undefined,
       }
     }
+    releaseToolState(toolKey)
   }
+  toolParsers.clear()
 }
 
 /**

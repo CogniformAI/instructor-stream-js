@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-10-15
+
+### Added
+
+- Benchmarks now replay the 5k-chunk LangGraph mock stream and print an ASCII baseline table (ops/s, RME, relative throughput) so performance regressions surface immediately.
+
+### Fixed
+
+- LangGraph adapter no longer leaks tool-call state, handles `null` tool names/ids, and avoids O(n²) string concatenations during long structured-output sessions.
+
 ## [0.2.1] - 2025-10-15
 
 ### Fixed

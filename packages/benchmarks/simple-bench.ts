@@ -1,7 +1,10 @@
 import { Bench } from 'tinybench'
 import { lensPath, set as rSet } from 'ramda'
+import { readFileSync } from 'node:fs'
+import { z } from 'zod'
 import JSONParser from '../instructor-stream/src/utils/json-parser.ts'
 import { setDeep } from '../instructor-stream/src/utils/path.ts'
+import { streamLangGraphEvents } from '../instructor-stream/src/adapters/langgraph/index.ts'
 
 type Path = (string | number)[]
 
@@ -9,6 +12,21 @@ const bigJson = JSON.stringify({
   user: { name: 'Alice', bio: 'Long bio '.repeat(1000), age: 42 },
   posts: Array.from({ length: 500 }, (_, i) => ({ id: i, title: `T${i}`, body: 'X'.repeat(200) })),
 })
+
+const langgraphRaw = readFileSync(
+  new URL(
+    '../instructor-stream/src/adapters/langgraph/__tests__/mock-data/stream-mock.jsonl',
+    import.meta.url
+  ),
+  'utf8'
+)
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line.length > 0)
+  .map((line) => JSON.parse(line))
+
+const langgraphMessageSchema = z.any()
+const langgraphToolSchemas = { screenshot_tool: z.any() }
 
 function getPathFromStack(
   stack: Array<{ key: string | number | undefined }>,
@@ -56,11 +74,34 @@ function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
 
+const makeLangGraphSource = (): AsyncIterable<unknown> => ({
+  async *[Symbol.asyncIterator]() {
+    for (const env of langgraphRaw) {
+      yield env
+    }
+  },
+})
+
+async function runLangGraphReplay(): Promise<number> {
+  let count = 0
+  for await (const event of streamLangGraphEvents({
+    source: makeLangGraphSource(),
+    tag: 'screenshot',
+    schema: langgraphMessageSchema,
+    toolSchemas: langgraphToolSchemas,
+  })) {
+    if (event.kind === 'message' || event.kind === 'tool') {
+      count += 1
+    }
+  }
+  return count
+}
+
 async function main() {
   const assignments = await collectAssignments(bigJson)
   const stub = { user: { name: 'Unknown', bio: '', age: 0 }, posts: [] as unknown[] }
 
-  const bench = new Bench({ time: Number.parseInt(process.env.BENCH_TIME ?? '5000', 10) })
+  const bench = new Bench({ time: Number.parseInt(process.env.BENCH_TIME ?? '2000', 10) })
 
   bench
     .add('in-place setDeep assignments (large JSON)', () => {
@@ -73,19 +114,45 @@ async function main() {
       for (const a of assignments) target = rSet(lensPath(a.path), a.value, target)
       return target
     })
+    .add('LangGraph stream replay (5k chunks, tag=screenshot)', async () => {
+      await runLangGraphReplay()
+    })
 
   await bench.run()
 
-  console.table(
-    bench.tasks.map((t) => ({
-      name: t.name,
-      hz: t.result?.hz?.toFixed(2),
-      mean: t.result?.mean?.toFixed(4),
-      min: t.result?.min?.toFixed(4),
-      max: t.result?.max?.toFixed(4),
-      samples: t.result?.samples,
-    }))
-  )
+  const summaries = bench.tasks
+    .map((task) => {
+      const result = task.result
+      const hz = result?.hz ?? 0
+      return {
+        name: task.name,
+        hz,
+        mean: result?.mean ?? 0,
+        rme: result?.rme ?? 0,
+        samples: result?.samples?.length ?? 0,
+      }
+    })
+    .sort((a, b) => b.hz - a.hz)
+
+  const bestHz = summaries[0]?.hz ?? 0
+  const barWidth = 28
+
+  const formatRow = (row: (typeof summaries)[number]) => {
+    const relative = bestHz > 0 ? row.hz / bestHz : 0
+    const barLength = bestHz > 0 ? Math.max(1, Math.round(relative * barWidth)) : 0
+    return {
+      name: row.name,
+      'ops/s': row.hz > 0 ? row.hz.toFixed(2) : '—',
+      'mean (ms)': row.mean > 0 ? row.mean.toFixed(4) : '—',
+      '± rme': row.hz > 0 ? `${row.rme.toFixed(2)}%` : '—',
+      samples: row.samples,
+      rel: bestHz > 0 ? `${(relative * 100).toFixed(1)}%` : '—',
+      bar: bestHz > 0 ? '█'.repeat(barLength) : '',
+    }
+  }
+
+  console.log('\nBenchmark baseline (higher ops/s is better):\n')
+  console.table(summaries.map(formatRow))
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await

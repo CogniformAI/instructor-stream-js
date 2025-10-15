@@ -1,5 +1,15 @@
 # @cogniformai/instructor-stream
 
+## 0.2.2
+
+### Patch Changes
+
+- Improve LangGraph adapter throughput and memory behaviour for long streams by eliminating queue shift churn, clearing tool parser state, and avoiding repeated string copies for tool-call arguments.
+- Accept LangGraph tool chunks with `null` names/ids and ensure mixed tool-call sequences still emit structured events; add a regression test and integrate the mock JSONL stream into the benchmarks.
+- Refresh the benchmarking suite with a streaming replay case and clearer console output so future refactors can track structured-output TPS at a glance.
+
+# @cogniformai/instructor-stream
+
 ## 0.1.1
 
 ### Patch Changes

@@ -123,4 +123,84 @@ describe('streamLangGraphEvents', () => {
       expect(toolEvent.rawArgs).toBe('{"business":"Acme"}')
     }
   })
+
+  it('coalesces tool-call chunks without id or name using the message id fallback', async () => {
+    const sharedMeta = {
+      tags: ['profile'],
+      langgraph_node: 'profile_llm',
+    }
+
+    async function* source(): AsyncGenerator<unknown> {
+      yield createEnvelope({
+        event: 'messages',
+        data: [
+          {
+            type: 'AIMessageChunk',
+            id: 'msg-1',
+            content: [
+              {
+                type: 'tool_call_chunk',
+                name: 'fetch_profile',
+                id: 'call-xyz',
+                args: '',
+                index: 0,
+              },
+            ],
+            tool_calls: [
+              {
+                name: 'fetch_profile',
+                args: {},
+                id: 'call-xyz',
+                type: 'tool_call',
+              },
+            ],
+          },
+          sharedMeta,
+        ],
+      })
+
+      const chunks = ['{"', 'business', '":"', 'Acme', '"}']
+      for (const piece of chunks) {
+        yield createEnvelope({
+          event: 'messages',
+          data: [
+            {
+              type: 'AIMessageChunk',
+              id: 'msg-1',
+              content: [
+                {
+                  type: 'tool_call_chunk',
+                  name: null,
+                  id: null,
+                  args: piece,
+                  index: 0,
+                },
+              ],
+              tool_calls: [
+                {
+                  name: null,
+                  args: {},
+                  id: null,
+                  type: 'tool_call',
+                },
+              ],
+            },
+            sharedMeta,
+          ],
+        })
+      }
+    }
+
+    const events = await collectEvents(source())
+    const tools = events.filter((event) => event.kind === 'tool')
+    expect(tools.length).toBeGreaterThan(0)
+    const toolEvent = tools[tools.length - 1]
+    expect(toolEvent.kind).toBe('tool')
+    if (toolEvent.kind === 'tool') {
+      expect(toolEvent.toolName).toBe('fetch_profile')
+      expect(toolEvent.toolCallId).toBe('call-xyz')
+      expect(toolEvent.rawArgs).toBe('{"business":"Acme"}')
+      expect(toolEvent.data).toEqual({ business: 'Acme' })
+    }
+  })
 })
