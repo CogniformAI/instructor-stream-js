@@ -36,8 +36,8 @@ describe('streamLangGraphEvents', () => {
           {
             type: 'AIMessageChunk',
             content: [
-              { type: 'text', text: '{"foo":', index: 0 },
-              { type: 'text', text: '"hi"}', index: 1 },
+              { type: 'text', text: '{"foo":', index: 'lc_txt_0' },
+              { type: 'text', text: '"hi"}', index: 'lc_txt_10' },
             ],
           },
           {

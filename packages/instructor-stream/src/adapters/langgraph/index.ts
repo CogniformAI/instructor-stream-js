@@ -25,7 +25,7 @@ export const ContentBlock = z
     args: z.string().optional(),
     name: z.string().optional(),
     id: z.union([z.string(), z.null()]).optional(),
-    index: z.number().optional(),
+    index: z.union([z.number(), z.string()]).optional(),
   })
   .catchall(z.unknown())
 export type LangGraphContentBlock = z.infer<typeof ContentBlock>
@@ -165,9 +165,19 @@ export function extractContent(env: TLangGraphEnvelope): string {
   const blocks = normalizeContentBlocks(msg)
   return blocks
     .filter((block) => block.type === 'text' && typeof block.text === 'string')
-    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+    .sort((a, b) => coerceIndex(a.index) - coerceIndex(b.index))
     .map((block) => block.text as string)
     .join('')
+}
+
+function coerceIndex(index: unknown): number {
+  if (typeof index === 'number' && Number.isFinite(index)) return index
+  if (typeof index === 'string') {
+    const numericTail = index.match(/(-?\d+(?:\.\d+)?)$/)?.[1]
+    const parsed = Number(numericTail ?? index)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return Number.MAX_SAFE_INTEGER
 }
 
 /**
