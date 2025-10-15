@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-10-15
+
+### Added
+
+- `streamLangGraphEvents` API for unified message/tool streaming in the LangGraph adapter
+- Unit coverage for multi-tag content blocks and incremental tool-call args (`stream-events.test.ts`)
+
+### Changed
+
+- Normalised LangGraph tuple schema enums to open-ended `catchall` structures to match provider variability
+- Updated LangGraph adapter to surface `matchedTag`, prefer subscribed tags for identifiers, and stream tool args progressively
+
 ### Added
 
 - ✅ Initial fork of instructor-js with streaming-first focus
