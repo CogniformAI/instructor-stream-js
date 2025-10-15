@@ -1,5 +1,13 @@
 # @cogniformai/instructor-stream
 
+## 0.2.3
+
+### Patch Changes
+
+- Document manual release flow and disable the CI auto-publish workflow so npm releases for 0.2.x are driven by the documented checklist.
+
+# @cogniformai/instructor-stream
+
 ## 0.2.2
 
 ### Patch Changes
