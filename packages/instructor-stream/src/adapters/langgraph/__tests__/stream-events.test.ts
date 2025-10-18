@@ -34,7 +34,7 @@ describe('streamLangGraphEvents', () => {
         event: 'messages',
         data: [
           {
-            type: 'AIMessageChunk',
+            type: 'ai',
             content: [
               { type: 'text', text: '{"foo":', index: 'lc_txt_0' },
               { type: 'text', text: '"hi"}', index: 'lc_txt_10' },
@@ -62,46 +62,26 @@ describe('streamLangGraphEvents', () => {
     }
   })
 
-  it('streams tool-call args grouped by tool name and preserves matched tag', async () => {
+  it('streams tool-call args from universal tool_call blocks', async () => {
     async function* source(): AsyncGenerator<unknown> {
-      // First chunk introduces the tool call and the opening of the JSON payload
       yield createEnvelope({
         event: 'messages',
         data: [
           {
-            type: 'AIMessageChunk',
+            type: 'ai',
             content: [
               {
-                type: 'tool_call_chunk',
+                type: 'tool_call',
                 name: 'fetch_profile',
                 id: 'call-1',
-                args: '{"business":',
+                args: {
+                  business: 'Acme',
+                },
               },
             ],
           },
           {
             tags: ['profile'],
-          },
-        ],
-      })
-
-      // Second chunk completes the payload and should flush an event
-      yield createEnvelope({
-        event: 'messages',
-        data: [
-          {
-            type: 'AIMessageChunk',
-            content: [
-              {
-                type: 'tool_call_chunk',
-                name: 'fetch_profile',
-                id: 'call-1',
-                args: '"Acme"}',
-              },
-            ],
-          },
-          {
-            tags: ['profile', 'tooling'],
           },
         ],
       })

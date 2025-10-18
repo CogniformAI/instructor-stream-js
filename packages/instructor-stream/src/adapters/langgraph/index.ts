@@ -22,7 +22,7 @@ export const ContentBlock = z
   .object({
     type: z.string(),
     text: z.string().optional(),
-    args: z.string().optional(),
+    args: z.unknown().optional(),
     name: z.union([z.string(), z.null()]).optional(),
     id: z.union([z.string(), z.null()]).optional(),
     index: z.union([z.number(), z.string()]).optional(),
@@ -252,6 +252,11 @@ type ToolParserState = {
   queue: AsyncQueue<unknown>
 }
 
+type ToolArgChunk = {
+  chunk: string
+  appended: boolean
+}
+
 type ToolContext = {
   meta: LangGraphMetadata
   tags: string[]
@@ -472,6 +477,29 @@ export async function* streamLangGraphEvents<
     return key
   }
 
+  const toToolArgsChunk = (block: LangGraphContentBlock): ToolArgChunk => {
+    const args = block.args
+    if (args === undefined || args === null) {
+      return { chunk: '', appended: false }
+    }
+    if (typeof args === 'string') {
+      return { chunk: args, appended: args.length > 0 }
+    }
+    if (typeof args === 'object') {
+      try {
+        const chunk = JSON.stringify(args)
+        return { chunk, appended: chunk.length > 0 }
+      } catch {
+        // fall through to stringification
+      }
+    }
+    const chunk = String(args)
+    return { chunk, appended: chunk.length > 0 }
+  }
+
+  const isToolCallBlock = (block: LangGraphContentBlock): boolean =>
+    block.type === 'tool_call_chunk' || block.type === 'tool_call'
+
   let lastMessageContext: {
     meta: LangGraphMetadata
     tags: string[]
@@ -519,12 +547,11 @@ export async function* streamLangGraphEvents<
         continue
       }
 
-      if (block.type === 'tool_call_chunk') {
+      if (isToolCallBlock(block)) {
         const toolKey = resolveToolKey(block, message)
         const toolName = resolveToolName(toolKey, block, message)
         const parser = ensureToolParser(toolKey, toolName)
-        const argsChunk = block.args ?? ''
-        const appendedThisTick = argsChunk.length > 0
+        const { chunk: argsChunk, appended: appendedThisTick } = toToolArgsChunk(block)
         if (appendedThisTick) {
           appendToolChunk(toolKey, argsChunk)
           await parser.writer.write(argsChunk)

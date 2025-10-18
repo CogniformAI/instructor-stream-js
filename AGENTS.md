@@ -1,33 +1,21 @@
-# Release Guide
+# Repository Guidelines
 
-Manual releases keep the process predictable and avoid surprise publishes from CI. Follow this checklist whenever cutting a new version.
+## Project Structure & Module Organization
 
-1. **Prepare the changes**
-   - Update version numbers in `package.json` (root) and `packages/instructor-stream/package.json`.
-   - Add changelog entries in both `CHANGELOG.md` (root) and `packages/instructor-stream/CHANGELOG.md`.
-   - Commit the feature/fix work before starting the release commit.
+The workspace is driven by `pnpm`, with the core TypeScript library in `packages/instructor-stream/src`. Feature modules follow folders such as `adapters/`, `stream/`, and `utils/`, while co-located unit specs live in `src/__tests__`. Integration scripts that exercise external APIs live in `integrations/`, and example apps are under `packages/examples`. Provider-specific adapters reside in `packages/providers/src`, with smoke tests in `packages/providers/tests`. Documentation sources sit in `docs/` and are published via `mkdocs`.
 
-2. **Validate locally**
-   - `pnpm install --frozen-lockfile`
-   - `pnpm -C packages/instructor-stream test`
-   - `pnpm -C packages/instructor-stream build`
+## Build, Test, and Development Commands
 
-3. **Create the release commit**
-   - `git add .`
-   - `git commit -m "Release X.Y.Z"`
+Install dependencies once with `pnpm install --frozen-lockfile`. Run the library specs by calling `pnpm -C packages/instructor-stream test`, or use `pnpm -C packages/instructor-stream test:watch` while iterating. Build distributables with `pnpm -C packages/instructor-stream build`, which runs `tsup` and refreshes `dist/`. Before publishing, execute the root `pnpm run pre-push` to format, lint, test, and build in one pass. For integration smoke tests, invoke `pnpm -C packages/instructor-stream test:integration`.
 
-4. **Tag and push**
-   - `git tag vX.Y.Z`
-   - `git push origin main`
-   - `git push origin vX.Y.Z`
+## Coding Style & Naming Conventions
 
-5. **Publish to npm**
-   - From `packages/instructor-stream/`: `pnpm publish --access public`
-   - Wait for the publish command to finish successfully, then announce the release.
+Code is TypeScript-first with ES modules and 2-space indentation enforced by Prettier (`pnpm run format`). Imports are auto-sorted using `@ianvs/prettier-plugin-sort-imports`, and static analysis must pass `pnpm run lint` (oxlint). Public entry points should export via `src/index.ts`, and new adapters belong under `src/adapters/<provider-name>.ts`. Use PascalCase for classes, camelCase for functions, and SCREAMING_SNAKE_CASE only for constants in `constants/`.
 
-6. **If something goes wrong**
-   - `npm unpublish @cogniformai/instructor-stream@X.Y.Z --force` (only if the release is broken and you are absolutely sure).
-   - Delete the git tag (`git tag -d vX.Y.Z`, `git push origin :refs/tags/vX.Y.Z`).
-   - Fix the issue, bump to a new patch version, and re-run the checklist.
+## Testing Guidelines
 
-Keep this file up to date if the release flow changes (e.g., adding additional packages or automation).
+Vitest powers both unit and benchmark suites; favor `describe` blocks that mirror directory names (for example, `describe("stream/chunk-consumer")`). Keep new unit tests beside the implementation in `src/__tests__`. For coverage checks, run `pnpm -C packages/instructor-stream test:coverage`, targeting parity with existing modules before merging. Integration harnesses (`tsx integrations/*.ts`) hit external APIs, so gate them behind environment variables and document any required tokens.
+
+## Commit & Pull Request Guidelines
+
+Follow the prevailing conventional commit style seen in history (`fix: normalize langgraph content indices`, `chore: prepare 0.2.3 manual release`). Release commits remain `Release X.Y.Z`. Each PR should include a clear summary, linked issues in the description, and validation notes (e.g., `pnpm -C packages/instructor-stream test`). Attach screenshots or logs when behavior changes user-facing streams. Request review from a maintainer and wait for CI green checks before merging.
