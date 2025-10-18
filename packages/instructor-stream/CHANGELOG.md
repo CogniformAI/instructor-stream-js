@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.2.4
+
+### Patch Changes
+
+- Handle LangChain's universal `tool_call` payloads by normalising object args and treating `tool_call`/`tool_call_chunk` blocks uniformly, restoring streaming snapshots for new provider responses.
+
 ## 0.2.3
 
 ### Patch Changes

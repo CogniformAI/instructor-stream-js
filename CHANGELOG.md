@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-10-18
+
+### Fixed
+
+- LangGraph adapter now accepts LangChain's universal `tool_call` content blocks, coalescing object args into streaming snapshots without regressing incremental chunk support.
+
+### Changed
+
+- Replaced the release checklist with a broader contributor guide in `AGENTS.md` so new agents can find project structure, workflows, and testing tips in one place.
+
 ## [0.2.3] - 2025-10-15
 
 ### Added
