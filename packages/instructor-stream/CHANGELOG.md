@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.2.5
+
+### Patch Changes
+
+- Quote primitive string tool-call chunks so they parse as JSON, add regression coverage for Anthropic/OpenAI streams, and replay the provider mocks end-to-end to guard against future adapter regressions.
+
 ## 0.2.4
 
 ### Patch Changes

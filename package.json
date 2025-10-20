@@ -1,6 +1,6 @@
 {
   "name": "@cogniformai/instructor-stream",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": true,
   "description": "streaming-first structured outputs for llms",
   "publishConfig": {
