@@ -201,7 +201,7 @@ class AsyncQueue<T> implements AsyncIterable<T> {
       return { value, done: false }
     }
     if (this.ended) {
-      return { value: undefined as any, done: true }
+      return { value: undefined as unknown as T, done: true }
     }
     return null
   }
@@ -218,13 +218,13 @@ class AsyncQueue<T> implements AsyncIterable<T> {
     this.ended = true
     let resolver: ((v: IteratorResult<T>) => void) | undefined
     while ((resolver = this.dequeueResolver())) {
-      resolver({ value: undefined as any, done: true })
+      resolver({ value: undefined as unknown as T, done: true })
     }
   }
   async next(): Promise<IteratorResult<T>> {
     const immediate = this.shift()
     if (immediate) return immediate
-    if (this.ended) return { value: undefined as any, done: true }
+    if (this.ended) return { value: undefined as unknown as T, done: true }
     return await new Promise((resolve) => {
       this.resolvers.push(resolve)
     })
@@ -477,12 +477,28 @@ export async function* streamLangGraphEvents<
     return key
   }
 
-  const toToolArgsChunk = (block: LangGraphContentBlock): ToolArgChunk => {
+  const toToolArgsChunk = (
+    block: LangGraphContentBlock,
+    hasExistingBuffer: boolean
+  ): ToolArgChunk => {
     const args = block.args
     if (args === undefined || args === null) {
       return { chunk: '', appended: false }
     }
     if (typeof args === 'string') {
+      const trimmed = args.trim()
+      if (trimmed.length === 0) {
+        return { chunk: '', appended: false }
+      }
+      const looksLikeJson = /[{}\[\]":,]/.test(trimmed)
+      if (!looksLikeJson && !hasExistingBuffer) {
+        const primitiveLiteral = /^(?:-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)$/
+        if (primitiveLiteral.test(trimmed)) {
+          return { chunk: trimmed, appended: trimmed.length > 0 }
+        }
+        const quoted = JSON.stringify(trimmed)
+        return { chunk: quoted, appended: quoted.length > 0 }
+      }
       return { chunk: args, appended: args.length > 0 }
     }
     if (typeof args === 'object') {
@@ -551,7 +567,10 @@ export async function* streamLangGraphEvents<
         const toolKey = resolveToolKey(block, message)
         const toolName = resolveToolName(toolKey, block, message)
         const parser = ensureToolParser(toolKey, toolName)
-        const { chunk: argsChunk, appended: appendedThisTick } = toToolArgsChunk(block)
+        const { chunk: argsChunk, appended: appendedThisTick } = toToolArgsChunk(
+          block,
+          toolRawBuffers.has(toolKey)
+        )
         if (appendedThisTick) {
           appendToolChunk(toolKey, argsChunk)
           await parser.writer.write(argsChunk)

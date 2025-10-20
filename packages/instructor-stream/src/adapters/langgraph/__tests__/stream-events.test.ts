@@ -104,6 +104,58 @@ describe('streamLangGraphEvents', () => {
     }
   })
 
+  it('normalizes primitive string tool_call args into valid JSON', async () => {
+    async function* source(): AsyncGenerator<unknown> {
+      yield createEnvelope({
+        event: 'messages',
+        data: [
+          {
+            type: 'ai',
+            content: [
+              {
+                type: 'tool_call',
+                name: 'fetch_profile',
+                id: 'call-primitive',
+                args: 'tense',
+              },
+            ],
+          },
+          {
+            tags: ['profile'],
+          },
+        ],
+      })
+    }
+
+    const events: LangGraphStreamEvent<typeof messageSchema, { fetch_profile: z.ZodAny }>[] = []
+    for await (const evt of streamLangGraphEvents({
+      source: source(),
+      tag: 'profile',
+      schema: messageSchema,
+      toolSchemas: { fetch_profile: z.any() },
+      typeDefaults: { string: null },
+    })) {
+      events.push(evt)
+    }
+
+    const toolEvent = events.find((event) => event.kind === 'tool')
+    expect(toolEvent).toBeDefined()
+    if (toolEvent?.kind === 'tool') {
+      expect(toolEvent.toolName).toBe('fetch_profile')
+      expect(toolEvent.toolCallId).toBe('call-primitive')
+      expect(toolEvent.identifier).toBe('fetch_profile')
+      expect(toolEvent.matchedTag).toBe('profile')
+      expect(toolEvent.rawArgs).toBe('"tense"')
+      if (typeof toolEvent.data === 'string') {
+        expect(toolEvent.data).toBe('tense')
+      } else if (toolEvent.data && typeof toolEvent.data === 'object') {
+        expect(Object.values(toolEvent.data)).toContain('tense')
+      } else {
+        throw new Error('Unexpected tool data shape')
+      }
+    }
+  })
+
   it('coalesces tool-call chunks without id or name using the message id fallback', async () => {
     const sharedMeta = {
       tags: ['profile'],
