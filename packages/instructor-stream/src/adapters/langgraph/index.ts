@@ -466,16 +466,8 @@ export async function* streamLangGraphEvents<
       if (args.length === 0) {
         return { chunk: '', appended: false }
       }
-      const trimmed = args.trim()
-      if (trimmed.length === 0) {
-        // Preserve intra-string whitespace chunks once parsing has started.
-        return {
-          chunk: hasExistingBuffer ? args : '',
-          appended: hasExistingBuffer && args.length > 0,
-        }
-      }
-      const looksLikeJson = /[{}\[\]":,]/.test(trimmed)
-      if (!looksLikeJson && !hasExistingBuffer) {
+      if (!hasExistingBuffer && block.type === 'tool_call') {
+        const trimmed = args.trim()
         const primitiveLiteral = /^(?:-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)$/
         if (primitiveLiteral.test(trimmed)) {
           return { chunk: trimmed, appended: true }
@@ -561,6 +553,7 @@ export async function* streamLangGraphEvents<
         } else {
           getToolBuffer(toolKey)
         }
+        const rawArgs = readToolBuffer(toolKey)
 
         const toolCallId = resolveToolCallId(toolKey, block, message)
         toolContexts.set(toolKey, {
@@ -571,20 +564,10 @@ export async function* streamLangGraphEvents<
           toolCallId: toolCallId ?? null,
         })
 
-        let finalizeAfterDrain = false
         while (true) {
           const dequeued = parser.queue.shift()
           if (!dequeued) break
           if (dequeued.done) break
-          const rawArgs = readToolBuffer(toolKey)
-          if (!finalizeAfterDrain && appendedThisTick && rawArgs.length > 0) {
-            try {
-              JSON.parse(rawArgs)
-              finalizeAfterDrain = true
-            } catch {
-              finalizeAfterDrain = false
-            }
-          }
 
           yield {
             kind: 'tool',
@@ -598,32 +581,6 @@ export async function* streamLangGraphEvents<
             data: dequeued.value as ToolDataUnion<TToolSchemas>,
             matchedTag,
           }
-        }
-        if (finalizeAfterDrain) {
-          await parser.writer.close()
-          const context = toolContexts.get(toolKey)
-          if (context) {
-            for await (const snapshot of parser.queue) {
-              yield {
-                kind: 'tool',
-                identifier: context.toolName,
-                meta: context.meta,
-                tags: context.tags,
-                node: context.node,
-                toolName: context.toolName,
-                toolCallId: context.toolCallId ?? null,
-                rawArgs: readToolBuffer(toolKey),
-                data: snapshot as ToolDataUnion<TToolSchemas>,
-                matchedTag:
-                  typeof tag === 'string' && context.tags.includes(tag) ? tag : matchedTag,
-              }
-            }
-          } else {
-            for await (const _ of parser.queue) {
-              // flushed with no context; nothing to emit
-            }
-          }
-          releaseToolState(toolKey, true)
         }
       }
     }

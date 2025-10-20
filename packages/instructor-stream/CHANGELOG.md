@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.2.8
+
+### Patch Changes
+
+- Stream LangGraph `tool_call_chunk` args through the same SchemaStream path as text so tool snapshots flush per chunk without extra buffering.
+
 ## 0.2.7
 
 ### Patch Changes
