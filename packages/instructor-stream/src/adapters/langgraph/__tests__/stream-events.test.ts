@@ -156,6 +156,64 @@ describe('streamLangGraphEvents', () => {
     }
   })
 
+  it('emits tool events when tool_call args arrive as an object', async () => {
+    async function* source(): AsyncGenerator<unknown> {
+      yield createEnvelope({
+        event: 'messages',
+        data: [
+          {
+            type: 'ai',
+            content: [
+              {
+                type: 'tool_call',
+                name: 'profile_tool',
+                id: 'call-object',
+                args: {
+                  profile: {
+                    business_name: 'Acme Co',
+                  },
+                },
+              },
+            ],
+          },
+          {
+            tags: ['profile'],
+          },
+        ],
+      })
+    }
+
+    const events: LangGraphStreamEvent<typeof messageSchema, { profile_tool: z.ZodTypeAny }>[] = []
+    for await (const evt of streamLangGraphEvents({
+      source: source(),
+      tag: 'profile',
+      schema: messageSchema,
+      toolSchemas: {
+        profile_tool: z.object({
+          profile: z.object({
+            business_name: z.string(),
+          }),
+        }),
+      },
+      typeDefaults: { string: null },
+    })) {
+      events.push(evt)
+    }
+
+    const toolEvent = events.find((event) => event.kind === 'tool')
+    expect(toolEvent).toBeDefined()
+    if (toolEvent?.kind === 'tool') {
+      expect(toolEvent.toolName).toBe('profile_tool')
+      expect(toolEvent.toolCallId).toBe('call-object')
+      expect(toolEvent.rawArgs).toBe('{"profile":{"business_name":"Acme Co"}}')
+      expect(toolEvent.data).toEqual({
+        profile: {
+          business_name: 'Acme Co',
+        },
+      })
+    }
+  })
+
   it('coalesces tool-call chunks without id or name using the message id fallback', async () => {
     const sharedMeta = {
       tags: ['profile'],

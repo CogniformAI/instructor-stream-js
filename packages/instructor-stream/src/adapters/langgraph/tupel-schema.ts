@@ -7,403 +7,397 @@
 
 import * as z from 'zod'
 
-/** The last chunk position */
-export const ChunkPositionSchema = z.string()
+export const ChunkPositionSchema = z.enum(['last'])
 export type ChunkPosition = z.infer<typeof ChunkPositionSchema>
 
-export const IndexEnumSchema = z.union([z.string(), z.number()])
+export const IndexEnumSchema = z.enum(['lc_tc_0', 'lc_txt_0'])
 export type IndexEnum = z.infer<typeof IndexEnumSchema>
 
-/**
- * NOTE: This is the new universal content_block type in langgraph 1.0.0a4 and newer
- * "content": [{ "type": "text", "text": "Hello, world!" , index: 0}] - text block
- * "content": [{ "type": "image_url", "url": "https://example.com/image.png" , index: 0}] - image block
- * @see https://docs.langchain.com/oss/javascript/langchain/messages
- */
-export const ContentTypeSchema = z.string()
+export const ContentTypeSchema = z.enum(['image', 'text', 'tool_call', 'tool_call_chunk'])
 export type ContentType = z.infer<typeof ContentTypeSchema>
 
-/** The creator of the chunk */
 export const CreatedBySchema = z.enum(['ai', 'AIMessageChunk', 'human', 'system', 'tool'])
 export type CreatedBy = z.infer<typeof CreatedBySchema>
 
-/** The graph id */
-export const GraphIdSchema = z.string()
+export const GraphIdSchema = z.enum(['cinematic_agent'])
 export type GraphId = z.infer<typeof GraphIdSchema>
 
-/** The type of invalid tool call */
-export const InvalidToolCallTypeSchema = z.string()
+export const InvalidToolCallTypeSchema = z.enum(['invalid_tool_call', 'tool_call_chunk'])
 export type InvalidToolCallType = z.infer<typeof InvalidToolCallTypeSchema>
 
-/** The version of the langgraph api that this was created with */
-export const LanggraphApiVersionSchema = z.string()
+export const LanggraphApiVersionSchema = z.enum(['0.4.43'])
 export type LanggraphApiVersion = z.infer<typeof LanggraphApiVersionSchema>
 
-/** The host of the langgraph api that this was created with */
-export const LanggraphHostSchema = z.string()
+export const LanggraphHostSchema = z.enum(['self-hosted'])
 export type LanggraphHost = z.infer<typeof LanggraphHostSchema>
 
-/**
- * @description The type of the langgraph node
- * - There are two main ways to identify a node:
- * 1. The name of the node via the `langgraph_node` field in the metadata
- * 2. Via tags added to a LLM call
- * NOTE: you can only tag LLM calls, not nodes that dont have an LLM call
- * @warning This is run dependent and will differ from setup to setup
- */
-export const LanggraphNodeSchema = z.string()
-export type Langgraph = z.infer<typeof LanggraphNodeSchema>
+export const LanggraphNodeSchema = z.enum([
+  'business_profile_llm_call',
+  'direction_llm_call',
+  'finalize_video_generation',
+  'format_video_prompts',
+  'generate_video_clip',
+  'ideation_llm_call',
+  'normalize_message_llm_call',
+  '__pregel_pull',
+  '__pregel_push',
+  'screenshot_analysis_llm_call',
+  'screenshot_llm_call',
+  'screenshot_process_url',
+  'screenshot_tools',
+  'visualizer_llm_call',
+])
+export type LanggraphNode = z.infer<typeof LanggraphNodeSchema>
 
-/** The langraph plan of the user */
-export const LanggraphPlanSchema = z.string()
+export const LanggraphPlanSchema = z.enum(['developer'])
 export type LanggraphPlan = z.infer<typeof LanggraphPlanSchema>
 
-/**
- * @description The triggers of the langgraph node
- * - This is the trigger that is used to branch the flow
- * @warning This is run dependent and will differ from setup to setup
- */
-export const LanggraphTriggerSchema = z.string()
+export const LanggraphTriggerSchema = z.enum([
+  'branch:to:business_profile_llm_call',
+  'branch:to:direction_llm_call',
+  'branch:to:finalize_video_generation',
+  'branch:to:format_video_prompts',
+  'branch:to:ideation_llm_call',
+  'branch:to:normalize_message_llm_call',
+  'branch:to:screenshot_analysis_llm_call',
+  'branch:to:screenshot_llm_call',
+  'branch:to:screenshot_process_url',
+  'branch:to:screenshot_tools',
+  'branch:to:visualizer_llm_call',
+  '__pregel_push',
+])
 export type LanggraphTrigger = z.infer<typeof LanggraphTriggerSchema>
 
-/** The version of the langgraph api that this was created with */
-export const LanggraphVersionSchema = z.string()
+export const LanggraphVersionSchema = z.enum(['1.0.0'])
 export type LanggraphVersion = z.infer<typeof LanggraphVersionSchema>
 
-/** The variant of the langgraph api that this was created with */
-export const LangsmithLanggraphApiVariantSchema = z.string()
+export const LangsmithLanggraphApiVariantSchema = z.enum(['local_dev'])
 export type LangsmithLanggraphApiVariant = z.infer<typeof LangsmithLanggraphApiVariantSchema>
 
-/** The project of the langgraph api */
-export const LangsmithProjectSchema = z.string()
+export const LangsmithProjectSchema = z.enum(['video-orchestrator-dev'])
 export type LangsmithProject = z.infer<typeof LangsmithProjectSchema>
 
-/** The llm model name, this will have more than one if you use multiple models */
-export const LsModelNameSchema = z.string()
+export const LsModelNameSchema = z.enum([
+  'claude-haiku-4-5',
+  'claude-sonnet-4-5',
+  'claude-sonnet-4-5-20250929',
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  'gpt-4.1-mini',
+])
 export type LsModelName = z.infer<typeof LsModelNameSchema>
 
-/** The type of the llm model */
-export const LsModelTypeSchema = z.string()
+export const LsModelTypeSchema = z.enum(['chat'])
 export type LsModelType = z.infer<typeof LsModelTypeSchema>
 
-/** The provider of the llm model */
-export const ProviderSchema = z.string()
+export const ProviderSchema = z.enum(['anthropic', 'google_genai', 'openai'])
 export type Provider = z.infer<typeof ProviderSchema>
 
-/**
- *  @description The version of the output
- * - This is important because right now you can only get consistent content blocks from v1 outputs
- * other wise you will get a mixed bag of content blocks
- */
-export const OutputVersionSchema = z.string()
+export const ModelSchema = z.enum(['gpt-4.1-mini-2025-04-14'])
+export type Model = z.infer<typeof ModelSchema>
+
+export const ObjectEnumSchema = z.enum(['response'])
+export type ObjectEnum = z.infer<typeof ObjectEnumSchema>
+
+export const OutputVersionSchema = z.enum(['v1'])
 export type OutputVersion = z.infer<typeof OutputVersionSchema>
 
-/**
- * @description The tags of the langgraph node
- * - These are the tags that are added to the LLM call, not the node
- * IMPORTANT: This is one of the two main ways to identify where the stream is coming from.
- * The other way is via the `langgraph_node` field in the metadata
- * @warning This is run dependent and will differ from setup to setup
- */
-export const TagSchema = z.string()
+export const ServiceTierSchema = z.enum(['default'])
+export type ServiceTier = z.infer<typeof ServiceTierSchema>
+
+export const StatusSchema = z.enum(['completed'])
+export type Status = z.infer<typeof StatusSchema>
+
+export const TagSchema = z.enum([
+  'direction',
+  'ideation',
+  'normalization',
+  'profile',
+  'screenshot',
+  'style_guide',
+  'visualizer',
+])
 export type Tag = z.infer<typeof TagSchema>
 
-/** The event type, this will vary depending on the stream mode */
-export const EventSchema = z.enum(['messages', 'metadata'])
+export const EventSchema = z.enum(['', 'messages', 'metadata'])
 export type Event = z.infer<typeof EventSchema>
 
-// export const HslSchema = z.object({
-//     "hue": z.number(),
-//     "saturation": z.number(),
-//     "lightness": z.number(),
-// });
-// export type Hsl = z.infer<typeof HslSchema>;
-
-// export const ThemeTokensSchema = z.object({
-//     "primary_bg": z.string(),
-//     "primary_text": z.string(),
-//     "secondary_bg": z.string(),
-//     "secondary_text": z.string(),
-//     "muted_bg": z.string(),
-//     "muted_text": z.string(),
-//     "accent_bg": z.string(),
-//     "accent_text": z.string(),
-// });
-// export type ThemeTokens = z.infer<typeof ThemeTokensSchema>;
-
-// export const AudioDirectionSchema = z.object({
-//     "music_suggestion": z.string(),
-//     "sound_design": z.string(),
-//     "vo_timing": z.string(),
-// });
-// export type AudioDirection = z.infer<typeof AudioDirectionSchema>;
-
-// export const CameraShotSchema = z.object({
-//     "shot_number": z.number(),
-//     "start_time": z.number(),
-//     "end_time": z.number(),
-//     "content": z.string(),
-//     "dialog": z.string(),
-//     "on_screen_text": z.string(),
-// });
-// export type CameraShot = z.infer<typeof CameraShotSchema>;
-
-// export const PersonasAndArchetypeSchema = z.object({
-//     "name": z.string(),
-//     "description": z.string(),
-//     "state_in_shot": z.string(),
-// });
-// export type PersonasAndArchetype = z.infer<typeof PersonasAndArchetypeSchema>;
-
-// export const VisualStyleSchema = z.object({
-//     "style_name": z.string(),
-//     "director_reference": z.string(),
-//     "visual_approach": z.string(),
-//     "color_palette": z.string(),
-//     "camera_style": z.string(),
-//     "lighting": z.string(),
-//     "pacing_strategy": z.string(),
-// });
-// export type VisualStyle = z.infer<typeof VisualStyleSchema>;
-
-// export const StoryBeatsSchema = z.object({
-//     "sec_0_8": z.string(),
-//     "sec_8_16": z.string(),
-//     "sec_16_24": z.string(),
-//     "sec_24_30": z.string(),
-// });
-// export type StoryBeats = z.infer<typeof StoryBeatsSchema>;
-
-// export const ProfileSchema = z.object({
-//     "business_name": z.string(),
-//     "type_of_business": z.string(),
-//     "founding_date": z.string(),
-//     "founders": z.string(),
-//     "key_milestones": z.string(),
-//     "brand_promise_and_value_proposition": z.string(),
-//     "key_differentiators": z.string(),
-//     "interesting_facts_and_achievements": z.string(),
-//     "website_url": z.string(),
-//     "physical_address": z.string(),
-//     "phone_number": z.string(),
-//     "email_address": z.string(),
-// });
-// export type Profile = z.infer<typeof ProfileSchema>;
-
-// export const ShotSchema = z.object({
-//     "index": z.number(),
-//     "veo_copy": z.string(),
-//     "camera": z.string(),
-//     "setting": z.string(),
-//     "subjects": z.string(),
-//     "style": z.string(),
-//     "timeline": z.string(),
-//     "audio": z.string(),
-// });
-// export type Shot = z.infer<typeof ShotSchema>;
-
-export const ImageUrlSchema = z
-  .object({
-    url: z.string(),
-  })
-  .catchall(z.unknown())
-export type ImageUrl = z.infer<typeof ImageUrlSchema>
-
-/** The invalid tool call */
-export const InvalidToolOrToolCallChunkSchema = z
-  .object({
-    name: z.union([z.null(), z.string()]),
-    args: z.string().optional(),
-    id: z.union([z.null(), z.string()]),
-    error: z.null().optional(),
-    type: InvalidToolCallTypeSchema,
-    index: z.number().optional(),
-  })
-  .catchall(z.unknown())
-export type InvalidToolCallOrToolCallChunk = z.infer<typeof InvalidToolOrToolCallChunkSchema>
-
-export const MetadataSchema = z.object({}).catchall(z.unknown())
-export type Metadata = z.infer<typeof MetadataSchema>
-
-/** The completion tokens details */
-export const CompletionTokensDetailsSchema = z.object({
-  accepted_prediction_tokens: z.number(),
-  audio_tokens: z.number(),
-  reasoning_tokens: z.number(),
-  rejected_prediction_tokens: z.number(),
+export const FunctionCallSchema = z.object({
+  name: z.string(),
+  arguments: z.string(),
 })
-export type CompletionTokensDetails = z.infer<typeof CompletionTokensDetailsSchema>
+export type FunctionCall = z.infer<typeof FunctionCallSchema>
 
-/** The prompt tokens details */
-export const PromptTokensDetailsSchema = z.object({
-  audio_tokens: z.number(),
-  cached_tokens: z.number(),
+export const HslSchema = z.object({
+  hue: z.number(),
+  saturation: z.number(),
+  lightness: z.number(),
 })
-export type PromptTokensDetails = z.infer<typeof PromptTokensDetailsSchema>
+export type Hsl = z.infer<typeof HslSchema>
 
-/** The tool call schema this is for content block type tool_call_chunk */
-export const ToolCallSchema = z
-  .object({
-    name: z.string(),
-    args: z.unknown(),
-    id: z.union([z.null(), z.string()]),
-    type: z.string(),
-  })
-  .catchall(z.unknown())
-export type ToolCall = z.infer<typeof ToolCallSchema>
+export const ThemeTokensSchema = z.object({
+  primary_bg: z.string(),
+  primary_text: z.string(),
+  secondary_bg: z.string(),
+  secondary_text: z.string(),
+  muted_bg: z.string(),
+  muted_text: z.string(),
+  accent_bg: z.string(),
+  accent_text: z.string(),
+})
+export type ThemeTokens = z.infer<typeof ThemeTokensSchema>
 
-/** The input tokens details */
+export const AudioDirectionSchema = z.object({
+  music_suggestion: z.string(),
+  sound_design: z.string(),
+  vo_timing: z.string(),
+})
+export type AudioDirection = z.infer<typeof AudioDirectionSchema>
+
+export const CameraShotSchema = z.object({
+  shot_number: z.number(),
+  start_time: z.number(),
+  end_time: z.number(),
+  content: z.string(),
+  dialog: z.string(),
+  on_screen_text: z.string(),
+})
+export type CameraShot = z.infer<typeof CameraShotSchema>
+
+export const PersonasAndArchetypeSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  state_in_shot: z.string(),
+})
+export type PersonasAndArchetype = z.infer<typeof PersonasAndArchetypeSchema>
+
+export const VisualStyleSchema = z.object({
+  style_name: z.string(),
+  director_reference: z.string(),
+  visual_approach: z.string(),
+  color_palette: z.string(),
+  camera_style: z.string(),
+  lighting: z.string(),
+  pacing_strategy: z.string(),
+})
+export type VisualStyle = z.infer<typeof VisualStyleSchema>
+
+export const StoryBeatsSchema = z.object({
+  sec_0_8: z.string(),
+  sec_8_16: z.string(),
+  sec_16_24: z.string(),
+  sec_24_30: z.string(),
+})
+export type StoryBeats = z.infer<typeof StoryBeatsSchema>
+
+export const ProfileSchema = z.object({
+  business_name: z.string(),
+  type_of_business: z.string(),
+  founding_date: z.string(),
+  founders: z.string(),
+  key_milestones: z.string(),
+  brand_promise_and_value_proposition: z.string(),
+  key_differentiators: z.string(),
+  interesting_facts_and_achievements: z.string(),
+  website_url: z.string(),
+  physical_address: z.string(),
+  phone_number: z.string(),
+  email_address: z.string(),
+  summary: z.string(),
+})
+export type Profile = z.infer<typeof ProfileSchema>
+
+export const ShotSchema = z.object({
+  index: z.number(),
+  veo_copy: z.string(),
+  camera: z.string(),
+  setting: z.string(),
+  subjects: z.string(),
+  style: z.string(),
+  timeline: z.string(),
+  audio: z.string(),
+})
+export type Shot = z.infer<typeof ShotSchema>
+
+export const ArgsArgsSchema = z.object({
+  profile: ProfileSchema,
+})
+export type ArgsArgs = z.infer<typeof ArgsArgsSchema>
+
+export const ExtrasSchema = z.object({
+  item_id: z.string(),
+})
+export type Extras = z.infer<typeof ExtrasSchema>
+
+export const ToolCallOrInvalidToolCallSchema = z.object({
+  name: z.union([z.null(), z.string()]),
+  args: z.string(),
+  id: z.union([z.null(), z.string()]),
+  error: z.null().optional(),
+  type: InvalidToolCallTypeSchema,
+  index: z.union([z.number(), z.null()]).optional(),
+})
+export type InvalidToolCall = z.infer<typeof ToolCallOrInvalidToolCallSchema>
+
+export const GroundingMetadataSchema = z.object({})
+export type GroundingMetadata = z.infer<typeof GroundingMetadataSchema>
+
+export const ArgsBreakdownSchema = z.object({
+  visual_style: GroundingMetadataSchema,
+})
+export type ArgsBreakdown = z.infer<typeof ArgsBreakdownSchema>
+
 export const InputTokenDetailsSchema = z.object({
-  audio: z.number().optional(),
   cache_read: z.number(),
+  cache_creation: z.number().optional(),
+  audio: z.number().optional(),
 })
 export type InputTokenDetails = z.infer<typeof InputTokenDetailsSchema>
 
-/** The output tokens details (Provider specific) */
 export const OutputTokenDetailsSchema = z.object({
-  audio: z.number().optional(),
   reasoning: z.number(),
+  audio: z.number().optional(),
 })
 export type OutputTokenDetails = z.infer<typeof OutputTokenDetailsSchema>
 
-// export const ColorSchema = z.object({
-//     "name": z.string(),
-//     "hex": z.string(),
-//     "rgb": z.array(z.number()),
-//     "hsl": HslSchema,
-//     "recommended_text": z.string(),
-//     "contrast_with_recommended": z.number(),
-//     "wcag_AA_ok": z.boolean(),
-// });
-// export type Color = z.infer<typeof ColorSchema>;
+export const DataSchemaAlt = z.object({
+  run_id: z.string(),
+  attempt: z.number(),
+})
+export type DataAlt = z.infer<typeof DataSchemaAlt>
 
-// export const BreakdownSchema = z.object({
-//     "visual_style": VisualStyleSchema,
-//     "personas_and_archetypes": z.array(PersonasAndArchetypeSchema),
-//     "camera_shots": z.array(CameraShotSchema),
-//     "audio_direction": AudioDirectionSchema,
-// });
-// export type Breakdown = z.infer<typeof BreakdownSchema>;
+export const ColorSchema = z.object({
+  name: z.string(),
+  hex: z.string(),
+  rgb: z.array(z.number()),
+  hsl: HslSchema,
+  recommended_text: z.union([z.null(), z.string()]),
+  contrast_with_recommended: z.union([z.number(), z.null()]),
+  wcag_AA_ok: z.union([z.boolean(), z.null()]),
+})
+export type Color = z.infer<typeof ColorSchema>
 
-// export const IdeaSchema = z.object({
-//     "name": z.string(),
-//     "concept": z.string(),
-//     "strategy": z.string(),
-//     "emotion": z.string(),
-//     "big_idea": z.string(),
-//     "story_beats": StoryBeatsSchema,
-// });
-// export type Idea = z.infer<typeof IdeaSchema>;
+export const ParsedBreakdownSchema = z.object({
+  visual_style: VisualStyleSchema,
+  personas_and_archetypes: z.array(PersonasAndArchetypeSchema),
+  camera_shots: z.array(CameraShotSchema),
+  audio_direction: AudioDirectionSchema,
+})
+export type ParsedBreakdown = z.infer<typeof ParsedBreakdownSchema>
+
+export const IdeaSchema = z.object({
+  name: z.string(),
+  concept: z.string(),
+  strategy: z.string(),
+  emotion: z.string(),
+  big_idea: z.string(),
+  story_beats: StoryBeatsSchema,
+})
+export type Idea = z.infer<typeof IdeaSchema>
 
 /**
- * @description The content element schema
- * - This is what is inside of the content block
- * - This is the text, image, or tool call chunk
- * @see https://docs.langchain.com/oss/javascript/langchain/messages
+ * This is the new unified Content Block from LangChain and is what we care about working correctly
  */
-export const ContentElementSchema = z
-  .object({
-    type: ContentTypeSchema,
-    text: z.string().optional(),
-    index: z.union([IndexEnumSchema, z.number()]).optional(),
-    id: z.union([z.null(), z.string()]).optional(),
-    name: z.union([z.null(), z.string()]).optional(),
-    args: z.string().optional(),
-    image_url: ImageUrlSchema.optional(),
-  })
-  .catchall(z.unknown())
-export type ContentElement = z.infer<typeof ContentElementSchema>
-
-/** The token usage schema */
-export const TokenUsageSchema = z.object({
-  completion_tokens: z.number(),
-  prompt_tokens: z.number(),
-  total_tokens: z.number(),
-  completion_tokens_details: CompletionTokensDetailsSchema,
-  prompt_tokens_details: PromptTokensDetailsSchema,
+export const ContentBlockSchema = z.object({
+  type: ContentTypeSchema,
+  text: z.string().optional(),
+  index: z.union([IndexEnumSchema, z.number()]).optional(),
+  id: z.union([z.null(), z.string()]).optional(),
+  name: z.union([z.null(), z.string()]).optional(),
+  args: z.union([ArgsArgsSchema, z.string()]).optional(),
+  extras: ExtrasSchema.optional(),
+  url: z.string().optional(),
 })
-export type TokenUsage = z.infer<typeof TokenUsageSchema>
+export type ContentBlock = z.infer<typeof ContentBlockSchema>
 
-/** The usage metadata schema */
+export const ResponseMetadataSchema = z.object({
+  model_provider: ProviderSchema.optional(),
+  id: z.string().optional(),
+  output_version: OutputVersionSchema.optional(),
+  created_at: z.number().optional(),
+  metadata: GroundingMetadataSchema.optional(),
+  model: ModelSchema.optional(),
+  object: ObjectEnumSchema.optional(),
+  service_tier: ServiceTierSchema.optional(),
+  status: StatusSchema.optional(),
+  model_name: z.string().optional(),
+  safety_ratings: z.array(z.any()).optional(),
+  grounding_metadata: GroundingMetadataSchema.optional(),
+  finish_reason: z.string().optional(),
+  stop_reason: z.string().optional(),
+  stop_sequence: z.null().optional(),
+  system_fingerprint: z.string().optional(),
+})
+export type ResponseMetadata = z.infer<typeof ResponseMetadataSchema>
+
+export const ToolCallArgsSchema = z.object({
+  profile: ProfileSchema.optional(),
+  breakdown: ArgsBreakdownSchema.optional(),
+  shot_number: z.number().optional(),
+  shots: z.array(GroundingMetadataSchema).optional(),
+  index: z.number().optional(),
+})
+export type ToolCallArgs = z.infer<typeof ToolCallArgsSchema>
+
 export const UsageMetadataSchema = z.object({
   input_tokens: z.number(),
   output_tokens: z.number(),
   total_tokens: z.number(),
   input_token_details: InputTokenDetailsSchema,
-  output_token_details: OutputTokenDetailsSchema,
+  output_token_details: OutputTokenDetailsSchema.optional(),
 })
 export type UsageMetadata = z.infer<typeof UsageMetadataSchema>
 
-// export const PaletteSchema = z.object({
-//     "colors": z.array(ColorSchema),
-//     "css_vars": z.string(),
-//     "theme_tokens": ThemeTokensSchema,
-// });
-// export type Palette = z.infer<typeof PaletteSchema>;
-
-/** The response metadata schema */
-export const ResponseMetadataSchema = z.object({
-  model_provider: ProviderSchema.optional(),
-  output_version: OutputVersionSchema.optional(),
-  finish_reason: z.string().optional(),
-  token_usage: TokenUsageSchema.optional(),
-  model_name: z.string().optional(),
-  system_fingerprint: z.string().optional(),
-  id: z.string().optional(),
-  service_tier: z.string().optional(),
-  created_at: z.number().optional(),
-  metadata: MetadataSchema.optional(),
-  model: z.string().optional(),
-  object: z.string().optional(),
-  status: z.string().optional(),
+export const PaletteSchema = z.object({
+  colors: z.array(ColorSchema),
+  css_vars: z.string(),
+  theme_tokens: ThemeTokensSchema,
 })
-export type ResponseMetadata = z.infer<typeof ResponseMetadataSchema>
+export type Palette = z.infer<typeof PaletteSchema>
 
-// export const BrandStyleGuideSchema = z.object({
-//     "style_guide": z.string(),
-//     "palette": PaletteSchema,
-// });
-// export type BrandStyleGuide = z.infer<typeof BrandStyleGuideSchema>;
+export const ToolCallSchema = z.object({
+  name: z.string(),
+  args: ToolCallArgsSchema,
+  id: z.union([z.null(), z.string()]),
+  type: ContentTypeSchema,
+})
+export type ToolCall = z.infer<typeof ToolCallSchema>
 
-/**
- * @description The parsed data schema
- * - This is the parsed data that is returned from the LLM call
- * @warning This is run dependent and will differ from setup to setup
- */
+export const BrandStyleGuideSchema = z.object({
+  style_guide: z.string(),
+  palette: PaletteSchema,
+})
+export type BrandStyleGuide = z.infer<typeof BrandStyleGuideSchema>
+
 export const ParsedSchema = z.object({
-  // "website_url": z.string().optional(),
-  // "business_name": z.string().optional(),
-  // "user_instructions": z.string().optional(),
-  // "profile": ProfileSchema.optional(),
-  // "brand_style_guide": BrandStyleGuideSchema.optional(),
-  // "ideas": z.array(IdeaSchema).optional(),
-  // "breakdown": BreakdownSchema.optional(),
-  // "shots": z.array(ShotSchema).optional(),
+  website_url: z.string().optional(),
+  business_name: z.string().optional(),
+  user_instructions: z.string().optional(),
+  brand_style_guide: BrandStyleGuideSchema.optional(),
+  profile: ProfileSchema.optional(),
+  ideas: z.array(IdeaSchema).optional(),
+  breakdown: ParsedBreakdownSchema.optional(),
+  shots: z.array(ShotSchema).optional(),
 })
 export type Parsed = z.infer<typeof ParsedSchema>
 
-/** The additional kwargs schema this can contain useful data like parsed data if you dont stream */
 export const AdditionalKwargsSchema = z.object({
   parsed: ParsedSchema.optional(),
-  refusal: z.null().optional(),
+  function_call: FunctionCallSchema.optional(),
 })
 export type AdditionalKwargs = z.infer<typeof AdditionalKwargsSchema>
 
-/**
- * @description The tuple data you find behind the `data` field in the stream chunk
- * - This is the most important schema in this file, some of this is run dependent and will differ from setup to setup
- */
 export const DataSchema = z.object({
-  content: z.union([z.array(ContentElementSchema), z.string()]).optional(),
+  content: z.union([z.array(ContentBlockSchema), z.string()]).optional(),
   additional_kwargs: AdditionalKwargsSchema.optional(),
   response_metadata: ResponseMetadataSchema.optional(),
   type: CreatedBySchema.optional(),
   name: z.union([z.null(), z.string()]).optional(),
   id: z.string().optional(),
   tool_calls: z.array(ToolCallSchema).optional(),
-  invalid_tool_calls: z.array(InvalidToolOrToolCallChunkSchema).optional(),
+  invalid_tool_calls: z.array(ToolCallOrInvalidToolCallSchema).optional(),
   usage_metadata: z.union([UsageMetadataSchema, z.null()]).optional(),
-  tool_call_chunks: z.array(InvalidToolOrToolCallChunkSchema).optional(),
+  tool_call_chunks: z.array(ToolCallOrInvalidToolCallSchema).optional(),
   chunk_position: z.union([ChunkPositionSchema, z.null()]).optional(),
   created_by: CreatedBySchema.optional(),
   graph_id: GraphIdSchema.optional(),
@@ -414,9 +408,9 @@ export const DataSchema = z.object({
   langgraph_plan: LanggraphPlanSchema.optional(),
   langgraph_host: LanggraphHostSchema.optional(),
   langgraph_api_url: z.string().optional(),
-  ideation_interrupt: z.boolean().optional(), // This is unique to this run.
-  direction_interrupt: z.boolean().optional(), // This is unique to this run.
-  visualizer_interrupt: z.boolean().optional(), // This is unique to this run.
+  ideation_interrupt: z.boolean().optional(),
+  direction_interrupt: z.boolean().optional(),
+  visualizer_interrupt: z.boolean().optional(),
   langgraph_request_id: z.string().optional(),
   run_id: z.string().optional(),
   thread_id: z.string().optional(),
@@ -428,22 +422,27 @@ export const DataSchema = z.object({
   langgraph_checkpoint_ns: z.string().optional(),
   langgraph_auth_user_id: z.string().optional(),
   checkpoint_ns: z.string().optional(),
-  ls_provider: ProviderSchema.optional(), // This is unique to this run.
-  ls_model_name: LsModelNameSchema.optional(), // This is unique to this run.
-  ls_model_type: LsModelTypeSchema.optional(), // This is unique to this run.
-  ls_temperature: z.union([z.number(), z.null()]).optional(), // This is unique to this run.
+  ls_provider: ProviderSchema.optional(),
+  ls_model_name: LsModelNameSchema.optional(),
+  ls_model_type: LsModelTypeSchema.optional(),
+  ls_temperature: z.union([z.number(), z.null()]).optional(),
   tags: z.array(TagSchema).optional(),
   LANGSMITH_LANGGRAPH_API_VARIANT: LangsmithLanggraphApiVariantSchema.optional(),
   LANGSMITH_PROJECT: LangsmithProjectSchema.optional(),
   tool_call_id: z.string().optional(),
-  artifact: z.null().optional(), // This could be useful but may be out of this scope.
+  artifact: z.null().optional(),
   status: z.string().optional(),
+  ls_max_tokens: z.number().optional(),
+  test_mode: z.boolean().optional(),
 })
-export type Datum = z.infer<typeof DataSchema>
+export type Data = z.infer<typeof DataSchema>
 
-export const StreamChunkSchema = z.object({
+export const CompleteStreamSchema = z.object({
+  type: z.string().optional(),
+  thread_id: z.string().optional(),
+  project_id: z.string().optional(),
   id: z.string().optional(),
   event: EventSchema.optional(),
-  data: z.union([z.array(DataSchema), z.null()]),
+  data: z.union([z.array(DataSchema), DataSchemaAlt, z.null()]).optional(),
 })
-export type StreamChunk = z.infer<typeof StreamChunkSchema>
+export type CompleteStream = z.infer<typeof CompleteStreamSchema>

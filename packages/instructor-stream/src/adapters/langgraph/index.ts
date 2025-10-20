@@ -601,6 +601,7 @@ export async function* streamLangGraphEvents<
               finalizeAfterDrain = false
             }
           }
+
           yield {
             kind: 'tool',
             identifier: toolName,
