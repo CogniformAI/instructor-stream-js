@@ -1,6 +1,6 @@
 {
   "name": "@cogniformai/instructor-stream",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Streaming-first structured data extraction from LLMs with real-time updates",
   "publishConfig": {
     "access": "public"

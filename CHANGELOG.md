@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.6] - 2025-10-20
+
+### Fixed
+
+- LangGraph adapter now treats `tool_call` content blocks with inline object args exactly like text chunks, streaming schema-validated snapshots as args evolve.
+
+### Added
+
+- Extended regression tests and JSONL replays for object-style tool calls ensure Anthropic/OpenAI captures hydrate tool schemas without custom logic.
+
 ## [0.2.5] - 2025-10-20
 
 ### Fixed

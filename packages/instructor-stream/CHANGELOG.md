@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.2.6
+
+### Patch Changes
+
+- Run `tool_call` content blocks with inline object args through the same schema stream as text chunks and add replay-based regression coverage for Anthropic/OpenAI captures.
+
 ## 0.2.5
 
 ### Patch Changes
