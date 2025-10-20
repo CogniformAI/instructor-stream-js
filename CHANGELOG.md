@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.7] - 2025-10-20
+
+### Fixed
+
+- Preserved intra-chunk whitespace for LangGraph tool-call streams so multi-part JSON arguments complete and emit tool snapshots instead of stalling mid-buffer.
+
+### Added
+
+- Captured the step-by-step manual npm release checklist in `AGENTS.md` to standardise bump, tag, push, and publish for the 0.2.x line.
+
 ## [0.2.6] - 2025-10-20
 
 ### Fixed

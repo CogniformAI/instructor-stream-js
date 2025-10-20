@@ -12,23 +12,52 @@ vi.mock(
   { virtual: true }
 )
 
-import { instructorStreamFromLangGraph, streamLangGraphEvents } from '../index'
 import {
-  ProfileSchema as LegacyProfileSchema,
-  ProfileTag,
-  ProfileTypeDefaults,
-} from './schemas/profile'
+  instructorStreamFromLangGraph,
+  streamLangGraphEvents,
+  type LangGraphToolEvent,
+} from '../index'
 import { replayJsonlFile } from './utils'
 
-let ReplayProfileSchema = LegacyProfileSchema
-try {
-  const module = await import('./schema/profile')
-  if (module?.ProfileSchema) {
-    ReplayProfileSchema = module.ProfileSchema
+async function tryImport<T = unknown>(specifier: string): Promise<T | null> {
+  try {
+    return (await import(specifier)) as T
+  } catch {
+    return null
   }
-} catch {
-  // fall back to legacy schema when the new one is not present
 }
+
+const profileModule =
+  (await tryImport<{
+    ProfileSchema?: z.ZodTypeAny
+    ProfileTag?: string
+    ProfileTypeDefaults?: {
+      string?: string | null
+      number?: number | null
+      boolean?: boolean | null
+    }
+  }>('./schema/profile')) ??
+  (await tryImport<{
+    ProfileSchema?: z.ZodTypeAny
+    ProfileTag?: string
+    ProfileTypeDefaults?: {
+      string?: string | null
+      number?: number | null
+      boolean?: boolean | null
+    }
+  }>('./schemas/profile'))
+
+const LegacyProfileSchema = profileModule?.ProfileSchema ?? z.object({}).passthrough()
+const ProfileTag = profileModule?.ProfileTag ?? 'profile'
+const ProfileTypeDefaults =
+  profileModule?.ProfileTypeDefaults ??
+  ({ string: null } as {
+    string?: string | null
+    number?: number | null
+    boolean?: boolean | null
+  })
+
+const ReplayProfileSchema = profileModule?.ProfileSchema ?? LegacyProfileSchema
 
 let ProvidedDirectionSchema: z.ZodTypeAny = z.object({ breakdown: z.unknown() }).passthrough()
 try {
@@ -154,8 +183,10 @@ describe('LangGraph adapter replay (profile tag)', () => {
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url))
 const ANTHROPIC_MOCK_PATH = path.join(TEST_DIR, 'mock-data/stream-mock-anthropic.jsonl')
 const GOOGLE_MOCK_PATH = path.join(TEST_DIR, 'mock-data/stream-mock-google.jsonl')
+const STREAM_MOCK_PATH = path.join(TEST_DIR, 'mock-data/stream-mock.jsonl')
 const HAS_ANTHROPIC_MOCK = fs.existsSync(ANTHROPIC_MOCK_PATH)
 const HAS_GOOGLE_MOCK = fs.existsSync(GOOGLE_MOCK_PATH)
+const HAS_STREAM_MOCK = fs.existsSync(STREAM_MOCK_PATH)
 
 describe('LangGraph adapter replay (mock streams)', () => {
   const anthropicIt = HAS_ANTHROPIC_MOCK ? it : it.skip
@@ -206,5 +237,44 @@ describe('LangGraph adapter replay (mock streams)', () => {
 
     expect(validSnapshot).not.toBeNull()
     expect(validSnapshot?.breakdown).toBeTruthy()
+  })
+
+  const streamMockIt = HAS_STREAM_MOCK ? it : it.skip
+  streamMockIt('replays default mock stream and resolves screenshot tool args', async () => {
+    const source = replayJsonlFile(STREAM_MOCK_PATH, {
+      fixedIntervalMs: 0,
+      filterObject: (obj) => {
+        if (!obj || typeof obj !== 'object') return false
+        const data = (obj as { data?: unknown }).data
+        if (!Array.isArray(data) || data.length < 2) return false
+        const meta = data[1]
+        if (!meta || typeof meta !== 'object') return false
+        const tags = (meta as { tags?: string[] }).tags
+        return Array.isArray(tags) && tags.includes('screenshot')
+      },
+    })
+
+    const screenshotSchema = z.object({ website_url: z.string() }).passthrough()
+    let finalTool: LangGraphToolEvent | null = null
+
+    for await (const event of streamLangGraphEvents({
+      source,
+      tag: 'screenshot',
+      schema: z.object({}).passthrough(),
+      toolSchemas: { screenshot_tool: screenshotSchema },
+      typeDefaults: { string: null },
+    })) {
+      if (event.kind !== 'tool') continue
+      finalTool = event
+      if (event.rawArgs.trim().endsWith('}')) {
+        break
+      }
+    }
+
+    expect(finalTool).not.toBeNull()
+    expect(finalTool?.toolName).toBe('screenshot_tool')
+    expect(finalTool?.rawArgs).toContain('website_url')
+    const parsed = JSON.parse(finalTool!.rawArgs)
+    expect(parsed.website_url).toMatch(/^https?:/i)
   })
 })

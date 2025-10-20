@@ -1,5 +1,14 @@
 # @cogniformai/instructor-stream
 
+## 0.2.7
+
+### Patch Changes
+
+- Preserve whitespace for streaming LangGraph `tool_call_chunk` args so JSON buffers remain valid across chunks and tool events flush once the payload parses.
+- Document the manual release checklist in `AGENTS.md` so the bump → tag → publish flow stays consistent across maintainers.
+
+# @cogniformai/instructor-stream
+
 ## 0.2.6
 
 ### Patch Changes

@@ -158,29 +158,6 @@ function normalizeContentBlocks(message: z.infer<typeof AIMessageChunk>): LangGr
 }
 
 /**
- * Normalize the `content` into a single string of concatenated text blocks.
- */
-export function extractContent(env: TLangGraphEnvelope): string {
-  const [msg] = env.data
-  const blocks = normalizeContentBlocks(msg)
-  return blocks
-    .filter((block) => block.type === 'text' && typeof block.text === 'string')
-    .sort((a, b) => coerceIndex(a.index) - coerceIndex(b.index))
-    .map((block) => block.text as string)
-    .join('')
-}
-
-function coerceIndex(index: unknown): number {
-  if (typeof index === 'number' && Number.isFinite(index)) return index
-  if (typeof index === 'string') {
-    const numericTail = index.match(/(-?\d+(?:\.\d+)?)$/)?.[1]
-    const parsed = Number(numericTail ?? index)
-    if (Number.isFinite(parsed)) return parsed
-  }
-  return Number.MAX_SAFE_INTEGER
-}
-
-/**
  * An async queue to bridge the TransformStream readable side to an async generator.
  */
 class AsyncQueue<T> implements AsyncIterable<T> {
@@ -486,20 +463,27 @@ export async function* streamLangGraphEvents<
       return { chunk: '', appended: false }
     }
     if (typeof args === 'string') {
+      if (args.length === 0) {
+        return { chunk: '', appended: false }
+      }
       const trimmed = args.trim()
       if (trimmed.length === 0) {
-        return { chunk: '', appended: false }
+        // Preserve intra-string whitespace chunks once parsing has started.
+        return {
+          chunk: hasExistingBuffer ? args : '',
+          appended: hasExistingBuffer && args.length > 0,
+        }
       }
       const looksLikeJson = /[{}\[\]":,]/.test(trimmed)
       if (!looksLikeJson && !hasExistingBuffer) {
         const primitiveLiteral = /^(?:-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)$/
         if (primitiveLiteral.test(trimmed)) {
-          return { chunk: trimmed, appended: trimmed.length > 0 }
+          return { chunk: trimmed, appended: true }
         }
-        const quoted = JSON.stringify(trimmed)
+        const quoted = JSON.stringify(args)
         return { chunk: quoted, appended: quoted.length > 0 }
       }
-      return { chunk: args, appended: args.length > 0 }
+      return { chunk: args, appended: true }
     }
     if (typeof args === 'object') {
       try {

@@ -19,3 +19,27 @@ Vitest powers both unit and benchmark suites; favor `describe` blocks that mirro
 ## Commit & Pull Request Guidelines
 
 Follow the prevailing conventional commit style seen in history (`fix: normalize langgraph content indices`, `chore: prepare 0.2.3 manual release`). Release commits remain `Release X.Y.Z`. Each PR should include a clear summary, linked issues in the description, and validation notes (e.g., `pnpm -C packages/instructor-stream test`). Attach screenshots or logs when behavior changes user-facing streams. Request review from a maintainer and wait for CI green checks before merging.
+
+## Manual Release Checklist (npm)
+
+Use this flow for the 0.2.x line while we’re publishing by hand:
+
+1. **Prep the workspace**
+   - `pnpm install --frozen-lockfile`
+   - `pnpm run pre-push`
+   - `pnpm -C packages/instructor-stream build`
+2. **Update release metadata**
+   - Bump the version in `packages/instructor-stream/package.json`
+   - Add a matching entry at the top of `packages/instructor-stream/CHANGELOG.md`
+   - Stage those files plus any source changes destined for the release
+3. **Commit**
+   - Commit as `Release X.Y.Z` (e.g. `Release 0.2.7`)
+4. **Tag and push**
+   - `git tag vX.Y.Z`
+   - `git push origin main`
+   - `git push origin vX.Y.Z`
+5. **Publish to npm**
+   - `pnpm -C packages/instructor-stream publish --access public`
+6. **Post-publish**
+   - Draft GitHub release notes (copy from CHANGELOG)
+   - Announce internally if needed

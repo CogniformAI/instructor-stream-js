@@ -5,6 +5,7 @@ import { z } from 'zod'
 const messageSchema = z.object({ foo: z.string() })
 const toolSchemas = {
   fetch_profile: z.object({ business: z.string() }),
+  format_prompt: z.object({ prompt: z.string() }),
 } as const
 
 function createEnvelope(raw: unknown) {
@@ -291,6 +292,82 @@ describe('streamLangGraphEvents', () => {
       expect(toolEvent.toolCallId).toBe('call-xyz')
       expect(toolEvent.rawArgs).toBe('{"business":"Acme"}')
       expect(toolEvent.data).toEqual({ business: 'Acme' })
+    }
+  })
+
+  it('preserves whitespace inside streaming tool_call chunks', async () => {
+    async function* source(): AsyncGenerator<unknown> {
+      const sharedMeta = {
+        tags: ['profile'],
+      }
+
+      yield createEnvelope({
+        event: 'messages',
+        data: [
+          {
+            type: 'AIMessageChunk',
+            id: 'msg-whitespace',
+            content: [
+              {
+                type: 'tool_call_chunk',
+                name: 'format_prompt',
+                id: 'call-whitespace',
+                args: '{"prompt": "hello ',
+                index: 0,
+              },
+            ],
+            tool_calls: [
+              {
+                name: 'format_prompt',
+                args: {},
+                id: 'call-whitespace',
+                type: 'tool_call',
+              },
+            ],
+          },
+          sharedMeta,
+        ],
+      })
+
+      yield createEnvelope({
+        event: 'messages',
+        data: [
+          {
+            type: 'AIMessageChunk',
+            id: 'msg-whitespace',
+            content: [
+              {
+                type: 'tool_call_chunk',
+                name: null,
+                id: null,
+                args: 'world"}',
+                index: 0,
+              },
+            ],
+            tool_calls: [
+              {
+                name: null,
+                args: {},
+                id: null,
+                type: 'tool_call',
+              },
+            ],
+          },
+          sharedMeta,
+        ],
+      })
+    }
+
+    const events = await collectEvents(source())
+    const toolEvents = events.filter((event) => event.kind === 'tool')
+    expect(toolEvents.length).toBeGreaterThan(0)
+    const toolEvent = toolEvents.at(-1)
+    expect(toolEvent).toBeDefined()
+    if (toolEvent?.kind === 'tool') {
+      expect(toolEvent.toolName).toBe('format_prompt')
+      expect(toolEvent.toolCallId).toBe('call-whitespace')
+      expect(toolEvent.rawArgs).toBe('{"prompt": "hello world"}')
+      expect(toolEvent.data).toEqual({ prompt: 'hello world' })
     }
   })
 })
