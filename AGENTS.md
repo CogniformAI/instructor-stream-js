@@ -2,19 +2,19 @@
 
 ## Project Structure & Module Organization
 
-The workspace is driven by `pnpm`, with the core TypeScript library in `packages/instructor-stream/src`. Feature modules follow folders such as `adapters/`, `stream/`, and `utils/`, while co-located unit specs live in `src/__tests__`. Integration scripts that exercise external APIs live in `integrations/`, and example apps are under `packages/examples`. Provider-specific adapters reside in `packages/providers/src`, with smoke tests in `packages/providers/tests`. Documentation sources sit in `docs/` and are published via `mkdocs`.
+The workspace uses pnpm; core runtime code lives in `packages/instructor-stream/src` with domain folders (`adapters/`, `stream/`, `dsl/`, `utils/`), and colocated unit tests under `src/__tests__/`. Provider adapters sit in `packages/providers/src` with integration specs in `packages/providers/tests/`. Examples and benchmarking harnesses reside in `packages/examples/` and `packages/benchmarks/`. Builds emit to each package `dist/`, while shared configs (`tsconfig.json`, `.prettierrc`, `.oxlintrc.json`) and MkDocs content under `docs/` live at the repo root.
 
-## Build, Test, and Development Commands
+## Build, Test & Development Commands
 
-Install dependencies once with `pnpm install --frozen-lockfile`. Run the library specs by calling `pnpm -C packages/instructor-stream test`, or use `pnpm -C packages/instructor-stream test:watch` while iterating. Build distributables with `pnpm -C packages/instructor-stream build`, which runs `tsup` and refreshes `dist/`. Before publishing, execute the root `pnpm run pre-push` to format, lint, test, and build in one pass. For integration smoke tests, invoke `pnpm -C packages/instructor-stream test:integration`.
+Install dependencies via `pnpm install`. Use `pnpm --filter @cogniformai/instructor-stream run dev` for watch-mode builds or `pnpm dev` to watch all packages. `pnpm build` fans out `tsup` builds, and `pnpm typecheck` runs workspace TypeScript. Guard style with `pnpm lint`, `pnpm format:check`, and fix using `pnpm format`. Run unit suites through `pnpm test`; add coverage with `pnpm --filter @cogniformai/instructor-stream run test:coverage`.
 
 ## Coding Style & Naming Conventions
 
-Code is TypeScript-first with ES modules and 2-space indentation enforced by Prettier (`pnpm run format`). Imports are auto-sorted using `@ianvs/prettier-plugin-sort-imports`, and static analysis must pass `pnpm run lint` (oxlint). Public entry points should export via `src/index.ts`, and new adapters belong under `src/adapters/<provider-name>.ts`. Use PascalCase for classes, camelCase for functions, and SCREAMING_SNAKE_CASE only for constants in `constants/`.
+Code ships as TypeScript ES modules. Prettier enforces two-space indentation, 100-character lines, single quotes, and no semicolons while `@ianvs/prettier-plugin-sort-imports` keeps import groups orderly. `oxlint` replaces ESLint and promotes strict TypeScript hygiene—avoid `any`, prefer explicit return types, and keep test overrides only in `.test.ts`. The `@` alias targets `packages/instructor-stream/src`; use `.ts` filenames for source and reserve `.d.ts` for generated types.
 
 ## Testing Guidelines
 
-Vitest powers both unit and benchmark suites; favor `describe` blocks that mirror directory names (for example, `describe("stream/chunk-consumer")`). Keep new unit tests beside the implementation in `src/__tests__`. For coverage checks, run `pnpm -C packages/instructor-stream test:coverage`, targeting parity with existing modules before merging. Integration harnesses (`tsx integrations/*.ts`) hit external APIs, so gate them behind environment variables and document any required tokens.
+Vitest covers unit, integration, and benchmarks. Name specs `*.test.ts` under `src/__tests__/` or `tests/` so they match the `vitest.config.ts` include glob. Use `pnpm --filter @cogniformai/instructor-stream run test:watch` while iterating and `pnpm --filter @cogniformai/instructor-stream run test:integration` only when provider API keys are available in `.secrets` (see `.secrets.example`). Coverage reports land in `coverage/`; avoid checking them in unless intentionally updating artifacts.
 
 ## Commit & Pull Request Guidelines
 
@@ -43,3 +43,7 @@ Use this flow for the 0.2.x line while we’re publishing by hand:
 6. **Post-publish**
    - Draft GitHub release notes (copy from CHANGELOG)
    - Announce internally if needed
+
+# ExecPlans
+
+When writing complex features or significant refactors, use an ExecPlan (as described in .agent/PLANS.md) from design to implementation.

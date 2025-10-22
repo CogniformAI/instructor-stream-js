@@ -18,6 +18,10 @@ Shows streaming extraction of action items from meeting transcripts.
 
 Example of streaming knowledge graph construction.
 
+### langgraph-channels/
+
+Shows how to route LangGraph message tuples into `consumeLanggraphChannels` and receive instructor-style snapshots per node.
+
 ## Coming Soon
 
 As we implement the new `{ data: T[], _meta }` format and enhanced streaming capabilities, these examples will be updated to showcase:

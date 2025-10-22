@@ -58,22 +58,22 @@ export function OAIStream({ res }: OaiStreamArgs): ReadableStream<Uint8Array> {
 /**
  * `readableStreamToAsyncGenerator` converts a ReadableStream to an AsyncGenerator.
  *
- * @param {ReadableStream<Uint8Array>} stream - The ReadableStream to convert.
- * @returns {AsyncGenerator<unknown>} - The converted AsyncGenerator.
+ * @param {ReadableStream<T>} stream - The ReadableStream to convert.
+ * @returns {AsyncGenerator<T>} - The converted AsyncGenerator.
  */
-export async function* readableStreamToAsyncGenerator(
-  stream: ReadableStream<Uint8Array>
-): AsyncGenerator<unknown> {
+export async function* readableStreamToAsyncGenerator<T>(
+  stream: ReadableStream<T>
+): AsyncGenerator<T> {
   const reader = stream.getReader()
-  const decoder = new TextDecoder()
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) {
-      break
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+      yield value as T
     }
-    // stripping a second time to be safe.
-    const decodedString = stripControlCharacters(decoder.decode(value))
-    yield JSON.parse(decodedString)
+  } finally {
+    reader.releaseLock()
   }
-  return
 }

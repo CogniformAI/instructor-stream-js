@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { Stream } from 'openai/streaming'
 import { z } from 'zod'
 import { MODE } from '@/constants'
+import type { StreamingProviderAdapter } from '@/adapters/streaming-provider-adapter'
 
 export type ActivePath = (string | number | undefined)[]
 export type CompletedPaths = ActivePath[]
@@ -138,10 +139,19 @@ export type ReturnTypeBasedOnParams<C, P> =
     : OpenAI.Chat.Completions.ChatCompletion
   : Promise<unknown>
 
+export type StreamingValidationMode = 'none' | 'final' | 'on-complete'
+
 export type ZodStreamCompletionParams<T extends z.ZodType> = {
   response_model: { schema: T }
   data?: Record<string, unknown>
-  completionPromise: (data?: Record<string, unknown>) => Promise<ReadableStream<Uint8Array>>
+  adapter?: StreamingProviderAdapter<T>
+  completionPromise?: (
+    data?: Record<string, unknown>,
+    signal?: AbortSignal
+  ) => Promise<ReadableStream<Uint8Array>>
+  channelType?: string
+  validationMode?: StreamingValidationMode
+  signal?: AbortSignal
 }
 
 export type InferStreamType<T extends OpenAI.ChatCompletionCreateParams> =

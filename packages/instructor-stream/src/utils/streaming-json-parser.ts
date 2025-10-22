@@ -2,6 +2,7 @@ import { setDeep, type Indexable } from './path.ts'
 import { z } from 'zod'
 import JSONParser from './json-parser.ts'
 import { ParsedTokenInfo, StackElement, TokenParserMode, TokenParserState } from '@/stream'
+import { charset } from './utf-8.ts'
 
 type SchemaType = z.ZodType
 type TypeDefaults = {
@@ -18,6 +19,9 @@ type OnKeyCompleteCallbackParams = {
 }
 type OnKeyCompleteCallback = (data: OnKeyCompleteCallbackParams) => void | undefined
 
+type AutoJSONMode = 'off' | 'object-or-array'
+type SnapshotMode = 'object' | 'string'
+
 /**
  * SchemaStream builds a progressively populated "stub" object for a JSON stream
  * based on a provided Zod schema. This allows consumers to read a safe partial
@@ -31,6 +35,9 @@ export class SchemaStream {
   private activePath: (string | number | undefined)[] = []
   private completedPaths: (string | number | undefined)[][] = []
   private readonly onKeyComplete?: OnKeyCompleteCallback
+  private readonly autoJSONMode: AutoJSONMode
+  private readonly maxUnstringifyDepth: number
+  private readonly snapshotMode: SnapshotMode
 
   constructor(
     schema: SchemaType,
@@ -38,11 +45,24 @@ export class SchemaStream {
       defaultData?: NestedObject
       typeDefaults?: TypeDefaults
       onKeyComplete?: OnKeyCompleteCallback
+      autoJSONMode?: AutoJSONMode
+      maxUnstringifyDepth?: number
+      snapshotMode?: SnapshotMode
     } = {}
   ) {
-    const { defaultData, onKeyComplete, typeDefaults } = opts
+    const {
+      defaultData,
+      onKeyComplete,
+      typeDefaults,
+      autoJSONMode = 'object-or-array',
+      maxUnstringifyDepth = 2,
+      snapshotMode = 'object',
+    } = opts
     this.schemaInstance = this.createBlankObject(schema, defaultData, typeDefaults)
     this.onKeyComplete = onKeyComplete
+    this.autoJSONMode = autoJSONMode
+    this.maxUnstringifyDepth = maxUnstringifyDepth
+    this.snapshotMode = snapshotMode
   }
 
   /**
@@ -220,7 +240,12 @@ export class SchemaStream {
         completedPaths: this.completedPaths,
       })
     }
-    setDeep(this.schemaInstance as Indexable, nextPath, value)
+    let nextValue: ParsedTokenInfo['value'] | NestedValue = value
+    if (!partial && typeof value === 'string' && this.autoJSONMode !== 'off') {
+      const unwrapped = this.unstringifyIfJSON(value)
+      nextValue = unwrapped
+    }
+    setDeep(this.schemaInstance as Indexable, nextPath, nextValue)
   }
   /** Compare paths by value to avoid spurious updates on identical paths */
   private arePathsEqual(a: (string | number)[], b: (string | number)[]): boolean {
@@ -229,6 +254,63 @@ export class SchemaStream {
       if (a[i] !== b[i]) return false
     }
     return true
+  }
+
+  private unstringifyIfJSON(value: string): NestedValue | string {
+    let remainingDepth = this.maxUnstringifyDepth
+    let current: unknown = value
+    while (remainingDepth > 0 && typeof current === 'string') {
+      const trimmed = current.trim()
+      if (trimmed.length < 2) {
+        break
+      }
+      const first = trimmed.charCodeAt(0)
+      const last = trimmed.charCodeAt(trimmed.length - 1)
+      const couldBeObject =
+        first === charset.LEFT_CURLY_BRACKET && last === charset.RIGHT_CURLY_BRACKET
+      const couldBeArray =
+        first === charset.LEFT_SQUARE_BRACKET && last === charset.RIGHT_SQUARE_BRACKET
+      let shouldAttemptParse = couldBeObject || couldBeArray
+      if (
+        !shouldAttemptParse &&
+        first === charset.QUOTATION_MARK &&
+        last === charset.QUOTATION_MARK
+      ) {
+        const inner = trimmed.slice(1, -1).trim()
+        if (inner.length >= 2) {
+          const innerFirst = inner.charCodeAt(0)
+          const innerLast = inner.charCodeAt(inner.length - 1)
+          const innerLooksObject =
+            innerFirst === charset.LEFT_CURLY_BRACKET && innerLast === charset.RIGHT_CURLY_BRACKET
+          const innerLooksArray =
+            innerFirst === charset.LEFT_SQUARE_BRACKET && innerLast === charset.RIGHT_SQUARE_BRACKET
+          if (innerLooksObject || innerLooksArray) {
+            shouldAttemptParse = true
+          }
+        }
+      }
+      if (!shouldAttemptParse) {
+        break
+      }
+      try {
+        const parsed = JSON.parse(trimmed) as unknown
+        if (Array.isArray(parsed)) {
+          return parsed as NestedValue
+        }
+        if (parsed !== null && typeof parsed === 'object') {
+          return parsed as NestedValue
+        }
+        if (typeof parsed === 'string') {
+          current = parsed
+          remainingDepth -= 1
+          continue
+        }
+        return value
+      } catch {
+        return value
+      }
+    }
+    return typeof current === 'string' ? current : value
   }
 
   /**
@@ -268,22 +350,27 @@ export class SchemaStream {
       stringBufferSize?: number
       handleUnescapedNewLines?: boolean
     } = { stringBufferSize: 0, handleUnescapedNewLines: true }
-  ) {
-    const textEncoder = new TextEncoder()
+  ): TransformStream<Uint8Array, unknown> {
     const parser = new JSONParser({
       stringBufferSize: opts.stringBufferSize ?? 0,
       handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true,
+      strictRootObject: true,
     })
     parser.onToken = this.handleToken.bind(this)
     parser.onValue = () => undefined
     parser.onError = (err: Error) => {
       console.error('Error in the json parser transform stream: parsing chunk', err)
     }
-    return new TransformStream({
+    const textEncoder = this.snapshotMode === 'string' ? new TextEncoder() : undefined
+    return new TransformStream<Uint8Array, unknown>({
       transform: async (chunk, controller): Promise<void> => {
         try {
           parser.write(chunk)
-          controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
+          if (this.snapshotMode === 'object') {
+            controller.enqueue(this.schemaInstance)
+          } else {
+            controller.enqueue(textEncoder!.encode(JSON.stringify(this.schemaInstance)))
+          }
         } catch (err) {
           if (typeof parser.onError === 'function') {
             parser.onError(err as Error)

@@ -60,12 +60,14 @@ export interface TokenParserOptions {
   paths?: string[]
   keepStack?: boolean
   separator?: string
+  strictRootObject?: boolean
 }
 
 const defaultOpts: TokenParserOptions = {
   paths: undefined,
   keepStack: true,
   separator: undefined,
+  strictRootObject: false,
 }
 
 export class TokenParserError extends Error {
@@ -79,11 +81,13 @@ export default class TokenParser {
   private readonly paths?: (string[] | undefined)[]
   private readonly keepStack: boolean
   private readonly separator?: string
+  private readonly strictRootObject: boolean
   state: TokenParserState = TokenParserState.VALUE
   mode: TokenParserMode | undefined = undefined
   key: JsonKey = undefined
   value: JsonStruct | undefined = undefined
   stack: StackElement[] = []
+  private rootSeen = false
 
   constructor(opts?: TokenParserOptions) {
     opts = { ...defaultOpts, ...opts }
@@ -105,6 +109,7 @@ export default class TokenParser {
     }
     this.keepStack = true
     this.separator = opts.separator
+    this.strictRootObject = !!opts.strictRootObject
   }
 
   private shouldEmit(): boolean {
@@ -184,6 +189,7 @@ export default class TokenParser {
       } else if (this.separator === undefined) {
         this.end()
       }
+      this.rootSeen = false
       // else if separator === '', expect next JSON object.
     }
   }
@@ -195,6 +201,20 @@ export default class TokenParser {
   public write({ token, value, partial }: Omit<ParsedTokenInfo, 'offset'>): void {
     if (partial) {
       return
+    }
+
+    if (
+      !this.rootSeen &&
+      this.strictRootObject &&
+      this.state === TokenParserState.VALUE &&
+      this.stack.length === 0
+    ) {
+      if (token !== TokenType.LEFT_BRACE) {
+        this.rootSeen = true
+        this.error(new TokenParserError('Root must be an object'))
+        return
+      }
+      this.rootSeen = true
     }
 
     if (this.state === TokenParserState.VALUE) {

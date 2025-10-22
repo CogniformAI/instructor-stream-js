@@ -1,10 +1,7 @@
 import { Bench } from 'tinybench'
 import { lensPath, set as rSet } from 'ramda'
-import { readFileSync } from 'node:fs'
-import { z } from 'zod'
 import JSONParser from '../instructor-stream/src/utils/json-parser.ts'
 import { setDeep } from '../instructor-stream/src/utils/path.ts'
-import { streamLangGraphEvents } from '../instructor-stream/src/adapters/langgraph/index.ts'
 
 type Path = (string | number)[]
 
@@ -12,21 +9,6 @@ const bigJson = JSON.stringify({
   user: { name: 'Alice', bio: 'Long bio '.repeat(1000), age: 42 },
   posts: Array.from({ length: 500 }, (_, i) => ({ id: i, title: `T${i}`, body: 'X'.repeat(200) })),
 })
-
-const langgraphRaw = readFileSync(
-  new URL(
-    '../instructor-stream/src/adapters/langgraph/__tests__/mock-data/stream-mock.jsonl',
-    import.meta.url
-  ),
-  'utf8'
-)
-  .split('\n')
-  .map((line) => line.trim())
-  .filter((line) => line.length > 0)
-  .map((line) => JSON.parse(line))
-
-const langgraphMessageSchema = z.any()
-const langgraphToolSchemas = { screenshot_tool: z.any() }
 
 function getPathFromStack(
   stack: Array<{ key: string | number | undefined }>,
@@ -74,29 +56,6 @@ function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
 
-const makeLangGraphSource = (): AsyncIterable<unknown> => ({
-  async *[Symbol.asyncIterator]() {
-    for (const env of langgraphRaw) {
-      yield env
-    }
-  },
-})
-
-async function runLangGraphReplay(): Promise<number> {
-  let count = 0
-  for await (const event of streamLangGraphEvents({
-    source: makeLangGraphSource(),
-    tag: 'screenshot',
-    schema: langgraphMessageSchema,
-    toolSchemas: langgraphToolSchemas,
-  })) {
-    if (event.kind === 'message' || event.kind === 'tool') {
-      count += 1
-    }
-  }
-  return count
-}
-
 async function main() {
   const assignments = await collectAssignments(bigJson)
   const stub = { user: { name: 'Unknown', bio: '', age: 0 }, posts: [] as unknown[] }
@@ -113,9 +72,6 @@ async function main() {
       let target: unknown = clone(stub)
       for (const a of assignments) target = rSet(lensPath(a.path), a.value, target)
       return target
-    })
-    .add('LangGraph stream replay (5k chunks, tag=screenshot)', async () => {
-      await runLangGraphReplay()
     })
 
   await bench.run()

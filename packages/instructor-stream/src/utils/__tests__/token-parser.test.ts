@@ -69,6 +69,25 @@ describe('token-parser.ts', () => {
      */
   })
 
+  test('shouldAllowObjectRootWhenStrictRootEnabled', () => {
+    setupParser({ strictRootObject: true })
+    writeToken(TokenType.LEFT_BRACE, '{')
+    writeToken(TokenType.STRING, 'key')
+    writeToken(TokenType.COLON, ':')
+    writeToken(TokenType.STRING, 'value')
+    writeToken(TokenType.RIGHT_BRACE, '}')
+    expect(mockOnError).not.toHaveBeenCalled()
+  })
+
+  test('shouldErrorWhenRootIsNotObjectInStrictMode', () => {
+    setupParser({ strictRootObject: true })
+    writeToken(TokenType.LEFT_BRACKET, '[')
+    expect(mockOnError).toHaveBeenCalled()
+    const error = mockOnError.mock.calls[0][0]
+    expect(error).toBeInstanceOf(TokenParserError)
+    expect((error as TokenParserError).message).toBe('Root must be an object')
+  })
+
   test('shouldHandleArrays', () => {
     setupParser()
     /** Build: [1, "hello", true, null] */

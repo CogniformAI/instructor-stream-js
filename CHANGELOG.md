@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-10-22
+
+### Added
+
+- `consumeLanggraphChannels`, `langgraphAdapter`, and `iterableToReadableStream` to bridge LangGraph "messages tuple" envelopes into instructor-stream snapshots.
+- `packages/examples/langgraph-channels` demonstrating per-node routing with the new adapter pipeline.
+
+### Changed
+
+- Streaming engine now emits object snapshots by default, automatically unwraps double-stringified payloads, and supports configurable validation modes through the provider adapter interface.
+- LangGraph documentation refreshed to describe the new channel workflow and schema naming expectations.
+
+### Removed
+
+- Legacy LangGraph helpers (`streamLangGraphEvents`, `createTaggedPipelines`) and the large tuple schema/constants that supported the previous adapter implementation.
+- Benchmark and test harnesses tied to the removed APIs.
+
 ## [0.2.7] - 2025-10-20
 
 ### Fixed
