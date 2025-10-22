@@ -9,6 +9,10 @@ import {
 } from '@/types'
 import { z } from 'zod'
 import { SchemaStream } from '@/utils/streaming-json-parser.ts'
+import {
+  createFunctionStreamingAdapter,
+  type StreamingProviderAdapter,
+} from '@/adapters/streaming-provider-adapter.ts'
 
 export default class ZodStream {
   readonly debug: boolean = false
@@ -16,7 +20,6 @@ export default class ZodStream {
   constructor({ debug = false }: ClientConfig = {}) {
     this.debug = debug
   }
-  // TODO: Determine if this is the same logger as the one in instructor file
   private log<T extends unknown[]>(level: LogLevel, ...args: T) {
     if (!this.debug && level === 'debug') {
       return
@@ -39,14 +42,22 @@ export default class ZodStream {
   }
 
   private async chatCompletionStream<T extends z.ZodType>({
+    adapter,
+    channelType = 'default',
     completionPromise,
     data,
     response_model,
+    validationMode = 'none',
+    signal,
   }: ZodStreamCompletionParams<T>): Promise<
     AsyncGenerator<{ data: Partial<z.infer<T>>[]; _meta: CompletionMeta }, void, unknown>
   > {
     let _activePath: ActivePath = []
     let _completedPaths: CompletedPaths = []
+    let completedPathCount = 0
+    let pendingOnCompleteValidation = false
+    let lastSnapshot: Partial<z.infer<T>> | null = null
+    let lastValidationResult = true
     this.log('debug', 'Starting completion stream')
     const streamParser = new SchemaStream(response_model.schema, {
       onKeyComplete: ({
@@ -57,58 +68,110 @@ export default class ZodStream {
         completedPaths: CompletedPaths
       }) => {
         this.log('debug', 'Key complete', activePath, completedPaths)
-        _activePath = activePath
-        _completedPaths = completedPaths
+        _activePath = [...activePath]
+        _completedPaths = completedPaths.map((path) => (Array.isArray(path) ? [...path] : []))
+        if (completedPaths.length > completedPathCount) {
+          pendingOnCompleteValidation = true
+          completedPathCount = completedPaths.length
+        }
       },
       typeDefaults: {
         string: null,
         number: null,
         boolean: null,
       },
+      snapshotMode: 'object',
     })
 
     try {
+      const resolvedAdapter: StreamingProviderAdapter<T> | undefined =
+        adapter ??
+        (completionPromise ?
+          createFunctionStreamingAdapter(async ({ data: adapterData, signal: adapterSignal }) => {
+            return completionPromise(adapterData, adapterSignal)
+          })
+        : undefined)
+
+      if (!resolvedAdapter) {
+        throw new Error('No streaming provider adapter or completionPromise was supplied.')
+      }
+
+      const providerResult = await resolvedAdapter.start({
+        schema: response_model.schema,
+        data,
+        signal,
+      })
+      if (!providerResult?.stream) {
+        this.log('error', 'Adapter returned no stream')
+        throw new Error('Adapter returned no stream')
+      }
+
+      const baseMeta: CompletionMeta = providerResult.meta ?? {}
       const parser = streamParser.parse({
         handleUnescapedNewLines: true,
       })
-      const textEncoder = new TextEncoder()
-      const textDecoder = new TextDecoder()
-      const validationStream = new TransformStream({
-        transform: async (chunk, controller): Promise<void> => {
+      const parsedStream = providerResult.stream.pipeThrough(parser)
+      const validationStream = new TransformStream<
+        Partial<z.infer<T>>,
+        { data: Partial<z.infer<T>>[]; _meta: CompletionMeta }
+      >({
+        transform: async (snapshot, controller): Promise<void> => {
+          lastSnapshot = snapshot
           try {
-            const parsedChunk = JSON.parse(textDecoder.decode(chunk))
-            const validation = await response_model.schema.safeParseAsync(parsedChunk)
-            this.log('debug', 'Validation result', validation)
-            controller.enqueue(
-              textEncoder.encode(
-                JSON.stringify({
-                  data: [parsedChunk],
-                  _meta: {
-                    _isValid: validation.success,
-                    _activePath,
-                    _completedPaths,
-                    _type: 'default',
-                  },
-                })
-              )
-            )
+            if (validationMode === 'on-complete' && pendingOnCompleteValidation) {
+              const validation = await response_model.schema.safeParseAsync(snapshot)
+              lastValidationResult = validation.success
+              pendingOnCompleteValidation = false
+              this.log('debug', 'Validation (on-complete) result', validation.success)
+            } else if (validationMode === 'none') {
+              lastValidationResult = true
+            }
+            const meta: CompletionMeta = {
+              ...baseMeta,
+              _isValid: validationMode === 'none' ? true : lastValidationResult,
+              _activePath,
+              _completedPaths,
+              _type: channelType,
+            }
+            controller.enqueue({
+              data: [snapshot],
+              _meta: meta,
+            })
           } catch (e) {
-            this.log('error', 'Error in the partial stream validation stream', e, chunk)
+            this.log('error', 'Error validating snapshot', e)
             controller.error(e)
           }
         },
-        // TODO: Determine if this is even being called
-        flush() {},
+        flush: async (controller): Promise<void> => {
+          if (!lastSnapshot) {
+            return
+          }
+          if (validationMode === 'final') {
+            try {
+              const validation = await response_model.schema.safeParseAsync(lastSnapshot)
+              lastValidationResult = validation.success
+              this.log('debug', 'Validation (final) result', validation.success)
+            } catch (error) {
+              this.log('error', 'Error validating final snapshot', error)
+              lastValidationResult = false
+            }
+            const meta: CompletionMeta = {
+              ...baseMeta,
+              _isValid: lastValidationResult,
+              _activePath,
+              _completedPaths,
+              _type: channelType,
+            }
+            controller.enqueue({
+              data: [lastSnapshot],
+              _meta: meta,
+            })
+          }
+        },
       })
-      const stream = await completionPromise(data)
-      if (!stream) {
-        this.log('error', 'Completion call returned no data')
-        // TODO: Clean up exception thrown and caught locally
-        throw new Error(stream)
-      }
-      stream.pipeThrough(parser)
-      parser.readable.pipeThrough(validationStream)
-      return readableStreamToAsyncGenerator(validationStream.readable) as AsyncGenerator<
+
+      const validatedStream = parsedStream.pipeThrough(validationStream)
+      return readableStreamToAsyncGenerator(validatedStream) as AsyncGenerator<
         { data: Partial<z.infer<T>>[]; _meta: CompletionMeta },
         void,
         unknown

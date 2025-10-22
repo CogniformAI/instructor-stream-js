@@ -516,7 +516,7 @@ export default class Tokenizer {
           this.state = TokenizerStates.START
           this.emitNumber()
           continue
-        // TRUE
+        /** TRUE is split into four tokens t r u e and emitted only when complete */
         case TokenizerStates.TRUE1:
           if (n === charset.LATIN_SMALL_LETTER_R) {
             this.state = TokenizerStates.TRUE2
@@ -541,7 +541,7 @@ export default class Tokenizer {
             continue
           }
           break
-        // FALSE
+        /** FALSE is split into five tokens f a l s e and emitted only when complete */
         case TokenizerStates.FALSE1:
           if (n === charset.LATIN_SMALL_LETTER_A) {
             this.state = TokenizerStates.FALSE2
@@ -572,7 +572,7 @@ export default class Tokenizer {
             continue
           }
           break
-        // NULL
+        /** NULL tokens are split by char n u l l */
         case TokenizerStates.NULL1:
           if (n === charset.LATIN_SMALL_LETTER_U) {
             this.state = TokenizerStates.NULL2
@@ -623,7 +623,7 @@ export default class Tokenizer {
             continue
           }
       }
-      // Signal error and stop processing
+      /** Signal error and stop processing  */
       this.error(
         new TokenizerError(
           `Unexpected "${String.fromCharCode(
@@ -681,19 +681,21 @@ export default class Tokenizer {
         )
     }
   }
-  // TODO: Review this and determine if it can be removed
+  /**
+   * @description Meant to be overridedn by the consumer
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onToken(parsedToken: ParsedTokenInfo): void {
-    // Override me
     throw new TokenizerError('Can\'t emit tokens before the "onToken" callback has been set up.')
   }
-
+  /**
+   * @description Meant to be overridedn by the consumer
+   */
   public onError(err: Error): void {
-    // Override me
     throw err
   }
-
-  public onEnd(): void {
-    // Override me
-  }
+  /**
+   * @description Meant to be overridedn by the consumer
+   */
+  public onEnd(): void {}
 }

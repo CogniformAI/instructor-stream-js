@@ -1,10 +1,7 @@
 import { bench, describe, beforeAll } from 'vitest'
-import { readFileSync } from 'node:fs'
 import { lensPath, set as rSet } from 'ramda'
 import JSONParser from '../instructor-stream/src/utils/json-parser.ts'
 import { setDeep } from '../instructor-stream/src/utils/path.ts'
-import { streamLangGraphEvents } from '../instructor-stream/src/adapters/langgraph/index.ts'
-import { z } from 'zod'
 
 type Path = (string | number)[]
 const BENCH_TIME = Number.parseInt(process.env.BENCH_TIME ?? '5000', 10)
@@ -12,51 +9,6 @@ const BENCH_TIME = Number.parseInt(process.env.BENCH_TIME ?? '5000', 10)
 const bigJson = JSON.stringify({
   user: { name: 'Alice', bio: 'Long bio '.repeat(1000), age: 42 },
   posts: Array.from({ length: 500 }, (_, i) => ({ id: i, title: `T${i}`, body: 'X'.repeat(200) })),
-})
-
-describe('langgraph adapter streaming', () => {
-  let envelopes: unknown[]
-  const messageSchema = z.any()
-  const toolSchemas = { screenshot_tool: z.any() }
-
-  beforeAll(() => {
-    const file = readFileSync(
-      new URL(
-        '../instructor-stream/src/adapters/langgraph/__tests__/mock-data/stream-mock.jsonl',
-        import.meta.url
-      ),
-      'utf8'
-    )
-    envelopes = file
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-      .map((line) => JSON.parse(line))
-  })
-
-  const makeSource = (): AsyncIterable<unknown> => ({
-    async *[Symbol.asyncIterator]() {
-      for (const env of envelopes) {
-        yield env
-      }
-    },
-  })
-
-  bench(
-    'streamLangGraphEvents (mock stream, tag=screenshot)',
-    async () => {
-      const iterator = streamLangGraphEvents({
-        source: makeSource(),
-        tag: 'screenshot',
-        schema: messageSchema,
-        toolSchemas,
-      })
-      for await (const _ of iterator) {
-        // consume
-      }
-    },
-    { time: BENCH_TIME }
-  )
 })
 
 function getPathFromStack(

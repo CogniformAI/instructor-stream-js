@@ -74,7 +74,7 @@ site/
 .eslintcache
 .claude
 CLAUDE.md
-.agents/
+.agent/
 # Local LangGraph schemas/mocks (internal only)
 packages/instructor-stream/src/adapters/langgraph/__tests__/schema/
 packages/instructor-stream/src/adapters/langgraph/__tests__/mock-data/stream-mock-*.jsonl

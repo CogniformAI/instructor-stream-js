@@ -3,6 +3,10 @@ import { describe, test, expect, vi } from 'vitest'
 import { z } from 'zod'
 import { SchemaStream } from '@/utils'
 
+function cloneSnapshot<T>(input: T): T {
+  return JSON.parse(JSON.stringify(input)) as T
+}
+
 describe('streaming-json-parser.ts', () => {
   describe('SchemaStream', () => {
     test('shouldCreateCorrectBlankObjectFromZodSchema', () => {
@@ -106,9 +110,7 @@ describe('streaming-json-parser.ts', () => {
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-          const jsonString = new TextDecoder().decode(value)
-          const parsedObject = JSON.parse(jsonString)
-          results.push(parsedObject)
+          results.push(cloneSnapshot(value as z.infer<typeof schema>))
         }
       } finally {
         reader.releaseLock()
@@ -130,6 +132,86 @@ describe('streaming-json-parser.ts', () => {
       expect(results.length).toBeGreaterThan(2) /** Should have multiple snapshots */
       /** Data should have at least one intermediate snapshot (already ensured by length > 2) */
       expect(results.length).toBeGreaterThan(2)
+    })
+
+    test('parse_shouldUnwrapDoubleStringifiedJSON', async () => {
+      const schema = z.object({ payload: z.unknown() })
+      const schemaStream = new SchemaStream(schema)
+      const transformStream = schemaStream.parse()
+      const jsonData = '{"payload":"{\\"foo\\":42}"}'
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(jsonData))
+          controller.close()
+        },
+      })
+      const reader = stream.pipeThrough(transformStream).getReader()
+      let finalSnapshot: z.infer<typeof schema> | null = null
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          finalSnapshot = cloneSnapshot(value as z.infer<typeof schema>)
+        }
+      } finally {
+        reader.releaseLock()
+      }
+      expect(finalSnapshot).not.toBeNull()
+      expect(finalSnapshot?.payload).toEqual({ foo: 42 })
+    })
+
+    test('parse_shouldRespectAutoJSONModeOff', async () => {
+      const schema = z.object({ payload: z.string() })
+      const schemaStream = new SchemaStream(schema, { autoJSONMode: 'off' })
+      const transformStream = schemaStream.parse()
+      const jsonData = '{"payload":"{\\"foo\\":42}"}'
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(jsonData))
+          controller.close()
+        },
+      })
+      const reader = stream.pipeThrough(transformStream).getReader()
+      let finalSnapshot: z.infer<typeof schema> | null = null
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          finalSnapshot = cloneSnapshot(value as z.infer<typeof schema>)
+        }
+      } finally {
+        reader.releaseLock()
+      }
+      expect(finalSnapshot?.payload).toBe('{"foo":42}')
+    })
+
+    test('parse_shouldLimitUnstringifyDepth', async () => {
+      const schema = z.object({ payload: z.unknown() })
+      const schemaStream = new SchemaStream(schema, { maxUnstringifyDepth: 1 })
+      const transformStream = schemaStream.parse()
+      const serializedObject = JSON.stringify({ foo: 42 })
+      const doubleWrapped = JSON.stringify(serializedObject)
+      const tripleWrapped = JSON.stringify(doubleWrapped)
+      const jsonData = `{"payload":${tripleWrapped}}`
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(jsonData))
+          controller.close()
+        },
+      })
+      const reader = stream.pipeThrough(transformStream).getReader()
+      let finalSnapshot: z.infer<typeof schema> | null = null
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          finalSnapshot = cloneSnapshot(value as z.infer<typeof schema>)
+        }
+      } finally {
+        reader.releaseLock()
+      }
+      /** Depth of 1 should stop after the first parse, leaving a JSON string */
+      expect(finalSnapshot?.payload).toBe(serializedObject)
     })
 
     test('onKeyComplete_shouldBeCalledWithCorrectPaths', () => {
@@ -310,9 +392,7 @@ describe('streaming-json-parser.ts', () => {
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-          const jsonString = new TextDecoder().decode(value)
-          const parsedObject = JSON.parse(jsonString)
-          results.push(parsedObject)
+          results.push(cloneSnapshot(value as z.infer<typeof schema>))
         }
       } finally {
         reader.releaseLock()
@@ -488,8 +568,7 @@ describe('streaming-json-parser.ts', () => {
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-          const jsonString = new TextDecoder().decode(value)
-          results.push(JSON.parse(jsonString))
+          results.push(cloneSnapshot(value as Record<string, unknown>))
         }
       } finally {
         reader.releaseLock()
