@@ -1,5 +1,13 @@
 # @cogniformai/instructor-stream
 
+## 0.3.1
+
+### Patch Changes
+
+- Prepare manual release metadata for 0.3.1.
+
+# @cogniformai/instructor-stream
+
 ## 0.2.8
 
 ### Patch Changes
