@@ -39,7 +39,7 @@ Use this flow for the 0.2.x line while we’re publishing by hand:
    - `git push origin main`
    - `git push origin vX.Y.Z`
 5. **Publish to npm**
-   - `pnpm -C packages/instructor-stream publish --access public`
+   - `pnpm publish --filter @cogniformai/instructor-stream --access public`
 6. **Post-publish**
    - Draft GitHub release notes (copy from CHANGELOG)
    - Announce internally if needed
