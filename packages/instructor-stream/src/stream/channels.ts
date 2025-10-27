@@ -15,6 +15,7 @@ export type ChannelSpec = {
   defaultSchema?: z.ZodType
   onSnapshot: (node: string, snapshot: unknown, meta: CompletionMeta) => void | Promise<void>
   validationMode?: StreamingValidationMode
+  failFast?: boolean
 }
 
 const encoder = new TextEncoder()
@@ -26,8 +27,19 @@ const createPipeline = (
   validationMode: StreamingValidationMode,
   errors: unknown[]
 ): NodePipeline => {
+  let started = false
   const chunkTransform = new TransformStream<string, Uint8Array>({
     transform(chunk, controller) {
+      if (!started) {
+        const idx = chunk.search(/[{\[]/)
+        if (idx === -1) {
+          return
+        }
+        if (idx > 0) {
+          chunk = chunk.slice(idx)
+        }
+        started = true
+      }
       controller.enqueue(encoder.encode(chunk))
     },
   })
@@ -45,8 +57,7 @@ const createPipeline = (
       const data = snapshot.data[0]
       await onSnapshot(node, data, snapshot._meta)
     }
-  })()
-  generatorTask.catch((error) => {
+  })().catch((error) => {
     errors.push(error)
   })
 
@@ -65,6 +76,7 @@ const createPipeline = (
 
 export async function consumeLanggraphChannels(spec: ChannelSpec): Promise<void> {
   const validationMode = spec.validationMode ?? 'none'
+  const failFast = spec.failFast ?? false
   const pipelines = new Map<string, NodePipeline>()
   const errors: unknown[] = []
   const reader = spec.upstream.pipeThrough(langgraphAdapter()).getReader()
@@ -89,7 +101,7 @@ export async function consumeLanggraphChannels(spec: ChannelSpec): Promise<void>
     reader.releaseLock()
     await Promise.all([...pipelines.values()].map((pipeline) => pipeline.close()))
   }
-  if (errors.length > 0) {
+  if (errors.length > 0 && failFast) {
     throw errors[0]
   }
 }

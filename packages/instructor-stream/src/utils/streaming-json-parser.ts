@@ -114,9 +114,9 @@ export class SchemaStream {
       schema instanceof z.ZodOptional ||
       schema instanceof z.ZodNullable ||
       /**
-      /* ZodEffects (v3 + v4); public API exposes unwrap()
-       * We intentionally check existence of unwrap to avoid instanceof mismatch across versions.
-       */
+       /* ZodEffects (v3 + v4); public API exposes unwrap()
+        * We intentionally check existence of unwrap to avoid instanceof mismatch across versions.
+        */
       ('unwrap' in schema &&
         typeof (schema as unknown as { unwrap: () => unknown }).unwrap === 'function')
     ) {
@@ -351,7 +351,7 @@ export class SchemaStream {
       handleUnescapedNewLines?: boolean
     } = { stringBufferSize: 0, handleUnescapedNewLines: true }
   ): TransformStream<Uint8Array, unknown> {
-    const parser = new JSONParser({
+    let parser = new JSONParser({
       stringBufferSize: opts.stringBufferSize ?? 0,
       handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true,
       strictRootObject: true,
@@ -359,7 +359,7 @@ export class SchemaStream {
     parser.onToken = this.handleToken.bind(this)
     parser.onValue = () => undefined
     parser.onError = (err: Error) => {
-      console.error('Error in the json parser transform stream: parsing chunk', err)
+      console.warn('SchemaStream parser warning (chunk skipped):', err?.message ?? err)
     }
     const textEncoder = this.snapshotMode === 'string' ? new TextEncoder() : undefined
     return new TransformStream<Uint8Array, unknown>({
@@ -374,9 +374,17 @@ export class SchemaStream {
         } catch (err) {
           if (typeof parser.onError === 'function') {
             parser.onError(err as Error)
-          } else {
-            controller.error(err)
           }
+          /** Soft reset parser on any error; drop this chunk */
+          parser = new JSONParser({
+            stringBufferSize: opts.stringBufferSize ?? 0,
+            handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true,
+            strictRootObject: true,
+          })
+          parser.onToken = this.handleToken.bind(this)
+          parser.onValue = () => undefined
+          parser.onError = (e: Error) =>
+            console.warn('SchemaStream parser warning (after reset):', e?.message ?? e)
         }
       },
       flush: () => {

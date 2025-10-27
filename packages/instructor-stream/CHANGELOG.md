@@ -1,5 +1,11 @@
 # @cogniformai/instructor-stream
 
+## 0.3.2
+
+### Patch Changes
+
+- Default LangGraph channel `failFast` to `false` so parser/snapshot errors are recorded without throwing unless explicitly requested, and ensure channel pipelines collect generator failures without unhandled rejections.
+
 ## 0.3.1
 
 ### Patch Changes

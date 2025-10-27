@@ -130,4 +130,85 @@ describe('consumeLanggraphChannels', () => {
     expect(betaFinal?.data).toEqual({ value: 42 })
     expect(betaFinal?.meta).toMatchObject({ _type: 'beta' })
   })
+
+  test('swallows snapshot errors when failFast is unset', async () => {
+    const envelopes = streamFromArray([
+      {
+        data: [
+          {
+            content: [{ type: 'text', text: '{"message": ' }],
+          },
+          { langgraph_node: 'alpha' },
+        ],
+      },
+      {
+        data: [
+          {
+            content: [{ type: 'tool_call_chunk', args: '"hello"}' }],
+          },
+          { langgraph_node: 'alpha' },
+        ],
+      },
+    ])
+
+    const onSnapshot = vi.fn(async () => {
+      throw new Error('snapshot failure')
+    })
+
+    await expect(
+      consumeLanggraphChannels({
+        upstream: envelopes,
+        schemas: {
+          alpha: z.object({
+            message: z.string(),
+          }),
+        },
+        onSnapshot,
+        validationMode: 'final',
+      })
+    ).resolves.toBeUndefined()
+
+    expect(onSnapshot).toHaveBeenCalledTimes(1)
+  })
+
+  test('throws snapshot errors when failFast is true', async () => {
+    const envelopes = streamFromArray([
+      {
+        data: [
+          {
+            content: [{ type: 'text', text: '{"message": ' }],
+          },
+          { langgraph_node: 'alpha' },
+        ],
+      },
+      {
+        data: [
+          {
+            content: [{ type: 'tool_call_chunk', args: '"hello"}' }],
+          },
+          { langgraph_node: 'alpha' },
+        ],
+      },
+    ])
+
+    const onSnapshot = vi.fn(async () => {
+      throw new Error('snapshot failure')
+    })
+
+    await expect(
+      consumeLanggraphChannels({
+        upstream: envelopes,
+        schemas: {
+          alpha: z.object({
+            message: z.string(),
+          }),
+        },
+        onSnapshot,
+        validationMode: 'final',
+        failFast: true,
+      })
+    ).rejects.toThrowError('snapshot failure')
+
+    expect(onSnapshot).toHaveBeenCalledTimes(1)
+  })
 })

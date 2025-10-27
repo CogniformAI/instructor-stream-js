@@ -500,7 +500,7 @@ describe('streaming-json-parser.ts', () => {
           controller.close()
         },
       })
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const transformedStream = invalidJsonStream.pipeThrough(transformStream)
       const reader = transformedStream.getReader()
       try {
@@ -512,8 +512,8 @@ describe('streaming-json-parser.ts', () => {
         reader.releaseLock()
       }
       /** Should have logged the error */
-      expect(consoleErrorSpy).toHaveBeenCalled()
-      consoleErrorSpy.mockRestore()
+      expect(consoleWarnSpy).toHaveBeenCalled()
+      consoleWarnSpy.mockRestore()
     })
 
     test('shouldHandleFlushOperationCorrectly', async () => {

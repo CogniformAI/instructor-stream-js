@@ -26,8 +26,12 @@ export default class JSONParser {
         this.tokenParser.end()
       }
     }
-
-    this.tokenParser.onError = this.tokenizer.error.bind(this.tokenizer)
+    /** Forward parse errors without forcing tokenizer into ERROR state. */
+    this.tokenParser.onError = (err: Error) => {
+      if (typeof this.tokenizer.onError === 'function') {
+        this.tokenizer.onError(err)
+      }
+    }
     this.tokenParser.onEnd = () => {
       if (!this.tokenizer.isEnded) {
         this.tokenizer.end()
