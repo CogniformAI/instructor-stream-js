@@ -10,8 +10,8 @@ import {
   type StreamingPipelineError,
 } from '../errors.ts'
 import type { SnapshotChunk } from './snapshots.ts'
-import type { Schema } from '@effect/schema/Schema'
-import * as SchemaApi from '@effect/schema/Schema'
+import type { Schema } from 'effect/Schema'
+import * as SchemaApi from 'effect/Schema'
 
 type ProviderMeta = Partial<CompletionMeta>
 

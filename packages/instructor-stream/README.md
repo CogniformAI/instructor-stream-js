@@ -6,7 +6,7 @@ Streaming-first structured data extraction from LLMs with real-time updates.
 
 ```ts
 import { Effect, Layer, Stream, Redacted } from 'effect'
-import * as Schema from '@effect/schema/Schema'
+import * as Schema from 'effect/Schema'
 import { z } from 'zod'
 import { Prompt } from '@effect/ai/Prompt'
 import * as NodeHttpClient from '@effect/platform-node/NodeHttpClient'

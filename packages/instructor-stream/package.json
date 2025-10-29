@@ -1,6 +1,6 @@
 {
   "name": "@cogniformai/instructor-stream",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Streaming-first structured data extraction from LLMs with real-time updates",
   "publishConfig": {
     "access": "public"
@@ -66,10 +66,8 @@
   "dependencies": {
     "@effect/ai": "^0.31.1",
     "@effect/ai-openai": "^0.34.0",
-    "@effect/data": "^0.18.7",
     "@effect/platform": "^0.92.1",
     "@effect/platform-node": "^0.98.4",
-    "@effect/schema": "^0.75.5",
     "@effect/vitest": "^0.26.0",
     "effect": "^3.18.4",
     "zod-validation-error": "catalog:"

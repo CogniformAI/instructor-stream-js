@@ -1,4 +1,4 @@
-import type { Schema } from '@effect/schema/Schema'
+import type { Schema } from 'effect/Schema'
 import type { z } from 'zod'
 import { SchemaResolutionError } from './errors.ts'
 

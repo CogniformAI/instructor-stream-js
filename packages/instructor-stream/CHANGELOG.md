@@ -1,5 +1,13 @@
 # @cogniformai/instructor-stream
 
+## 0.4.1
+
+### Patch Changes
+
+- refactor: collapse imports to `effect/*` entry points now that the former `@effect/data` and `@effect/schema` packages are redirected.
+- docs: adjust README/sample code to use the new import paths.
+- chore: regenerate lockfile and build artifacts against consolidated effect packages.
+
 ## 0.4.0
 
 ### Minor Changes

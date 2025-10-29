@@ -1,4 +1,4 @@
-import * as Data from '@effect/data/Data'
+import * as Data from 'effect/Data'
 
 export class ProviderError extends Data.TaggedClass('ProviderError')<{
   readonly message: string
