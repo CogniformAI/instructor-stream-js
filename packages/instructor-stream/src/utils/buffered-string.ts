@@ -19,7 +19,7 @@ export interface StringBuilder {
 export class NonBufferedString implements StringBuilder {
   private decoder = new TextDecoder('utf-8')
   private assembled = ''
-  private readonly onIncrementalString?: (str: string) => void
+  private readonly onIncrementalString: ((str: string) => void) | null
 
   public byteLength = 0
 
@@ -29,9 +29,8 @@ export class NonBufferedString implements StringBuilder {
    * @param {Object} param0 - An object containing optional parameters.
    * @param {(str: string) => void} [param0.onIncrementalString] - A callback function that is called with the incremental string updates.
    */
-
-  constructor({ onIncrementalString }: { onIncrementalString?: (str: string) => void }) {
-    this.onIncrementalString = onIncrementalString ?? undefined
+  constructor({ onIncrementalString }: { onIncrementalString?: (str: string) => void } = {}) {
+    this.onIncrementalString = onIncrementalString ?? null
   }
 
   public appendChar(char: number): void {
@@ -69,13 +68,13 @@ export class BufferedString implements StringBuilder {
   private readonly buffer: Uint8Array
   private bufferOffset = 0
   private string = ''
-  private readonly onIncrementalString?: (str: string) => void
+  private readonly onIncrementalString: ((str: string) => void) | null
 
   public byteLength = 0
 
   public constructor(bufferSize: number, onIncrementalString?: (str: string) => void) {
     this.buffer = new Uint8Array(bufferSize)
-    this.onIncrementalString = onIncrementalString ?? undefined
+    this.onIncrementalString = onIncrementalString ?? null
   }
 
   public appendChar(char: number): void {

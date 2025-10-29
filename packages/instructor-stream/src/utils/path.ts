@@ -4,7 +4,7 @@
  * @todo: These will be replacing Ramda's lensPath / set / view for performance
  */
 
-export type Path = (string | number)[]
+export type Path = (string | number | undefined)[]
 
 /**
  * Represents an Object/array that can be accessed by either string or numeric keys.
@@ -32,6 +32,9 @@ export interface Indexable {
 export function getDeep(obj: unknown, path: Path): unknown {
   let current: unknown = obj
   for (const key of path) {
+    if (key === undefined) {
+      return undefined
+    }
     if (current == null || typeof current !== 'object') {
       return undefined
     }
@@ -51,10 +54,16 @@ export function getDeep(obj: unknown, path: Path): unknown {
  * @param value - The value to set at the specified path.
  */
 export function setDeep(obj: Indexable, path: Path, value: unknown): void {
+  if (path.length === 0) {
+    return
+  }
   let current: Indexable = obj as Indexable
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i]
     const nextKey = path[i + 1]
+    if (key === undefined || nextKey === undefined) {
+      return
+    }
     if ((current as Indexable)[key] == null) {
       /** Decide container type based on next key */
       ;(current as Indexable)[key] = typeof nextKey === 'number' ? [] : {}
@@ -62,5 +71,8 @@ export function setDeep(obj: Indexable, path: Path, value: unknown): void {
     current = (current as Indexable)[key] as Indexable
   }
   const lastKey = path[path.length - 1]
+  if (lastKey === undefined) {
+    return
+  }
   ;(current as Indexable)[lastKey] = value
 }

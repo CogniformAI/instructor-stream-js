@@ -1,7 +1,4 @@
-import Instructor, { InstructorClient } from './instructor.ts'
+export * from './effect/index.ts'
+export * from './langgraph/index.ts'
 
-export { type InstructorClient }
-export * from './types'
-export * from './adapters'
-
-export default Instructor
+export { stream as instructorStream, stub as instructorStub } from './effect/instructor.ts'

@@ -1,27 +1,20 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "strict": true,
-    "strictNullChecks": true,
-    "noEmit": true,
-    "allowJs": true,
-    "lib": ["es2020"],
-    "module": "esnext",
-    "target": "es2020",
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "moduleDetection": "force",
     "baseUrl": ".",
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "incremental": true,
-    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["vitest/globals"],
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "tsconfig.tsbuildinfo"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "tsconfig.tsbuildinfo",
+    "src/**/__tests__/**",
+    "src/legacy/**"
+  ]
 }

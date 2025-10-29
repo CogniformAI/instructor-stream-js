@@ -1,5 +1,4 @@
 import { Bench } from 'tinybench'
-import { lensPath, set as rSet } from 'ramda'
 import JSONParser from '../instructor-stream/src/utils/json-parser.ts'
 import { setDeep } from '../instructor-stream/src/utils/path.ts'
 
@@ -56,6 +55,27 @@ function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
 
+const immutableSet = (source: unknown, path: Path, value: unknown): unknown => {
+  if (path.length === 0) {
+    return value
+  }
+  const [key, ...rest] = path
+  const nextPath = rest as Path
+  if (typeof key === 'number') {
+    const clone = Array.isArray(source) ? [...(source as unknown[])] : []
+    clone[key] = immutableSet(clone[key], nextPath, value)
+    return clone
+  }
+  const record =
+    source && typeof source === 'object' ? { ...(source as Record<string, unknown>) } : {}
+  record[String(key)] = immutableSet(
+    (source as Record<string, unknown> | undefined)?.[String(key)],
+    nextPath,
+    value
+  )
+  return record
+}
+
 async function main() {
   const assignments = await collectAssignments(bigJson)
   const stub = { user: { name: 'Unknown', bio: '', age: 0 }, posts: [] as unknown[] }
@@ -68,9 +88,11 @@ async function main() {
       for (const a of assignments) setDeep(target, a.path, a.value)
       return target
     })
-    .add('immutable Ramda set(assignments) (large JSON)', () => {
+    .add('immutable structural copy (large JSON)', () => {
       let target: unknown = clone(stub)
-      for (const a of assignments) target = rSet(lensPath(a.path), a.value, target)
+      for (const a of assignments) {
+        target = immutableSet(target, a.path, a.value)
+      }
       return target
     })
 

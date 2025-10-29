@@ -1,8 +1,0 @@
-export const MODE = {
-  FUNCTIONS: 'FUNCTIONS',
-  TOOLS: 'TOOLS',
-  JSON: 'JSON',
-  MD_JSON: 'MD_JSON',
-  JSON_SCHEMA: 'JSON_SCHEMA',
-  THINKING_MD_JSON: 'THINKING_MD_JSON',
-} as const

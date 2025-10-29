@@ -1,7 +1,7 @@
 import {
   consumeLanggraphChannels,
   iterableToReadableStream,
-} from '@cogniformai/instructor-stream/adapters/langgraph'
+} from '@cogniformai/instructor-stream/langgraph'
 import { z } from 'zod'
 
 type Envelope = {

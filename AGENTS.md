@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-The workspace uses pnpm; core runtime code lives in `packages/instructor-stream/src` with domain folders (`adapters/`, `stream/`, `dsl/`, `utils/`), and colocated unit tests under `src/__tests__/`. Provider adapters sit in `packages/providers/src` with integration specs in `packages/providers/tests/`. Examples and benchmarking harnesses reside in `packages/examples/` and `packages/benchmarks/`. Builds emit to each package `dist/`, while shared configs (`tsconfig.json`, `.prettierrc`, `.oxlintrc.json`) and MkDocs content under `docs/` live at the repo root.
+The workspace uses pnpm; the new Effect runtime and service graph live under `packages/instructor-stream/src/effect/`, LangGraph utilities under `src/langgraph/`, and shared helpers in `src/utils/`. Unit tests sit beside code in `__tests__` folders. Legacy code has been removed; all new work should target the Effect pipeline. Provider adapters for integrations remain in `packages/providers/src` with tests in `packages/providers/tests/`. Examples and benchmarking harnesses reside in `packages/examples/` and `packages/benchmarks/`. Builds emit to each package `dist/`, while shared configs (`tsconfig.json`, `.prettierrc`, `.oxlintrc.json`) and MkDocs content under `docs/` live at the repo root.
 
 ## Build, Test & Development Commands
 
@@ -47,3 +47,11 @@ Use this flow for the 0.2.x line while we’re publishing by hand:
 # ExecPlans
 
 When writing complex features or significant refactors, use an ExecPlan (as described in .agent/PLANS.md) from design to implementation.
+
+# Effect Migration
+
+- Check the `MIGRATION.md` file with the rules and style of Effect that we are going to use. Always refer to the MIGRATION file and double check that you are follwoing the right conventions for Effect
+- Take advantage of Typescript, for easier itteration. This will help find small errors throught the codebase.
+- DO NOT worry about backwards compatibilty and by this I mean I dont want half the code in one runtime and half in another, If we are going to migrate this to Effect, then its go big or go home. I want this to be using the Effect runtime and all of its built-ins where possible.
+
+NOTE: The effect docs are in the `effect-docs` folder at the root of the project.

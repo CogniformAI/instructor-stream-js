@@ -8,10 +8,11 @@
  *
  */
 
-import { BufferedString, NonBufferedString } from '@/utils/index.ts'
-import type { ParsedTokenInfo, StringBuilder } from '@/utils/index.ts'
+import { BufferedString, NonBufferedString } from './buffered-string.ts'
+import type { StringBuilder } from './buffered-string.ts'
+import type { ParsedTokenInfo } from './token-parser.ts'
 import TokenType from './token-type.ts'
-import { charset, escapedSequences } from './utf-8.js'
+import { charset, escapedSequences } from './utf-8.ts'
 
 const enum TokenizerStates {
   START,
@@ -76,13 +77,13 @@ function TokenizerStateToString(tokenizerState: TokenizerStates): string {
     'NUMBER_AFTER_E_AND_SIGN',
     'NUMBER_AFTER_E_AND_DIGIT',
     'SEPARATOR',
-  ][tokenizerState]
+  ][tokenizerState] as string
 }
 
 export interface TokenizerOptions {
   stringBufferSize?: number
   numberBufferSize?: number
-  separator?: string
+  separator?: string | undefined
   handleUnescapedNewLines?: boolean
 }
 
@@ -105,12 +106,12 @@ export default class Tokenizer {
 
   private readonly handleUnescapedNewLines?: boolean
   private readonly separator?: string
-  private readonly separatorBytes?: Uint8Array
+  private readonly separatorBytes?: Uint8Array | undefined
   private separatorIndex = 0
   private bufferedString: StringBuilder
   private bufferedNumber: StringBuilder
   private unicode?: string // unicode escapes
-  private highSurrogate?: number
+  private highSurrogate?: number | undefined
   private bytes_remaining = 0 // number of bytes remaining in multi byte utf8 char to read after split boundary
   private bytes_in_sequence = 0 // bytes in multi byte utf8 char to read
   private char_split_buffer = new Uint8Array(4) // for rebuilding chars split before boundary is reached
@@ -141,7 +142,7 @@ export default class Tokenizer {
       : new NonBufferedString({})
 
     this.handleUnescapedNewLines = opts?.handleUnescapedNewLines ?? false
-    this.separator = opts?.separator
+    this.separator = opts?.separator as string
     this.separatorBytes = opts?.separator ? this.encoder.encode(opts.separator) : undefined
   }
 
@@ -169,6 +170,7 @@ export default class Tokenizer {
 
     for (let i = 0; i < buffer.length; i++) {
       const n = buffer[i] // get current byte from buffer
+      if (!n) return
       switch (this.state) {
         case TokenizerStates.START:
           this.offset++
@@ -627,7 +629,7 @@ export default class Tokenizer {
       this.error(
         new TokenizerError(
           `Unexpected "${String.fromCharCode(
-            n
+            n as number
           )}" at position "${i}" in state ${TokenizerStateToString(this.state)}`
         )
       )

@@ -15,11 +15,17 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
+    "./langgraph": {
+      "types": "./dist/langgraph/index.d.ts",
+      "import": "./dist/langgraph/index.js",
+      "require": "./dist/langgraph/index.cjs",
+      "default": "./dist/langgraph/index.js"
+    },
     "./adapters/langgraph": {
-      "types": "./dist/adapters/langgraph.d.ts",
-      "import": "./dist/adapters/langgraph.js",
-      "require": "./dist/adapters/langgraph.cjs",
-      "default": "./dist/adapters/langgraph.js"
+      "types": "./dist/langgraph/index.d.ts",
+      "import": "./dist/langgraph/index.js",
+      "require": "./dist/langgraph/index.cjs",
+      "default": "./dist/langgraph/index.js"
     }
   },
   "files": [
@@ -58,6 +64,14 @@
   "license": "MIT",
   "homepage": "https://github.com/cogniformai/instructor-stream-js",
   "dependencies": {
+    "@effect/ai": "^0.31.1",
+    "@effect/ai-openai": "^0.34.0",
+    "@effect/data": "^0.18.7",
+    "@effect/platform": "^0.92.1",
+    "@effect/platform-node": "^0.98.4",
+    "@effect/schema": "^0.75.5",
+    "@effect/vitest": "^0.26.0",
+    "effect": "^3.18.4",
     "zod-validation-error": "catalog:"
   },
   "peerDependencies": {

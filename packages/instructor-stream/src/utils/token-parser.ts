@@ -24,7 +24,7 @@ export const enum TokenParserMode {
 export interface StackElement {
   key: JsonKey
   value: JsonStruct
-  mode?: TokenParserMode
+  mode: TokenParserMode | undefined
   emit: boolean
 }
 
@@ -37,8 +37,8 @@ export interface ParsedTokenInfo {
 
 export interface ParsedElementInfo {
   value: JsonPrimitive | JsonStruct
-  parent?: JsonStruct
-  key?: JsonKey
+  parent: JsonStruct | undefined
+  key: JsonKey
   stack: StackElement[]
 }
 
@@ -52,22 +52,25 @@ export const enum TokenParserState {
   SEPARATOR,
 }
 
+const TOKEN_STATE_LABELS = [
+  'VALUE',
+  'KEY',
+  'COLON',
+  'COMMA',
+  'ENDED',
+  'ERROR',
+  'SEPARATOR',
+] as const
+
 function TokenParserStateToString(state: TokenParserState): string {
-  return ['VALUE', 'KEY', 'COLON', 'COMMA', 'ENDED', 'ERROR', 'SEPARATOR'][state]
+  return TOKEN_STATE_LABELS[state] ?? 'UNKNOWN'
 }
 
 export interface TokenParserOptions {
-  paths?: string[]
-  keepStack?: boolean
-  separator?: string
-  strictRootObject?: boolean
-}
-
-const defaultOpts: TokenParserOptions = {
-  paths: undefined,
-  keepStack: true,
-  separator: undefined,
-  strictRootObject: false,
+  paths?: string[] | undefined
+  keepStack?: boolean | undefined
+  separator?: string | undefined
+  strictRootObject?: boolean | undefined
 }
 
 export class TokenParserError extends Error {
@@ -80,7 +83,7 @@ export class TokenParserError extends Error {
 export default class TokenParser {
   private readonly paths?: (string[] | undefined)[]
   private readonly keepStack: boolean
-  private readonly separator?: string
+  private readonly separator: string | undefined
   private readonly strictRootObject: boolean
   state: TokenParserState = TokenParserState.VALUE
   mode: TokenParserMode | undefined = undefined
@@ -89,11 +92,11 @@ export default class TokenParser {
   stack: StackElement[] = []
   private rootSeen = false
 
-  constructor(opts?: TokenParserOptions) {
-    opts = { ...defaultOpts, ...opts }
+  constructor(opts: TokenParserOptions = {}) {
+    const { paths, keepStack = true, separator, strictRootObject = false } = opts
 
-    if (opts.paths) {
-      this.paths = opts.paths.map((path) => {
+    if (paths) {
+      this.paths = paths.map((path) => {
         if (path === undefined || path === '$*') {
           return undefined
         }
@@ -107,9 +110,9 @@ export default class TokenParser {
         return pathParts
       })
     }
-    this.keepStack = true
-    this.separator = opts.separator
-    this.strictRootObject = !!opts.strictRootObject
+    this.keepStack = keepStack
+    this.separator = separator
+    this.strictRootObject = strictRootObject
   }
 
   private shouldEmit(): boolean {
@@ -127,7 +130,11 @@ export default class TokenParser {
 
       for (let i = 0; i < path.length - 1; i++) {
         const selector = path[i]
-        const { key } = this.stack[i + 1]
+        const stackEntry = this.stack[i + 1]
+        if (!stackEntry) {
+          return false
+        }
+        const { key } = stackEntry
         if (selector === '*') {
           continue
         }
@@ -156,12 +163,14 @@ export default class TokenParser {
   private pop(): void {
     const value = this.value
 
-    let emit
-    const popped = this.stack.pop() as StackElement
+    const popped = this.stack.pop()
+    if (!popped) {
+      throw new TokenParserError('Unexpected parser stack underflow')
+    }
     this.key = popped.key
     this.value = popped.value
     this.mode = popped.mode
-    emit = popped.emit
+    const emit = popped.emit
 
     this.state = this.mode !== undefined ? TokenParserState.COMMA : TokenParserState.VALUE
 

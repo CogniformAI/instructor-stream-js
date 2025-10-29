@@ -4,29 +4,54 @@ Streaming-first structured data extraction from LLMs with real-time updates.
 
 ## Quick Start
 
-```typescript
-import { instructor } from '@cogniformai/instructor-stream'
+```ts
+import { Effect, Layer, Stream, Redacted } from 'effect'
+import * as Schema from '@effect/schema/Schema'
 import { z } from 'zod'
+import { Prompt } from '@effect/ai/Prompt'
+import * as NodeHttpClient from '@effect/platform-node/NodeHttpClient'
+import { OpenAiClient, OpenAiLanguageModel } from '@effect/ai-openai'
 
-const schema = z.object({
+import { instructorStream, SnapshotHydratorLayer } from '@cogniformai/instructor-stream'
+
+const Person = Schema.Struct({
+  name: Schema.String,
+  age: Schema.Number,
+})
+
+const PersonZod = z.object({
   name: z.string(),
   age: z.number(),
 })
 
-for await (const result of instructor({
-  model: 'gpt-4o-mini',
-  response_model: { schema },
-  messages: [{ role: 'user', content: 'Extract: John is 25 years old' }],
-})) {
-  console.log('Streaming data:', result.data)
-  console.log('Metadata:', result._meta)
+const program = Stream.runCollect(
+  instructorStream({
+    schema: { name: 'Person', effect: Person, zod: PersonZod },
+    prompt: Prompt.text('Extract the name and age from: John is 25 years old.'),
+    validationMode: 'final',
+  })
+).pipe(
+  Effect.provide(
+    Layer.mergeAll(
+      SnapshotHydratorLayer,
+      NodeHttpClient.layer,
+      OpenAiClient.layer({ apiKey: Redacted.make(process.env.OPENAI_API_KEY!) }),
+      OpenAiLanguageModel.layer({ model: 'gpt-4o-mini' })
+    )
+  )
+)
+
+const snapshots = await Effect.runPromise(program)
+for (const chunk of snapshots) {
+  console.log('data', chunk.data[0])
+  console.log('meta', chunk.meta)
 }
 ```
 
 ## Features
 
 - **Real-time Updates**: Get structured data as it streams from LLMs
-- **Clean API**: Separate data from metadata with `{ data: T[], _meta }` format
+- **Clean API**: Separate data from metadata with `{ data: T[], meta }` format
 - **Performance Optimized**: Built for production streaming applications
 - **Provider Agnostic**: Works with OpenAI, Anthropic, and more
 
@@ -38,7 +63,7 @@ Need to consume LangGraph’s multi-node streams and hydrate different UI surfac
 import {
   consumeLanggraphChannels,
   iterableToReadableStream,
-} from '@cogniformai/instructor-stream/adapters/langgraph'
+} from '@cogniformai/instructor-stream/langgraph'
 import { z } from 'zod'
 
 const Schemas = {
@@ -61,7 +86,7 @@ await consumeLanggraphChannels({
 })
 ```
 
-See `src/adapters/langgraph/README.md` for background, helper utilities, and testing tips.
+See `src/langgraph/README.md` for background, helper utilities, and testing tips.
 
 ## Documentation
 

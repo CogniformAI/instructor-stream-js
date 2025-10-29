@@ -1,7 +1,7 @@
 import { setDeep, type Indexable } from './path.ts'
 import { z } from 'zod'
 import JSONParser from './json-parser.ts'
-import { ParsedTokenInfo, StackElement, TokenParserMode, TokenParserState } from '@/stream'
+import { ParsedTokenInfo, StackElement, TokenParserMode, TokenParserState } from './token-parser.ts'
 import { charset } from './utf-8.ts'
 
 type SchemaType = z.ZodType
@@ -13,11 +13,12 @@ type TypeDefaults = {
 type NestedPrimitive = string | number | boolean | null
 type NestedValue = NestedPrimitive | NestedObject | NestedValue[]
 type NestedObject = { [key: string]: NestedValue } & { [key: number]: NestedValue }
+type PathSegment = string | number | undefined
 type OnKeyCompleteCallbackParams = {
-  activePath: (string | number | undefined)[]
-  completedPaths: (string | number | undefined)[][]
+  activePath: PathSegment[]
+  completedPaths: PathSegment[][]
 }
-type OnKeyCompleteCallback = (data: OnKeyCompleteCallbackParams) => void | undefined
+type OnKeyCompleteCallback = (data: OnKeyCompleteCallbackParams) => void
 
 type AutoJSONMode = 'off' | 'object-or-array'
 type SnapshotMode = 'object' | 'string'
@@ -32,9 +33,9 @@ type SnapshotMode = 'object' | 'string'
  */
 export class SchemaStream {
   private schemaInstance: NestedObject
-  private activePath: (string | number | undefined)[] = []
-  private completedPaths: (string | number | undefined)[][] = []
-  private readonly onKeyComplete?: OnKeyCompleteCallback
+  private activePath: PathSegment[] = []
+  private completedPaths: PathSegment[][] = []
+  private readonly onKeyComplete: OnKeyCompleteCallback | null
   private readonly autoJSONMode: AutoJSONMode
   private readonly maxUnstringifyDepth: number
   private readonly snapshotMode: SnapshotMode
@@ -59,7 +60,7 @@ export class SchemaStream {
       snapshotMode = 'object',
     } = opts
     this.schemaInstance = this.createBlankObject(schema, defaultData, typeDefaults)
-    this.onKeyComplete = onKeyComplete
+    this.onKeyComplete = onKeyComplete ?? null
     this.autoJSONMode = autoJSONMode
     this.maxUnstringifyDepth = maxUnstringifyDepth
     this.snapshotMode = snapshotMode
@@ -180,15 +181,16 @@ export class SchemaStream {
   private getPathFromStack(
     stack: StackElement[] = [],
     key: string | number | undefined
-  ): (string | number)[] {
+  ): PathSegment[] {
     /** Build path without intermediate array copies or shift */
     const stackLen = stack.length
     const pathLen = stackLen > 0 ? stackLen - 1 : 0
-    const out: (string | number)[] = new Array(pathLen + 1)
+    const out: PathSegment[] = new Array(pathLen + 1)
     for (let i = 1; i < stackLen; i++) {
-      out[i - 1] = stack[i].key as string | number
+      const element = stack[i]
+      out[i - 1] = element?.key
     }
-    out[pathLen] = key as string | number
+    out[pathLen] = key
     return out
   }
 
@@ -226,8 +228,7 @@ export class SchemaStream {
   }): void {
     const nextPath = this.getPathFromStack(stack, key)
     const pathChanged =
-      this.activePath.length === 0 ||
-      !this.arePathsEqual(this.activePath as (string | number)[], nextPath)
+      this.activePath.length === 0 || !this.arePathsEqual(this.activePath, nextPath)
     if (pathChanged) {
       this.activePath = nextPath
     }
@@ -248,7 +249,7 @@ export class SchemaStream {
     setDeep(this.schemaInstance as Indexable, nextPath, nextValue)
   }
   /** Compare paths by value to avoid spurious updates on identical paths */
-  private arePathsEqual(a: (string | number)[], b: (string | number)[]): boolean {
+  private arePathsEqual(a: PathSegment[], b: PathSegment[]): boolean {
     if (a.length !== b.length) return false
     for (let i = 0; i < a.length; i++) {
       if (a[i] !== b[i]) return false
@@ -361,15 +362,15 @@ export class SchemaStream {
     parser.onError = (err: Error) => {
       console.warn('SchemaStream parser warning (chunk skipped):', err?.message ?? err)
     }
-    const textEncoder = this.snapshotMode === 'string' ? new TextEncoder() : undefined
+    const textEncoder = this.snapshotMode === 'string' ? new TextEncoder() : null
     return new TransformStream<Uint8Array, unknown>({
       transform: async (chunk, controller): Promise<void> => {
         try {
           parser.write(chunk)
           if (this.snapshotMode === 'object') {
             controller.enqueue(this.schemaInstance)
-          } else {
-            controller.enqueue(textEncoder!.encode(JSON.stringify(this.schemaInstance)))
+          } else if (textEncoder) {
+            controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
           }
         } catch (err) {
           if (typeof parser.onError === 'function') {

@@ -7,7 +7,7 @@ export default defineConfig((options) => {
     minify: true,
     entry: {
       index: 'src/index.ts',
-      'adapters/langgraph': 'src/adapters/langgraph/index.ts',
+      'langgraph/index': 'src/langgraph/index.ts',
     },
     target: 'es2020',
     format: ['cjs', 'esm'],
