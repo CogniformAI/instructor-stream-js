@@ -1,5 +1,13 @@
 # @cogniformai/instructor-stream
 
+## 0.4.0
+
+### Minor Changes
+
+- Replace the legacy streaming runtime with a single Effect-first pipeline powered by `@effect/ai`. Snapshot hydration now lives under `src/effect/**`, provider I/O flows through Effect services/layers, and LangGraph integration calls into the same hydrator via `@cogniformai/instructor-stream/langgraph`.
+- Remove the OAI-specific streaming client, DSL helpers, and legacy error types; shared metadata (`CompletionMeta`) no longer depends on OpenAI-specific usage shapes.
+- Consolidate documentation/examples around the Effect API with updated quick-start snippets and LangGraph usage.
+
 ## 0.3.2
 
 ### Patch Changes
