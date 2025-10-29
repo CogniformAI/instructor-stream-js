@@ -82,7 +82,24 @@ const extractNode = (env: LangGraphEnvelope): string | undefined => {
   }
   return undefined
 }
-
+/**
+ * Collects and concatenates text fragments from a LangGraph envelope.
+ *
+ * This function extracts text content from nested data structures within a LangGraph envelope,
+ * organizing fragments by their optional index values and original order. Fragments with numeric
+ * indices are sorted first by index, then by order of appearance. Fragments without indices
+ * appear after indexed fragments, sorted by their order of appearance.
+ *
+ * @param env - The LangGraph envelope containing data entries with content blocks
+ * @returns A single concatenated string of all text fragments in sorted order
+ *
+ * @remarks
+ * The sorting algorithm prioritizes:
+ * 1. Fragments with numeric indices (sorted by index, then order)
+ * 2. Fragments without indices (sorted by order)
+ *
+ * Empty or non-string text content is filtered out during processing.
+ */
 const collectFragments = (env: LangGraphEnvelope): string => {
   const fragments: IndexedFragment[] = []
   let order = 0
@@ -116,6 +133,31 @@ const collectFragments = (env: LangGraphEnvelope): string => {
   return fragments.map((fragment) => fragment.text).join('')
 }
 
+/**
+ * Creates a TransformStream that adapts LangGraph output into EmittedChunk format.
+ *
+ * This adapter processes streaming data from LangGraph, extracting node information
+ * and associated payload fragments from each chunk. It filters out invalid chunks
+ * and only emits well-formed data containing both a node identifier and non-empty payload.
+ *
+ * @returns A TransformStream that converts LangGraph envelope objects into EmittedChunk objects
+ *
+ * @remarks
+ * The adapter performs the following transformations:
+ * - Validates that incoming chunks are objects
+ * - Extracts the node identifier from the LangGraph envelope
+ * - Collects payload fragments associated with the node
+ * - Filters out chunks with empty payloads or invalid node identifiers
+ * - Enqueues transformed chunks with both node and payload information
+ *
+ * @example
+ * ```typescript
+ * const stream = langgraphStream.pipeThrough(langgraphAdapter());
+ * for await (const { node, chunk } of stream) {
+ *   console.log(`Node: ${node}, Payload:`, chunk);
+ * }
+ * ```
+ */
 export function langgraphAdapter(): TransformStream<unknown, EmittedChunk> {
   return new TransformStream<unknown, EmittedChunk>({
     transform(chunk, controller) {

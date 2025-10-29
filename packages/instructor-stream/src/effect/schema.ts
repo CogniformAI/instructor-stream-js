@@ -16,6 +16,22 @@ export type ResolvedSchema<A> = {
   readonly zod?: z.ZodType<A>
 }
 
+/**
+ * Resolves a schema source into a resolved schema with validated effect and/or zod schemas.
+ *
+ * @template A - The type parameter representing the schema's inferred type
+ * @param {SchemaSource<A>} source - The schema source object containing optional effect/zod schemas and a name
+ * @returns {ResolvedSchema<A>} A resolved schema object containing the name and available schemas
+ * @throws {SchemaResolutionError} When neither an Effect schema nor a Zod schema is provided
+ *
+ * @example
+ * ```typescript
+ * const schema = resolveSchema({
+ *   name: 'UserSchema',
+ *   zod: z.object({ name: z.string() })
+ * });
+ * ```
+ */
 export const resolveSchema = <A>(source: SchemaSource<A>): ResolvedSchema<A> => {
   if (!source.effect && !source.zod) {
     throw new SchemaResolutionError({

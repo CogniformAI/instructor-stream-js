@@ -94,7 +94,6 @@ export default class TokenParser {
 
   constructor(opts: TokenParserOptions = {}) {
     const { paths, keepStack = true, separator, strictRootObject = false } = opts
-
     if (paths) {
       this.paths = paths.map((path) => {
         if (path === undefined || path === '$*') {
@@ -115,6 +114,20 @@ export default class TokenParser {
     this.strictRootObject = strictRootObject
   }
 
+  /**
+   * Determines whether the current parser state should emit a value based on configured paths.
+   *
+   * @returns `true` if no paths are configured, or if the current stack and key match any of the configured paths; `false` otherwise.
+   *
+   * @remarks
+   * This method compares the current parser stack against a list of path selectors to determine if
+   * the current position in the JSON structure matches any target path. The comparison process:
+   * - Returns `true` immediately if no paths filter is configured
+   * - Checks if any configured path matches the current stack depth
+   * - Supports wildcard selectors (`'*'`) that match any key at that level
+   * - Validates each level of the path against the corresponding stack entry
+   * - Special handling for the final selector in the path, comparing against the current key
+   */
   private shouldEmit(): boolean {
     if (!this.paths) {
       return true

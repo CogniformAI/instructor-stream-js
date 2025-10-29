@@ -257,6 +257,27 @@ export class SchemaStream {
     return true
   }
 
+  /**
+   * Recursively attempts to parse a string value as JSON up to a maximum depth.
+   *
+   * This method handles cases where JSON has been stringified multiple times
+   * (e.g., `"\"{\\"key\\":\\"value\\"}\""`) by repeatedly parsing until reaching
+   * a non-string value or the maximum depth limit.
+   *
+   * @param value - The string value to unstringify
+   * @returns The parsed nested value (object or array) if successful, or the original
+   *          string if parsing fails or the value doesn't appear to be JSON
+   *
+   * @remarks
+   * The method performs validation checks before attempting to parse:
+   * - Checks if the string starts and ends with appropriate JSON delimiters (`{}`, `[]`, or `""`)
+   * - For quoted strings, checks if the inner content looks like JSON
+   * - Only attempts parsing when the string structure suggests it contains JSON
+   * - Respects `maxUnstringifyDepth` to prevent excessive recursion
+   *
+   * If parsing succeeds but results in a primitive value other than a string,
+   * the original value is returned instead.
+   */
   private unstringifyIfJSON(value: string): NestedValue | string {
     let remainingDepth = this.maxUnstringifyDepth
     let current: unknown = value
