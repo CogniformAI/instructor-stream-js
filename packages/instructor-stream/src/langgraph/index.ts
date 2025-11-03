@@ -1,10 +1,10 @@
-import { langgraphAdapter } from './adapter.ts'
-import { consumeLanggraphChannels, type ChannelSpec } from './channels.ts'
+import { fastAdapter, type FastAdapterOptions, type LangGraphDelta } from './fast-adapter.ts'
+import { streamLangGraph, type StreamLangGraphSpec } from './stream.ts'
 
 /**
  * Convert an (async) iterable of envelope objects into a WHATWG ReadableStream.
  * LangGraph runtimes commonly expose async generators; this helper makes them
- * compatible with `consumeLanggraphChannels`.
+ * compatible with `streamLangGraph`.
  */
 export function iterableToReadableStream<T>(
   source: AsyncIterable<T> | Iterable<T>
@@ -35,5 +35,5 @@ export function iterableToReadableStream<T>(
   })
 }
 
-export { langgraphAdapter, consumeLanggraphChannels }
-export type { ChannelSpec }
+export { fastAdapter, streamLangGraph }
+export type { FastAdapterOptions, LangGraphDelta, StreamLangGraphSpec }

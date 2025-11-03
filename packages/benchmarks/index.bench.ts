@@ -19,7 +19,7 @@ function getPathFromStack(
   const pathLen = stackLen > 0 ? stackLen - 1 : 0
   const out: (string | number)[] = new Array(pathLen + 1)
   for (let i = 1; i < stackLen; i++) {
-    out[i - 1] = stack[i].key as string | number
+    out[i - 1] = stack[i]!.key as string | number
   }
   out[pathLen] = key as string | number
   return out
@@ -30,6 +30,7 @@ const chunkSize = 1024
 async function collectAssignments(json: string): Promise<Array<{ path: Path; value: unknown }>> {
   const parser = new JSONParser({ stringBufferSize: 0, handleUnescapedNewLines: true })
   const assignments: Array<{ path: Path; value: unknown }> = []
+  // @ts-expect-error - parser.key is incorectly typed this is only used for benchmarking
   parser.onToken = ({
     parser: p,
     tokenizer: t,

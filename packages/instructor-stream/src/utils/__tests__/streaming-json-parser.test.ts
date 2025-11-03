@@ -548,6 +548,48 @@ describe('streaming-json-parser.ts', () => {
       expect(flushCall).toBeDefined()
     })
 
+    test('ingest returns closure signal when prefix stream completes', () => {
+      const schema = z.object({
+        alpha: z.object({
+          message: z.string().nullable().optional(),
+        }),
+      })
+      const schemaStream = new SchemaStream(schema)
+
+      const first = schemaStream.ingest(['alpha'], '{"message": ')
+      expect(first.closed).toBe(false)
+
+      const second = schemaStream.ingest(['alpha'], '"hello"}')
+      expect(second.closed).toBe(true)
+      expect(second.completions.some((path) => path.join('.') === 'alpha.message')).toBe(true)
+
+      schemaStream.releaseContext(['alpha'])
+
+      const restart = schemaStream.ingest(['alpha'], '{"message": "goodbye"}')
+      expect(restart.closed).toBe(true)
+      expect(restart.completions.some((path) => path.join('.') === 'alpha.message')).toBe(true)
+    })
+
+    test('ingest handles chunk boundaries inside strings without premature close', () => {
+      const schema = z.object({
+        payload: z.string(),
+      })
+      const schemaStream = new SchemaStream(schema)
+
+      const first = schemaStream.ingest([], '{"payload":"value with ')
+      expect(first.closed).toBe(false)
+      expect(first.completions).toHaveLength(0)
+
+      const second = schemaStream.ingest([], '} brace still streaming ')
+      expect(second.closed).toBe(false)
+      expect(second.completions).toHaveLength(0)
+
+      const final = schemaStream.ingest([], 'and closing"}')
+      expect(final.closed).toBe(true)
+      expect(final.completions.some((path) => path.join('.') === 'payload')).toBe(true)
+      expect(schemaStream.current().payload).toBe('value with } brace still streaming and closing')
+    })
+
     test('shouldHandleParserEndStateCorrectly', async () => {
       const schema = z.object({
         name: z.string().prefault('test'),

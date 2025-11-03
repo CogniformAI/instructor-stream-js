@@ -31,7 +31,7 @@ describe('buffered-string.ts', () => {
 
     test('NonBufferedString_shouldCallIncrementalCallback', () => {
       const mockCallback = vi.fn()
-      const nonBuffered = new NonBufferedString({ onIncrementalString: mockCallback })
+      const nonBuffered = new NonBufferedString({ onIncrementalString: mockCallback, interval: 1 })
 
       nonBuffered.appendChar(65) /** 'A' */
       expect(mockCallback).toHaveBeenCalledWith('A')

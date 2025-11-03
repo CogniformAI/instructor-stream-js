@@ -20,6 +20,8 @@ export class NonBufferedString implements StringBuilder {
   private decoder = new TextDecoder('utf-8')
   private assembled = ''
   private readonly onIncrementalString: ((str: string) => void) | null
+  private lastEmittedLength = 0
+  private readonly emitInterval: number
 
   public byteLength = 0
 
@@ -29,8 +31,12 @@ export class NonBufferedString implements StringBuilder {
    * @param {Object} param0 - An object containing optional parameters.
    * @param {(str: string) => void} [param0.onIncrementalString] - A callback function that is called with the incremental string updates.
    */
-  constructor({ onIncrementalString }: { onIncrementalString?: (str: string) => void } = {}) {
+  constructor({
+    onIncrementalString,
+    interval = 256,
+  }: { onIncrementalString?: (str: string) => void; interval?: number } = {}) {
     this.onIncrementalString = onIncrementalString ?? null
+    this.emitInterval = Math.max(1, interval)
   }
 
   public appendChar(char: number): void {
@@ -46,19 +52,26 @@ export class NonBufferedString implements StringBuilder {
     this.update()
   }
 
-  private update(): void {
-    if (this.onIncrementalString) {
-      /** Emit the full string-so-far without extra joins */
-      this.onIncrementalString(this.assembled)
+  private update(force = false): void {
+    if (!this.onIncrementalString) {
+      return
     }
+    const { length } = this.assembled
+    if (!force && length - this.lastEmittedLength < this.emitInterval) {
+      return
+    }
+    this.lastEmittedLength = length
+    this.onIncrementalString(this.assembled)
   }
 
   public reset(): void {
     this.assembled = ''
     this.byteLength = 0
+    this.lastEmittedLength = 0
   }
 
   public toString(): string {
+    this.update(true)
     return this.assembled
   }
 }
@@ -96,7 +109,9 @@ export class BufferedString implements StringBuilder {
   }
 
   private flushStringBuffer(): void {
-    this.string += this.decoder.decode(this.buffer.subarray(0, this.bufferOffset))
+    this.string += this.decoder.decode(this.buffer.subarray(0, this.bufferOffset), {
+      stream: true,
+    })
     this.bufferOffset = 0
     this.update()
   }

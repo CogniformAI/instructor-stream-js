@@ -31,6 +31,16 @@ This package contains performance benchmarks for the streaming JSON parser and u
   BENCH_TIME=15000 pnpm -C packages/benchmarks run bench:simple
   ```
 
+- LangGraph adapter baseline (reads 4k-line JSONL fixture):
+
+  ```bash
+  pnpm -C packages/benchmarks run bench:langgraph
+  # Longer sample window
+  BENCH_TIME=10000 pnpm -C packages/benchmarks run bench:langgraph
+  ```
+
+  A typical laptop run processes the 4,096 envelope fixture in roughly 30 ms (≈130k envelopes/sec).
+
 ## Interpreting results
 
 - The tinybench table prints:

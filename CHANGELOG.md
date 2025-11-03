@@ -10,8 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- `consumeLanggraphChannels`, `langgraphAdapter`, and `iterableToReadableStream` to bridge LangGraph "messages tuple" envelopes into instructor-stream snapshots.
-- `packages/examples/langgraph-channels` demonstrating per-node routing with the new adapter pipeline.
+- `streamLangGraph`, `fastAdapter`, and `iterableToReadableStream` to bridge LangGraph "messages tuple" envelopes into instructor-stream snapshots with a single SchemaStream pipeline.
+- `packages/examples/langgraph-channels` demonstrating per-node routing with the updated adapter pipeline.
+- `defaultNode` / `onMissingNode` options for LangGraph streams plus configurable tokenizer `stringEmitInterval` for tuning incremental snapshots.
 
 ### Changed
 

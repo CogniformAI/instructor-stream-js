@@ -1,7 +1,5 @@
-import {
-  consumeLanggraphChannels,
-  iterableToReadableStream,
-} from '@cogniformai/instructor-stream/langgraph'
+import { iterableToReadableStream, streamLangGraph } from '@cogniformai/instructor-stream/langgraph'
+import { Stream, Effect } from 'effect'
 import { z } from 'zod'
 
 type Envelope = {
@@ -21,12 +19,15 @@ type Envelope = {
   ]
 }
 
-const Schemas = {
-  ideation_llm_call: z.object({
-    ideas: z.array(z.string()).nullable().optional(),
-  }),
-  screenshot_analysis_llm_call: z.object({
-    findings: z.string().nullable().optional(),
+const RootSchema = {
+  name: 'mock-graph',
+  zod: z.object({
+    ideation_llm_call: z.object({
+      ideas: z.array(z.string()).nullable().optional(),
+    }),
+    screenshot_analysis_llm_call: z.object({
+      findings: z.string().nullable().optional(),
+    }),
   }),
 } as const
 
@@ -61,14 +62,16 @@ async function* mockLangGraphSource(): AsyncIterable<Envelope> {
 }
 
 async function main() {
-  await consumeLanggraphChannels({
+  const stream = streamLangGraph({
     upstream: iterableToReadableStream(mockLangGraphSource()),
-    schemas: Schemas,
-    validationMode: 'final',
-    onSnapshot: async (node, snapshot, meta) => {
-      console.log(`[${node}]`, snapshot, meta)
+    schema: RootSchema,
+    validation: 'final',
+    onSnapshot: async (snapshot, meta) => {
+      console.log(`[${meta._type}]`, snapshot, meta)
     },
   })
+
+  await Effect.runPromise(Stream.runDrain(stream))
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await

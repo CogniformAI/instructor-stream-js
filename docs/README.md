@@ -46,25 +46,29 @@ await Effect.runPromise(program)
 LangGraph adapter:
 
 ```ts
-import {
-  consumeLanggraphChannels,
-  iterableToReadableStream,
-} from '@cogniformai/instructor-stream/langgraph'
+import { iterableToReadableStream, streamLangGraph } from '@cogniformai/instructor-stream/langgraph'
+import { Effect, Stream } from 'effect'
 import { z } from 'zod'
 
-await consumeLanggraphChannels({
+const stream = streamLangGraph({
   upstream: iterableToReadableStream(streamOfEnvelopes),
-  schemas: {
-    alpha: z.object({ title: z.string().nullable().optional() }),
+  schema: {
+    name: 'alpha-only',
+    zod: z.object({
+      alpha: z.object({ title: z.string().nullable().optional() }),
+    }),
   },
-  validationMode: 'final',
-  onSnapshot: async (node, partial, meta) => {
-    console.log(node, partial, meta)
+  validation: 'final',
+  // defaultNode: 'alpha',
+  onSnapshot: async (snapshot, meta) => {
+    console.log(meta._type, snapshot, meta)
   },
 })
+
+await Effect.runPromise(Stream.runDrain(stream))
 ```
 
-See `packages/examples/langgraph-channels` for a runnable fixture that prints per-node snapshots using mocked LangGraph envelopes.
+See `packages/examples/langgraph-channels` for a runnable fixture that prints per-node snapshots using mocked LangGraph envelopes. Consult `src/langgraph/README.md` for defaults (`defaultNode`, `onMissingNode`) and parser tuning options such as `stringEmitInterval`.
 
 ## Development Resources
 

@@ -1,84 +1,108 @@
 # LangGraph Adapter
 
-Connect LangGraph “messages tuple” envelopes to the Effect-based instructor-stream core. The adapter extracts textual/tool-call fragments, routes them by `langgraph_node`, and feeds them into the schema streaming engine so you receive `{ data, meta }` snapshots as soon as each node updates.
+Connect LangGraph “messages tuple” envelopes to the Effect-based instructor-stream core. The new adapter peels `{ langgraph_node, text-delta }` tuples, multiplexes them through a single `SchemaStream`, and emits `{ data, meta }` snapshots as soon as any node completes a JSON value—no per-node pipelines required.
 
 ## Quick Start
 
 ```ts
-import {
-  consumeLanggraphChannels,
-  iterableToReadableStream,
-} from '@cogniformai/instructor-stream/langgraph'
+import { iterableToReadableStream, streamLangGraph } from '@cogniformai/instructor-stream/langgraph'
+import { Effect, Stream } from 'effect'
 import { z } from 'zod'
 
-const Schemas = {
-  ideation_llm_call: z.object({
-    ideas: z.array(z.string()).nullable().optional(),
-  }),
-  screenshot_analysis_llm_call: z.object({
-    findings: z.string().nullable().optional(),
+const RootSchema = {
+  name: 'design-graph',
+  zod: z.object({
+    ideation_llm_call: z.object({
+      ideas: z.array(z.string()).nullable().optional(),
+    }),
+    screenshot_analysis_llm_call: z.object({
+      findings: z.string().nullable().optional(),
+    }),
   }),
 } as const
 
 async function run(streamOfEnvelopes: AsyncIterable<unknown>) {
-  await consumeLanggraphChannels({
+  const stream = streamLangGraph({
     upstream: iterableToReadableStream(streamOfEnvelopes),
-    schemas: Schemas,
-    defaultSchema: z.any(), // optional fallback for unexpected nodes
-    validationMode: 'final', // 'none' | 'final' | 'on-complete' (defaults to 'none')
-    onSnapshot: async (node, partial, meta) => {
-      console.log(`[${node}]`, partial, meta)
+    schema: RootSchema,
+    validation: 'final', // 'none' | 'final' (defaults to 'none')
+    // defaultNode: 'fallback', // optionally direct tuples missing `langgraph_node`
+    onSnapshot: async (snapshot, meta) => {
+      console.log(`[${meta._type}]`, snapshot, meta)
     },
   })
+
+  await Effect.runPromise(Stream.runDrain(stream))
 }
 ```
 
-How it works:
+## How It Works
 
-1. `langgraphAdapter` scans each envelope, finds `langgraph_node`, and concatenates the `content` fragments (both `text` and `tool_call_chunk.args` are treated identically).
-2. `consumeLanggraphChannels` spins up a streaming JSON parser for every node that has a registered schema.
-3. Every chunk yields an instructor-style snapshot `{ data: [partial], meta }` where `meta._type` is the node name.
-4. Nodes that are not in `schemas` (and have no `defaultSchema`) are discarded immediately—no extra buffering or memory growth.
+1. `fastAdapter()` walks the SSE envelope once, yielding `{ node, text }` deltas as soon as they appear. Empty fragments are skipped and tuple order is preserved (LangGraph already guarantees FIFO per node).
+2. `streamLangGraph()` routes every delta through a single `SchemaStream`. Each node’s JSON parser keeps its own state while sharing the same root snapshot object.
+3. Whenever a JSON value finishes (`TokenParserState === VALUE` and not partial), the current snapshot is emitted with `meta._type` set to the emitting node. Partial values never leak.
+4. At stream completion, optional `'final'` validation re-parses the aggregated object with your root Zod schema.
 
 ## Utilities
 
-- `iterableToReadableStream(iterable)` converts the async iterable returned by LangGraph runtimes into a WHATWG `ReadableStream`, which the instructor core expects.
-- `langgraphAdapter()` is exposed directly in case you want manual access to `{ node, chunk }` tuples before hydration.
+- `iterableToReadableStream(iterable)` converts the async iterable returned by LangGraph runtimes into a WHATWG `ReadableStream` for browser / worker compatibility.
+- `fastAdapter(options?)` is exported directly if you need raw `{ node, text }` access (e.g., custom buffering or logging) before hydrating through `streamLangGraph`.
 
-## Schema Naming
+## Schema Layout
 
-Schema keys should match the `langgraph_node` value emitted by LangGraph. This keeps routing explicit:
+- Supply a **single root schema** whose keys match `langgraph_node` identifiers. Each node’s sub-schema can be as strict or loose as you need.
+- Missing nodes simply retain their default values. To opt-out entirely, omit the key from the root schema; the parser still tracks deltas but nothing is written to the snapshot.
 
 ```ts
-const Schemas = {
-  ideation_llm_call: IdeationSchema,
-  screenshot_analysis_llm_call: AnalysisSchema,
+const RootSchema = {
+  name: 'graph',
+  zod: z.object({
+    agent: AgentSchema,
+    tools: ToolSchema,
+  }),
 }
 ```
 
-If you provide a `defaultSchema`, any node without an explicit entry will use it instead of being dropped.
-
 ## Snapshot Shape
 
-`onSnapshot` receives:
+Every emission is the full root object as it exists at that moment:
 
-- `node`: the emitting `langgraph_node`.
-- `snapshot`: the partial object (first element of the instructor `data` array).
-- `meta`: the usual instructor metadata with `_type` set to the node name and `_activePath`/`_completedPaths` tracking progress.
+- `chunk.data[0]` — the aggregated snapshot keyed by node
+- `chunk.meta` — instructor metadata (`_type` = node, `_activePath`, `_completedPaths`, `_isValid`)
 
-The partial accumulates fields as soon as the JSON fragment becomes valid; no artificial throttling is applied.
+Because snapshots are immutable references to the shared object, downstream consumers should clone if they plan to mutate.
 
-## Handling Tool Calls
+## Tool Calls & Text Blocks
 
-LangGraph tool-call chunks arrive as `content[*].type === 'tool_call_chunk'` with `args` already stringified JSON. The adapter treats them like any other fragment: `args` is appended to the node’s JSON stream and validated against the node’s schema. If tool calls need a different schema, split them into their own node and register the appropriate schema.
+`fastAdapter` treats `content[*].type === 'text'` and `tool_call_chunk` identically. Tool-call `args` strings are appended directly to the node’s JSON stream, so you can keep tool call schemas alongside regular completion data (or split into separate nodes if you prefer).
 
-## Ignoring Noise
+## Noise Handling
 
-- Envelopes missing `langgraph_node` or providing empty fragments are skipped.
-- Nodes with no schema entry (and no default) are ignored, keeping queues tight.
+- Envelopes missing `langgraph_node` or emitting empty fragments are dropped immediately.
+- Unknown nodes are ignored unless you include them in the root schema.
+- Back-pressure is governed entirely by Effect streams—no extra `ReadableStream` fan-out or buffering is introduced.
+
+## Missing Node Defaults
+
+- Pass `defaultNode` to `streamLangGraph` (or `fastAdapter`) to route tuples that never declare `langgraph_node`.
+- Provide `onMissingNode` if you want to log or meter dropped tuples yourself; otherwise a one-time warning is emitted.
+
+```ts
+const stream = streamLangGraph({
+  upstream,
+  schema: RootSchema,
+  defaultNode: 'fallback',
+  onMissingNode: (chunk) => logger.warn('missing node', chunk),
+})
+```
+
+## Parser Tuning
+
+- Adjust `stringEmitInterval` via `SchemaStream.parse({ stringEmitInterval })` or `schemaStream.ingest` options to trade callback frequency for throughput; the default is `256` bytes.
+- Larger intervals reduce `partial` string events; smaller intervals improve latency for character-by-character UIs.
 
 ## See Also
 
-- `consumeLanggraphChannels` implementation (`packages/instructor-stream/src/langgraph/channels.ts`)
-- `langgraphAdapter` (`packages/instructor-stream/src/langgraph/adapter.ts`)
-- Tests covering the flow (`packages/instructor-stream/src/langgraph/__tests__/adapter.test.ts`)
+- `fastAdapter` implementation (`packages/instructor-stream/src/langgraph/fast-adapter.ts`)
+- `streamLangGraph` pipeline (`packages/instructor-stream/src/langgraph/stream.ts`)
+- Tests covering interleaving nodes (`packages/instructor-stream/src/langgraph/__tests__/adapter.test.ts`)

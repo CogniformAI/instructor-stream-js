@@ -315,4 +315,30 @@ describe('tokenizer.ts', () => {
     expect(errorCallCount).toBe(2)
     expect(errorTokenizer.isEnded).toBe(false)
   })
+
+  test('respects stringEmitInterval option for incremental callbacks', () => {
+    const eagerTokenizer = new Tokenizer({ stringEmitInterval: 1 })
+    const eagerPartialTokens: ParsedTokenInfo[] = []
+    eagerTokenizer.onToken = (token: ParsedTokenInfo) => {
+      eagerPartialTokens.push(token)
+    }
+    eagerTokenizer.onError = mockOnError
+    eagerTokenizer.onEnd = mockOnEnd
+    eagerTokenizer.write('{"msg":"hello"}')
+    eagerTokenizer.end()
+    const eagerPartials = eagerPartialTokens.filter((token) => token.partial)
+    expect(eagerPartials.length).toBeGreaterThanOrEqual(3)
+
+    const lazyTokenizer = new Tokenizer({ stringEmitInterval: 1024 })
+    const lazyPartialTokens: ParsedTokenInfo[] = []
+    lazyTokenizer.onToken = (token: ParsedTokenInfo) => {
+      lazyPartialTokens.push(token)
+    }
+    lazyTokenizer.onError = mockOnError
+    lazyTokenizer.onEnd = mockOnEnd
+    lazyTokenizer.write('{"msg":"hello"}')
+    lazyTokenizer.end()
+    const lazyPartials = lazyPartialTokens.filter((token) => token.partial)
+    expect(lazyPartials.length).toBeLessThan(eagerPartials.length)
+  })
 })

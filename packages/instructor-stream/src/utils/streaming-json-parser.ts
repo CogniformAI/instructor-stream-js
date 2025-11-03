@@ -23,6 +23,29 @@ type OnKeyCompleteCallback = (data: OnKeyCompleteCallbackParams) => void
 type AutoJSONMode = 'off' | 'object-or-array'
 type SnapshotMode = 'object' | 'string'
 
+type ParserContext = {
+  readonly key: string
+  readonly prefix: PathSegment[]
+  parser: JSONParser | null
+  activePath: PathSegment[]
+  completedPaths: PathSegment[][]
+  recentCompletions: PathSegment[][]
+  structureDepth: number
+  inString: boolean
+  escaped: boolean
+}
+
+type ParserOptions = {
+  stringBufferSize?: number
+  handleUnescapedNewLines?: boolean
+  stringEmitInterval?: number
+}
+
+export type IngestOutcome = {
+  completions: PathSegment[][]
+  closed: boolean
+}
+
 /**
  * SchemaStream builds a progressively populated "stub" object for a JSON stream
  * based on a provided Zod schema. This allows consumers to read a safe partial
@@ -33,12 +56,13 @@ type SnapshotMode = 'object' | 'string'
  */
 export class SchemaStream {
   private schemaInstance: NestedObject
-  private activePath: PathSegment[] = []
-  private completedPaths: PathSegment[][] = []
   private readonly onKeyComplete: OnKeyCompleteCallback | null
   private readonly autoJSONMode: AutoJSONMode
   private readonly maxUnstringifyDepth: number
   private readonly snapshotMode: SnapshotMode
+  private readonly contexts = new Map<string, ParserContext>()
+  private activePath: PathSegment[] = []
+  private completedPaths: PathSegment[][] = []
 
   constructor(
     schema: SchemaType,
@@ -64,6 +88,101 @@ export class SchemaStream {
     this.autoJSONMode = autoJSONMode
     this.maxUnstringifyDepth = maxUnstringifyDepth
     this.snapshotMode = snapshotMode
+    this.ensureContext([], SchemaStream.defaultParserOpts)
+  }
+
+  private static defaultParserOpts: Required<ParserOptions> = {
+    stringBufferSize: 0,
+    handleUnescapedNewLines: true,
+    stringEmitInterval: 256,
+  }
+
+  private static contextKey(prefix: PathSegment[]): string {
+    if (prefix.length === 0) {
+      return '$root'
+    }
+    return prefix
+      .map((segment) => {
+        if (segment === undefined) return 'u'
+        if (typeof segment === 'number') return `#${segment}`
+        return encodeURIComponent(segment)
+      })
+      .join('.')
+  }
+
+  private ensureContext(prefix: PathSegment[], opts: ParserOptions): ParserContext {
+    const key = SchemaStream.contextKey(prefix)
+    const existing = this.contexts.get(key)
+    if (existing) {
+      return existing
+    }
+    const parserOpts = {
+      stringBufferSize: opts.stringBufferSize ?? SchemaStream.defaultParserOpts.stringBufferSize,
+      handleUnescapedNewLines:
+        opts.handleUnescapedNewLines ?? SchemaStream.defaultParserOpts.handleUnescapedNewLines,
+      stringEmitInterval:
+        opts.stringEmitInterval ?? SchemaStream.defaultParserOpts.stringEmitInterval,
+      strictRootObject: true,
+    }
+    const context: ParserContext = {
+      key,
+      prefix: [...prefix],
+      activePath: [],
+      completedPaths: [],
+      recentCompletions: [],
+      structureDepth: 0,
+      inString: false,
+      escaped: false,
+      parser: null,
+    }
+    context.parser = new JSONParser(parserOpts)
+    this.configureParser(context)
+    this.contexts.set(key, context)
+    return context
+  }
+
+  private configureParser(context: ParserContext): void {
+    if (!context.parser) {
+      return
+    }
+    context.parser.onToken = (info) => this.handleToken(context, info)
+    context.parser.onValue = () => undefined
+    context.parser.onError = (err: Error) => {
+      console.warn('SchemaStream parser warning (chunk skipped):', err?.message ?? err)
+    }
+    context.parser.onEnd = () => {
+      context.activePath = []
+    }
+  }
+
+  private disposeParser(context: ParserContext): void {
+    if (!context.parser) {
+      return
+    }
+    const noop = () => undefined
+    context.parser.onToken = noop as never
+    context.parser.onValue = noop
+    context.parser.onError = noop
+    context.parser.onEnd = noop
+    context.parser = null
+  }
+
+  private resetContext(context: ParserContext, opts: ParserOptions): void {
+    const parserOpts = {
+      stringBufferSize: opts.stringBufferSize ?? SchemaStream.defaultParserOpts.stringBufferSize,
+      handleUnescapedNewLines:
+        opts.handleUnescapedNewLines ?? SchemaStream.defaultParserOpts.handleUnescapedNewLines,
+      stringEmitInterval:
+        opts.stringEmitInterval ?? SchemaStream.defaultParserOpts.stringEmitInterval,
+      strictRootObject: true,
+    }
+    this.disposeParser(context)
+    context.parser = new JSONParser(parserOpts)
+    context.recentCompletions = []
+    context.structureDepth = 0
+    context.inString = false
+    context.escaped = false
+    this.configureParser(context)
   }
 
   /**
@@ -214,31 +333,39 @@ export class SchemaStream {
    * Returns:
    *   void
    */
-  private handleToken({
-    parser: { key, stack },
-    tokenizer: { value, partial },
-  }: {
-    parser: {
-      state: TokenParserState
-      key: string | number | undefined
-      mode: TokenParserMode | undefined
-      stack: StackElement[]
+  private handleToken(
+    context: ParserContext,
+    {
+      parser: { key, stack },
+      tokenizer: { value, partial },
+    }: {
+      parser: {
+        state: TokenParserState
+        key: string | number | undefined
+        mode: TokenParserMode | undefined
+        stack: StackElement[]
+      }
+      tokenizer: ParsedTokenInfo
     }
-    tokenizer: ParsedTokenInfo
-  }): void {
-    const nextPath = this.getPathFromStack(stack, key)
+  ): void {
+    const relativePath = this.getPathFromStack(stack, key)
+    const fullPath = context.prefix.length > 0 ? [...context.prefix, ...relativePath] : relativePath
     const pathChanged =
-      this.activePath.length === 0 || !this.arePathsEqual(this.activePath, nextPath)
+      context.activePath.length === 0 || !this.arePathsEqual(context.activePath, fullPath)
     if (pathChanged) {
-      this.activePath = nextPath
+      context.activePath = [...fullPath]
     }
     if (!partial) {
-      this.completedPaths.push(nextPath)
+      const completedPath = [...fullPath]
+      context.completedPaths.push(completedPath)
+      context.recentCompletions.push(completedPath)
+      this.completedPaths.push(completedPath)
     }
     if ((pathChanged || !partial) && this.onKeyComplete) {
+      this.activePath = [...fullPath]
       this.onKeyComplete({
-        activePath: this.activePath,
-        completedPaths: this.completedPaths,
+        activePath: [...this.activePath],
+        completedPaths: this.completedPaths.map((path) => [...path]),
       })
     }
     let nextValue: ParsedTokenInfo['value'] | NestedValue = value
@@ -246,7 +373,7 @@ export class SchemaStream {
       const unwrapped = this.unstringifyIfJSON(value)
       nextValue = unwrapped
     }
-    setDeep(this.schemaInstance as Indexable, nextPath, nextValue)
+    setDeep(this.schemaInstance as Indexable, fullPath, nextValue)
   }
   /** Compare paths by value to avoid spurious updates on identical paths */
   private arePathsEqual(a: PathSegment[], b: PathSegment[]): boolean {
@@ -316,15 +443,12 @@ export class SchemaStream {
       }
       try {
         const parsed = JSON.parse(trimmed) as unknown
-        if (Array.isArray(parsed)) {
-          return parsed as NestedValue
-        }
-        if (parsed !== null && typeof parsed === 'object') {
+        if (Array.isArray(parsed) || (parsed !== null && typeof parsed === 'object')) {
           return parsed as NestedValue
         }
         if (typeof parsed === 'string') {
           current = parsed
-          remainingDepth -= 1
+          remainingDepth--
           continue
         }
         return value
@@ -368,56 +492,148 @@ export class SchemaStream {
    * defaults applied to the schema instance.
    */
   public parse(
-    opts: {
-      stringBufferSize?: number
-      handleUnescapedNewLines?: boolean
-    } = { stringBufferSize: 0, handleUnescapedNewLines: true }
-  ): TransformStream<Uint8Array, unknown> {
-    let parser = new JSONParser({
-      stringBufferSize: opts.stringBufferSize ?? 0,
-      handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true,
-      strictRootObject: true,
-    })
-    parser.onToken = this.handleToken.bind(this)
-    parser.onValue = () => undefined
-    parser.onError = (err: Error) => {
-      console.warn('SchemaStream parser warning (chunk skipped):', err?.message ?? err)
-    }
+    opts: ParserOptions = SchemaStream.defaultParserOpts
+  ): TransformStream<string | Uint8Array, unknown> {
+    const context = this.ensureContext([], opts)
     const textEncoder = this.snapshotMode === 'string' ? new TextEncoder() : null
-    return new TransformStream<Uint8Array, unknown>({
-      transform: async (chunk, controller): Promise<void> => {
+    return new TransformStream<string | Uint8Array, unknown>({
+      transform: (chunk, controller) => {
         try {
-          parser.write(chunk)
+          this.writeChunk(context, chunk, opts)
           if (this.snapshotMode === 'object') {
             controller.enqueue(this.schemaInstance)
           } else if (textEncoder) {
             controller.enqueue(textEncoder.encode(JSON.stringify(this.schemaInstance)))
           }
         } catch (err) {
-          if (typeof parser.onError === 'function') {
-            parser.onError(err as Error)
+          if (typeof context.parser?.onError === 'function') {
+            context.parser.onError(err as Error)
           }
-          /** Soft reset parser on any error; drop this chunk */
-          parser = new JSONParser({
-            stringBufferSize: opts.stringBufferSize ?? 0,
-            handleUnescapedNewLines: opts.handleUnescapedNewLines ?? true,
-            strictRootObject: true,
-          })
-          parser.onToken = this.handleToken.bind(this)
-          parser.onValue = () => undefined
-          parser.onError = (e: Error) =>
-            console.warn('SchemaStream parser warning (after reset):', e?.message ?? e)
+          this.resetContext(context, opts)
         }
       },
       flush: () => {
         if (this.onKeyComplete) {
           this.onKeyComplete({
-            completedPaths: this.completedPaths,
+            completedPaths: this.completedPaths.map((path) => [...path]),
             activePath: [],
           })
         }
         this.activePath = []
       },
     })
+  }
+
+  public ingest(
+    prefix: PathSegment[],
+    chunk: string | Uint8Array,
+    opts: ParserOptions = SchemaStream.defaultParserOpts
+  ): IngestOutcome {
+    const context = this.ensureContext(prefix, opts)
+    return this.writeChunk(context, chunk, opts)
+  }
+
+  public releaseContext(prefix: PathSegment[]): void {
+    const key = SchemaStream.contextKey(prefix)
+    const context = this.contexts.get(key)
+    if (!context) {
+      return
+    }
+    this.disposeParser(context)
+    context.activePath = []
+    context.completedPaths = []
+    context.recentCompletions = []
+    context.structureDepth = 0
+    context.inString = false
+    context.escaped = false
+    this.contexts.delete(key)
+  }
+
+  public current(): NestedObject {
+    return this.schemaInstance
+  }
+
+  public getActivePath(): PathSegment[] {
+    return [...this.activePath]
+  }
+
+  public getCompletedPaths(): PathSegment[][] {
+    return this.completedPaths.map((path) => [...path])
+  }
+
+  private writeChunk(
+    context: ParserContext,
+    chunk: string | Uint8Array,
+    opts: ParserOptions
+  ): IngestOutcome {
+    if (!context.parser) {
+      return { completions: [], closed: true }
+    }
+    this.updateStructureDepth(context, chunk)
+    try {
+      context.parser.write(chunk)
+    } catch (error) {
+      if (typeof context.parser.onError === 'function') {
+        context.parser.onError(error as Error)
+      }
+      this.resetContext(context, opts)
+    }
+    const completed = context.recentCompletions
+    context.recentCompletions = []
+    const closed = context.structureDepth <= 0
+    return {
+      completions: completed.map((path) => [...path]),
+      closed,
+    }
+  }
+
+  private static readonly textDecoder =
+    typeof TextDecoder === 'undefined' ? null : new TextDecoder()
+
+  private updateStructureDepth(context: ParserContext, chunk: string | Uint8Array): void {
+    const decoder = SchemaStream.textDecoder
+    const text =
+      typeof chunk === 'string' ? chunk
+      : decoder ? decoder.decode(chunk)
+      : Array.from(chunk as Uint8Array)
+          .map((code) => String.fromCharCode(code))
+          .join('')
+
+    let delta = 0
+    let { inString, escaped } = context
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i]
+      if (inString) {
+        if (escaped) {
+          escaped = false
+          continue
+        }
+        if (char === '\\') {
+          escaped = true
+          continue
+        }
+        if (char === '"') {
+          inString = false
+        }
+        continue
+      }
+
+      if (char === '"') {
+        inString = true
+        continue
+      }
+
+      if (char === '{' || char === '[') {
+        delta++
+        continue
+      }
+      if (char === '}' || char === ']') {
+        delta--
+      }
+    }
+
+    context.structureDepth = Math.max(0, context.structureDepth + delta)
+    context.inString = inString
+    context.escaped = escaped
   }
 }

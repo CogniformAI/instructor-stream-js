@@ -116,6 +116,8 @@ Instructor, while powerful for server-side data validation and extraction, prese
 
 - **Ease of Use**: Using WebSockets, developers can stream the entire partially hydrated model to the client, simplifying the process of updating the UI in real time.
 
+!!! note "SchemaStream targets WebSockets, not SSE" The SchemaStream runtime reuses parser instances per LangGraph node and tracks structural depth across message boundaries. WebSocket frames deliver UTF-8 strings without extra re-encoding, keeping that tracking accurate and inexpensive. SSE, by contrast, fragments payloads and forces repeated encode/decode work, which quickly regresses latency and memory usage for the snapshot pipeline. When you wire up SchemaStream, prefer WebSockets and only drop to SSE if you add your own buffering to reassemble full JSON strings before ingestion.
+
 ### Alternatives in Serverless Environments
 
 - **Challenges in Serverless**: In serverless environments or scenarios where WebSockets may not be feasible, streaming large, fully hydrated models becomes more complicated due to limitations in transferring large data chunks efficiently.

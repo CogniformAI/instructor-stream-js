@@ -9,6 +9,7 @@
     "bench:ci": "vitest bench --run",
     "bench:long": "BENCH_TIME=15000 vitest bench --run",
     "bench:simple": "tsx simple-bench.ts",
+    "bench:langgraph": "tsx langgraph-adapter.bench.ts",
     "clean": "rm -rf node_modules"
   },
   "repository": {
@@ -35,6 +36,7 @@
     "typescript": "catalog:",
     "vitest": "catalog:",
     "tinybench": "^2.9.0",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "zod": "catalog:"
   }
 }

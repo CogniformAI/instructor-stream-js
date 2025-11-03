@@ -1,5 +1,13 @@
 # @cogniformai/instructor-stream
 
+## 0.4.2
+
+### Patch Changes
+
+- fix: persist string/escape flags on streaming parser contexts so LangGraph snapshots survive chunk boundaries that land inside string literals.
+- docs: document that SchemaStream expects websocket frames and clarify SSE caveats.
+- chore: add a reusable LangGraph JSONL fixture plus a tinybench harness for fastAdapter + SchemaStream to baseline throughput.
+
 ## 0.4.1
 
 ### Patch Changes

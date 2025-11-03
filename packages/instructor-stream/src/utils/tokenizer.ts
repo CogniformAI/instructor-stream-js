@@ -85,6 +85,7 @@ export interface TokenizerOptions {
   numberBufferSize?: number
   separator?: string | undefined
   handleUnescapedNewLines?: boolean
+  stringEmitInterval?: number
 }
 
 const defaultOpts: TokenizerOptions = {
@@ -92,6 +93,7 @@ const defaultOpts: TokenizerOptions = {
   numberBufferSize: 0,
   separator: undefined,
   handleUnescapedNewLines: false,
+  stringEmitInterval: 256,
 }
 
 export class TokenizerError extends Error {
@@ -129,17 +131,20 @@ export default class Tokenizer {
       })
     }
 
+    const emitInterval = opts?.stringEmitInterval ?? defaultOpts.stringEmitInterval ?? 256
+
     this.bufferedString =
       opts?.stringBufferSize && opts.stringBufferSize > 0 ?
         new BufferedString(opts.stringBufferSize)
       : new NonBufferedString({
           onIncrementalString,
+          interval: emitInterval,
         })
 
     this.bufferedNumber =
       opts?.numberBufferSize && opts.numberBufferSize > 0 ?
         new BufferedString(opts.numberBufferSize, onIncrementalString)
-      : new NonBufferedString({})
+      : new NonBufferedString({ interval: emitInterval })
 
     this.handleUnescapedNewLines = opts?.handleUnescapedNewLines ?? false
     this.separator = opts?.separator as string

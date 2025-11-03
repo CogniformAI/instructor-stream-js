@@ -20,7 +20,7 @@ Example of streaming knowledge graph construction.
 
 ### langgraph-channels/
 
-Shows how to route LangGraph message tuples into `consumeLanggraphChannels` and receive instructor-style snapshots per node.
+Shows how to route LangGraph message tuples into `streamLangGraph` and receive instructor-style snapshots per node.
 
 ## Coming Soon
 
