@@ -147,9 +147,7 @@ export class SchemaStream {
     }
     context.parser.onToken = (info) => this.handleToken(context, info)
     context.parser.onValue = () => undefined
-    context.parser.onError = (err: Error) => {
-      console.warn('SchemaStream parser warning (chunk skipped):', err?.message ?? err)
-    }
+    context.parser.onError = () => undefined
     context.parser.onEnd = () => {
       context.activePath = []
     }

@@ -37,9 +37,23 @@ We're grateful for their pioneering work in structured LLM extraction and stream
 - ✅ New streaming data format implementation
 - ✅ PNPM workspaces migration
 - ✅ Validation system integration (LLM + moderation)
+- ✅ Effect runtime migration and adapter architecture (v0.5.0)
 - ⏳ Performance optimization and benchmarking
 
 See [PLAN.md](docs/roadmap/PLAN.md) for the complete development roadmap.
+
+## Architecture (v0.5.0)
+
+The library now uses a clean adapter architecture:
+
+- **Core Effect Runtime**: `@cogniformai/instructor-stream` - Main streaming library using Effect for functional error handling
+- **Provider Adapters**:
+  - `@cogniformai/instructor-stream/adapters/openai` - OpenAI adapter using Effect AI internally
+  - `@cogniformai/instructor-stream/adapters/anthropic` - Anthropic adapter (stub)
+  - `@cogniformai/instructor-stream/adapters/google` - Google adapter (stub)
+  - `@cogniformai/instructor-stream/adapters/langgraph` - LangGraph streaming format adapter
+
+Examples are now located in the root `examples/` directory.
 
 ## Quick TODO List
 

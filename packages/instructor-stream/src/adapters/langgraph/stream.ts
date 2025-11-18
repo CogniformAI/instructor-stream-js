@@ -31,26 +31,6 @@ const defaultTypeDefaults = {
 const toStreamingError = (cause: unknown, message: string): StreamingError =>
   cause instanceof StreamingError ? cause : new StreamingError({ message, cause })
 
-const canStructuredClone = typeof globalThis.structuredClone === 'function'
-let structuredCloneFallbackWarned = false
-
-const cloneSnapshot = <A>(value: A): A => {
-  if (canStructuredClone) {
-    return globalThis.structuredClone(value)
-  }
-  if (!structuredCloneFallbackWarned) {
-    structuredCloneFallbackWarned = true
-    console.warn(
-      'streamLangGraph: falling back to JSON cloning because structuredClone is unavailable; snapshots may lose non-JSON data.'
-    )
-  }
-  try {
-    return JSON.parse(JSON.stringify(value)) as A
-  } catch (error) {
-    throw toStreamingError(error, 'Unable to clone snapshot without structuredClone support')
-  }
-}
-
 export const streamLangGraph = <A>(spec: StreamLangGraphSpec<A>) => {
   const resolved = resolveSchema(spec.schema)
   if (!resolved.zod) {
@@ -105,7 +85,7 @@ export const streamLangGraph = <A>(spec: StreamLangGraphSpec<A>) => {
         }
         activeNodes.add(delta.node)
         yield {
-          data: [cloneSnapshot(schemaStream.current()) as Partial<A>],
+          data: [schemaStream.current() as Partial<A>],
           meta: buildMeta(delta.node),
         }
         if (closed) {
