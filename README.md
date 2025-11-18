@@ -47,13 +47,9 @@ See [PLAN.md](docs/roadmap/PLAN.md) for the complete development roadmap.
 The library now uses a clean adapter architecture:
 
 - **Core Effect Runtime**: `@cogniformai/instructor-stream` - Main streaming library using Effect for functional error handling
-- **Provider Adapters**:
-  - `@cogniformai/instructor-stream/adapters/openai` - OpenAI adapter using Effect AI internally
-  - `@cogniformai/instructor-stream/adapters/anthropic` - Anthropic adapter (stub)
-  - `@cogniformai/instructor-stream/adapters/google` - Google adapter (stub)
-  - `@cogniformai/instructor-stream/adapters/langgraph` - LangGraph streaming format adapter
+- **LangGraph Adapter**: `@cogniformai/instructor-stream/adapters/langgraph` - Adapter for LangGraph streaming format
 
-Examples are now located in the root `examples/` directory.
+The LangGraph adapter has been moved to `src/adapters/langgraph/` for better organization. Examples are now located in the root `examples/` directory.
 
 ## Quick TODO List
 
