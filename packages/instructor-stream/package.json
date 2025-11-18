@@ -20,6 +20,24 @@
       "import": "./dist/adapters/langgraph/index.js",
       "require": "./dist/adapters/langgraph/index.cjs",
       "default": "./dist/adapters/langgraph/index.js"
+    },
+    "./adapters/openai": {
+      "types": "./dist/adapters/openai/index.d.ts",
+      "import": "./dist/adapters/openai/index.js",
+      "require": "./dist/adapters/openai/index.cjs",
+      "default": "./dist/adapters/openai/index.js"
+    },
+    "./adapters/anthropic": {
+      "types": "./dist/adapters/anthropic/index.d.ts",
+      "import": "./dist/adapters/anthropic/index.js",
+      "require": "./dist/adapters/anthropic/index.cjs",
+      "default": "./dist/adapters/anthropic/index.js"
+    },
+    "./adapters/google": {
+      "types": "./dist/adapters/google/index.d.ts",
+      "import": "./dist/adapters/google/index.js",
+      "require": "./dist/adapters/google/index.cjs",
+      "default": "./dist/adapters/google/index.js"
     }
   },
   "files": [
