@@ -7,7 +7,10 @@ export default defineConfig((options) => {
     minify: true,
     entry: {
       index: 'src/index.ts',
-      'langgraph/index': 'src/langgraph/index.ts',
+      'adapters/langgraph/index': 'src/adapters/langgraph/index.ts',
+      'adapters/openai/index': 'src/adapters/openai/index.ts',
+      'adapters/anthropic/index': 'src/adapters/anthropic/index.ts',
+      'adapters/google/index': 'src/adapters/google/index.ts',
     },
     target: 'es2020',
     format: ['cjs', 'esm'],
