@@ -61,6 +61,12 @@ async function* mockLangGraphSource(): AsyncIterable<Envelope> {
   }
 }
 
+/**
+ * Start and run a LangGraph streaming pipeline backed by a mocked upstream and log snapshots.
+ *
+ * Creates a stream configured with RootSchema and final validation, drains it to completion,
+ * and logs each snapshot via the provided onSnapshot callback.
+ */
 async function main() {
   const stream = streamLangGraph({
     upstream: iterableToReadableStream(mockLangGraphSource()),
