@@ -1,6 +1,6 @@
 {
   "name": "@cogniformai/instructor-stream",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Streaming-first structured data extraction from LLMs with real-time updates",
   "publishConfig": {
     "access": "public"
@@ -15,17 +15,29 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
-    "./langgraph": {
-      "types": "./dist/langgraph/index.d.ts",
-      "import": "./dist/langgraph/index.js",
-      "require": "./dist/langgraph/index.cjs",
-      "default": "./dist/langgraph/index.js"
-    },
     "./adapters/langgraph": {
-      "types": "./dist/langgraph/index.d.ts",
-      "import": "./dist/langgraph/index.js",
-      "require": "./dist/langgraph/index.cjs",
-      "default": "./dist/langgraph/index.js"
+      "types": "./dist/adapters/langgraph/index.d.ts",
+      "import": "./dist/adapters/langgraph/index.js",
+      "require": "./dist/adapters/langgraph/index.cjs",
+      "default": "./dist/adapters/langgraph/index.js"
+    },
+    "./adapters/openai": {
+      "types": "./dist/adapters/openai/index.d.ts",
+      "import": "./dist/adapters/openai/index.js",
+      "require": "./dist/adapters/openai/index.cjs",
+      "default": "./dist/adapters/openai/index.js"
+    },
+    "./adapters/anthropic": {
+      "types": "./dist/adapters/anthropic/index.d.ts",
+      "import": "./dist/adapters/anthropic/index.js",
+      "require": "./dist/adapters/anthropic/index.cjs",
+      "default": "./dist/adapters/anthropic/index.js"
+    },
+    "./adapters/google": {
+      "types": "./dist/adapters/google/index.d.ts",
+      "import": "./dist/adapters/google/index.js",
+      "require": "./dist/adapters/google/index.cjs",
+      "default": "./dist/adapters/google/index.js"
     }
   },
   "files": [

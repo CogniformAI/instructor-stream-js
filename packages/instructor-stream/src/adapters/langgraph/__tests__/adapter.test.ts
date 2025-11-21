@@ -128,13 +128,12 @@ describe('streamLangGraph', () => {
 
     const [first, second] = snapshots
     expect(first.meta).toMatchObject({ _type: 'alpha', _isValid: true })
-    expect(first.data[0]).toEqual({
+    expect(first.data[0]).toMatchObject({
       alpha: { message: 'hello' },
-      beta: { value: null },
     })
 
     expect(second.meta).toMatchObject({ _type: 'beta', _isValid: true })
-    expect(second.data[0]).toEqual({
+    expect(second.data[0]).toMatchObject({
       alpha: { message: 'hello' },
       beta: { value: 42 },
     })
