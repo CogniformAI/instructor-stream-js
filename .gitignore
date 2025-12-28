@@ -19,8 +19,9 @@ out/
 .DS_Store
 *.pem
 
-# Keep _ai directory for development docs
-_ai/
+# Keep .agents directory for development ref_docs
+.agents/
+.idea/
 
 # debug
 npm-debug.log*
