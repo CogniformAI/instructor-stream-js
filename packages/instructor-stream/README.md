@@ -44,14 +44,14 @@ const program = Stream.runCollect(
 const snapshots = await Effect.runPromise(program)
 for (const chunk of snapshots) {
   console.log('data', chunk.data[0])
-  console.log('meta', chunk.meta)
+  console.log('_meta', chunk._meta)
 }
 ```
 
 ## Features
 
 - **Real-time Updates**: Get structured data as it streams from LLMs
-- **Clean API**: Separate data from metadata with `{ data: T[], meta }` format
+- **Clean API**: Separate data from metadata with `{ data: T[], _meta }` format
 - **Performance Optimized**: Built for production streaming applications
 - **Provider Agnostic**: Works with OpenAI, Anthropic, and more
 

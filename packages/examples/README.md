@@ -42,4 +42,4 @@ npm install
 npm run dev examples/extract_user_stream/index.ts
 ```
 
-For more information on the development roadmap, see [PLAN.md](../../docs/roadmap/PLAN.md).
+For more information on the development roadmap, see [PLAN.md](../../.agents/ref_docs/roadmap/PLAN.md).

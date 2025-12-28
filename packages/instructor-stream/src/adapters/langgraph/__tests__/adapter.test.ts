@@ -127,12 +127,12 @@ describe('streamLangGraph', () => {
     expect(snapshots).toHaveLength(2)
 
     const [first, second] = snapshots
-    expect(first.meta).toMatchObject({ _type: 'alpha', _isValid: true })
+    expect(first._meta).toMatchObject({ _type: 'alpha', _isValid: true })
     expect(first.data[0]).toMatchObject({
       alpha: { message: 'hello' },
     })
 
-    expect(second.meta).toMatchObject({ _type: 'beta', _isValid: true })
+    expect(second._meta).toMatchObject({ _type: 'beta', _isValid: true })
     expect(second.data[0]).toMatchObject({
       alpha: { message: 'hello' },
       beta: { value: 42 },
@@ -202,7 +202,7 @@ describe('streamLangGraph', () => {
     const collected = await Effect.runPromise(Stream.runCollect(stream))
     expect(collected.length).toBe(1)
     const [chunk] = collected
-    expect(chunk.meta._type).toBe('fallback')
+    expect(chunk._meta._type).toBe('fallback')
     expect(chunk.data[0]).toEqual({ fallback: { message: 'hi' } })
   })
 })

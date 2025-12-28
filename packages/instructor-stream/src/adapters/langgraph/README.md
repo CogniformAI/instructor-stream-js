@@ -1,6 +1,6 @@
 # LangGraph Adapter
 
-Connect LangGraph “messages tuple” envelopes to the Effect-based instructor-stream core. The new adapter peels `{ langgraph_node, text-delta }` tuples, multiplexes them through a single `SchemaStream`, and emits `{ data, meta }` snapshots as soon as any node completes a JSON value—no per-node pipelines required.
+Connect LangGraph “messages tuple” envelopes to the Effect-based instructor-stream core. The new adapter peels `{ langgraph_node, text-delta }` tuples, multiplexes them through a single `SchemaStream`, and emits `{ data, _meta }` snapshots as soon as any node completes a JSON value—no per-node pipelines required.
 
 ## Quick Start
 
@@ -27,9 +27,9 @@ async function run(streamOfEnvelopes: AsyncIterable<unknown>) {
     schema: RootSchema,
     validation: 'final', // 'none' | 'final' (defaults to 'none')
     // defaultNode: 'fallback', // optionally direct tuples missing `langgraph_node`
-    onSnapshot: async (snapshot, meta) => {
-      console.log(`[${meta._type}]`, snapshot, meta)
-    },
+  onSnapshot: async (snapshot, meta) => {
+    console.log(`[${meta._type}]`, snapshot, meta)
+  },
   })
 
   await Effect.runPromise(Stream.runDrain(stream))
@@ -68,7 +68,7 @@ const RootSchema = {
 Every emission is the full root object as it exists at that moment:
 
 - `chunk.data[0]` — the aggregated snapshot keyed by node
-- `chunk.meta` — instructor metadata (`_type` = node, `_activePath`, `_completedPaths`, `_isValid`)
+- `chunk._meta` — instructor metadata (`_type` = node, `_activePath`, `_completedPaths`, `_isValid`)
 
 Because snapshots are immutable references to the shared object, downstream consumers should clone if they plan to mutate.
 

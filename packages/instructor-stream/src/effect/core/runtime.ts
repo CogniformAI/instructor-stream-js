@@ -2,14 +2,14 @@ import { Effect, Layer, Stream } from 'effect'
 import type { CompletionMeta, ActivePath, CompletedPaths } from './types.ts'
 import { SchemaStream } from '@/utils/streaming-json-parser.ts'
 import { readableStreamToAsyncGenerator } from '@/utils/streams.ts'
-import { resolveSchema, type SchemaSource, type SchemaValidationMode } from '../schema.ts'
+import { resolveSchema, type SchemaSource, type SchemaValidationMode } from '@/effect'
 import {
   SchemaResolutionError,
   SnapshotValidationError,
   StreamingError,
   type StreamingPipelineError,
-} from '../errors.ts'
-import type { SnapshotChunk } from './snapshots.ts'
+} from '@/effect'
+import type { SnapshotChunk } from '@/effect'
 import type { Schema } from 'effect/Schema'
 import * as SchemaApi from 'effect/Schema'
 
@@ -257,7 +257,7 @@ const hydrate = <A>({
 
         controller.enqueue({
           data: [snapshot],
-          meta,
+          _meta: meta,
         })
       } catch (error) {
         controller.error(
@@ -300,7 +300,7 @@ const hydrate = <A>({
       }
       controller.enqueue({
         data: [lastSnapshot],
-        meta,
+        _meta: meta,
       })
     },
   })

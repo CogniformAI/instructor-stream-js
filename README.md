@@ -40,7 +40,7 @@ We're grateful for their pioneering work in structured LLM extraction and stream
 - ✅ Effect runtime migration and adapter architecture (v0.5.0)
 - ⏳ Performance optimization and benchmarking
 
-See [PLAN.md](docs/roadmap/PLAN.md) for the complete development roadmap.
+See [PLAN.md](.agents/ref_docs/roadmap/PLAN.md) for the complete development roadmap.
 
 ## Architecture (v0.5.0)
 
@@ -127,7 +127,7 @@ for await (const chunk of stream) {
 
 ## Development Timeline
 
-See [PLAN.md](docs/roadmap/PLAN.md) for detailed roadmap. Progress:
+See [PLAN.md](.agents/ref_docs/roadmap/PLAN.md) for detailed roadmap. Progress:
 
 - **Phase 0**: Repository cleanup and dependency integration ✅ _(completed)_
 - **Phase 1**: Zod 4 migration and data shape restructuring ✅ _(completed)_

@@ -63,8 +63,8 @@ describe('Effect instructor stream', () => {
 
     const final = snapshots[snapshots.length - 1]!
     expect(final.data[0]).toEqual({ name: 'Ada', age: 42 })
-    expect(final.meta._type).toBeUndefined()
-    expect(final.meta._isValid).toBe(true)
+    expect(final._meta._type).toBeUndefined()
+    expect(final._meta._isValid).toBe(true)
   })
 
   test('creates schema stubs using defaults', async () => {

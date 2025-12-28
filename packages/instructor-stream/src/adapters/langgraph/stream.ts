@@ -86,7 +86,7 @@ export const streamLangGraph = <A>(spec: StreamLangGraphSpec<A>) => {
         activeNodes.add(delta.node)
         yield {
           data: [schemaStream.current() as Partial<A>],
-          meta: buildMeta(delta.node),
+          _meta: buildMeta(delta.node),
         }
         if (closed) {
           schemaStream.releaseContext([delta.node])
@@ -144,7 +144,7 @@ export const streamLangGraph = <A>(spec: StreamLangGraphSpec<A>) => {
     Effect.tryPromise({
       try: async () => {
         const snapshot = chunk.data[0]
-        await spec.onSnapshot?.(snapshot ?? {}, chunk.meta)
+        await spec.onSnapshot?.(snapshot ?? {}, chunk._meta)
         return chunk
       },
       catch: (cause) => toStreamingError(cause, 'LangGraph onSnapshot handler failed'),

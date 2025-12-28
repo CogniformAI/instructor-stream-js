@@ -56,7 +56,7 @@ describe('OpenAI Adapter', () => {
     expect(snapshots.length).toBeGreaterThan(0)
     const final = snapshots[snapshots.length - 1]!
     expect(final.data[0]).toEqual({ name: 'Alice', age: 30 })
-    expect(final.meta._isValid).toBe(true)
+    expect(final._meta._isValid).toBe(true)
   })
   test('verifies no cloning - referential equality across emissions', async () => {
     const schema = z.object({
@@ -119,7 +119,7 @@ describe('OpenAI Adapter', () => {
     const snapshots = Chunk.toReadonlyArray(chunk)
     expect(snapshots.length).toBeGreaterThan(0)
     const final = snapshots[snapshots.length - 1]!
-    expect(final.meta._isValid).toBe(false)
+    expect(final._meta._isValid).toBe(false)
   })
   test('createOpenAILayers exports layer helper', () => {
     const layers = createOpenAILayers({ apiKey: 'fake-key', model: 'gpt-4o-mini' })
