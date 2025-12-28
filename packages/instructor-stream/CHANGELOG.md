@@ -1,5 +1,12 @@
 # @cogniformai/instructor-stream
 
+## 0.5.1
+
+### Patch Changes
+
+- feat: emit `_meta` in streaming snapshots across core runtime, adapters, and tests to keep metadata out of payloads.
+- docs: align examples and guidance with the `{ data, _meta }` streaming format.
+
 ## 0.4.2
 
 ### Patch Changes
