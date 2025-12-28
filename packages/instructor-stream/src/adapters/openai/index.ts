@@ -2,6 +2,7 @@ import { Layer, Redacted } from 'effect'
 import { OpenAiClient, OpenAiLanguageModel } from '@effect/ai-openai'
 import * as NodeHttpClient from '@effect/platform-node/NodeHttpClient'
 import { SnapshotHydratorLayer } from '@/effect/core/runtime.ts'
+
 export interface OpenAIAdapterConfig {
   apiKey: string
   model?: string

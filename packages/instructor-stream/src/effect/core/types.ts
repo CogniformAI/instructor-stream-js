@@ -1,4 +1,4 @@
-import type { SchemaValidationMode } from '../schema.ts'
+import type { SchemaValidationMode } from '@/effect'
 
 export type ActivePath = (string | number | undefined)[]
 export type CompletedPaths = ActivePath[]

@@ -12,4 +12,4 @@ pr_review:
     - 'Function and Method Naming Should Follow Consistent Patterns'
     - 'If library code changes, expect documentation to be updated'
     - 'If library code changes, check if tests are updated'
-    - 'If a new `md` file is created in `docs`, make sure it’s added to mkdocs.yml'
+    - 'If a new `md` file is created in `ref_docs`, make sure it’s added to mkdocs.yml'

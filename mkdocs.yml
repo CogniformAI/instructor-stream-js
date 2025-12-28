@@ -4,7 +4,7 @@ site_description: Structured LLM outputs with Zod
 repo_name: instructor
 repo_url: https://github.com/instructor-ai/instructor-js
 site_url: https://js.useinstructor.com/
-edit_uri: edit/main/docs/
+edit_uri: edit/main/ref_docs/
 copyright: Copyright &copy; 2024 Jason Liu
 theme:
   name: material
@@ -69,7 +69,7 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  custom_dir: docs/overrides
+  custom_dir: ref_docs/overrides
 # Extensions
 markdown_extensions:
   - abbr

@@ -50,8 +50,7 @@ When writing complex features or significant refactors, use an ExecPlan (as desc
 
 # Effect Migration
 
-- Check the `MIGRATION.md` file with the rules and style of Effect that we are going to use. Always refer to the MIGRATION file and double check that you are follwoing the right conventions for Effect
 - Take advantage of Typescript, for easier itteration. This will help find small errors throught the codebase.
 - DO NOT worry about backwards compatibilty and by this I mean I dont want half the code in one runtime and half in another, If we are going to migrate this to Effect, then its go big or go home. I want this to be using the Effect runtime and all of its built-ins where possible.
 
-NOTE: The effect docs are in the `effect-docs` folder at the root of the project.
+NOTE: Effect documentation lives under `.agents/ref_docs/effect-docs` (see `.agents/ref_docs/README.md` for entry points).

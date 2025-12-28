@@ -169,7 +169,7 @@ const partsToProviderStream = <R, E, Tools extends Record<string, Tool.Any>>(
  * @returns A Stream that emits hydrated objects conforming to the schema
  *
  * @example
- * ```typescript
+ * ```TypeScript
  * const userStream = stream({
  *   prompt: "Extract user information",
  *   schema: z.object({ name: z.string(), age: z.number() })
@@ -209,7 +209,7 @@ export const stream = <A>(request: StreamRequest<A>) =>
  * @returns An Effect that produces a stubbed value conforming to the schema
  *
  * @example
- * ```typescript
+ * ```TypeScript
  * const userSchema = S.struct({ name: S.string, age: S.number });
  * const userStub = stub(userSchema, { name: "John" });
  * ```
