@@ -114,8 +114,8 @@ export default class Tokenizer {
   private bufferedNumber: StringBuilder
   private unicode?: string // unicode escapes
   private highSurrogate?: number | undefined
-  private bytes_remaining = 0 // number of bytes remaining in multi byte utf8 char to read after split boundary
-  private bytes_in_sequence = 0 // bytes in multi byte utf8 char to read
+  private bytes_remaining = 0 // number of bytes remaining in multibyte utf8 char to read after split boundary
+  private bytes_in_sequence = 0 // bytes in multibyte utf8 char to read
   private char_split_buffer = new Uint8Array(4) // for rebuilding chars split before boundary is reached
   private encoder = new TextEncoder()
   private offset = -1
@@ -179,7 +179,6 @@ export default class Tokenizer {
       switch (this.state) {
         case TokenizerStates.START:
           this.offset++
-
           if (this.separatorBytes && n === this.separatorBytes[0]) {
             if (this.separatorBytes.length === 1) {
               this.state = TokenizerStates.START
@@ -193,7 +192,6 @@ export default class Tokenizer {
             this.state = TokenizerStates.SEPARATOR
             continue
           }
-
           if (
             n === charset.SPACE ||
             n === charset.NEWLINE ||
@@ -203,7 +201,6 @@ export default class Tokenizer {
             // whitespace
             continue
           }
-
           if (n === charset.LEFT_CURLY_BRACKET) {
             this.onToken({
               token: TokenType.LEFT_BRACE,
@@ -252,49 +249,41 @@ export default class Tokenizer {
             })
             continue
           }
-
           if (n === charset.LATIN_SMALL_LETTER_T) {
             this.state = TokenizerStates.TRUE1
             continue
           }
-
           if (n === charset.LATIN_SMALL_LETTER_F) {
             this.state = TokenizerStates.FALSE1
             continue
           }
-
           if (n === charset.LATIN_SMALL_LETTER_N) {
             this.state = TokenizerStates.NULL1
             continue
           }
-
           if (n === charset.QUOTATION_MARK) {
             this.bufferedString.reset()
             this.state = TokenizerStates.STRING_DEFAULT
             continue
           }
-
           if (n >= charset.DIGIT_ONE && n <= charset.DIGIT_NINE) {
             this.bufferedNumber.reset()
             this.bufferedNumber.appendChar(n)
             this.state = TokenizerStates.NUMBER_AFTER_INITIAL_NON_ZERO
             continue
           }
-
           if (n === charset.DIGIT_ZERO) {
             this.bufferedNumber.reset()
             this.bufferedNumber.appendChar(n)
             this.state = TokenizerStates.NUMBER_AFTER_INITIAL_ZERO
             continue
           }
-
           if (n === charset.HYPHEN_MINUS) {
             this.bufferedNumber.reset()
             this.bufferedNumber.appendChar(n)
             this.state = TokenizerStates.NUMBER_AFTER_INITIAL_MINUS
             continue
           }
-
           break
         // STRING
         case TokenizerStates.STRING_DEFAULT:
@@ -303,7 +292,6 @@ export default class Tokenizer {
             this.bufferedString.appendChar(charset.LATIN_SMALL_LETTER_N) // Appends 'n'
             continue
           }
-
           if (n === charset.QUOTATION_MARK) {
             const string = this.bufferedString.toString()
             this.state = TokenizerStates.START
@@ -315,14 +303,12 @@ export default class Tokenizer {
             this.offset += this.bufferedString.byteLength + 1
             continue
           }
-
           if (n === charset.REVERSE_SOLIDUS) {
             this.state = TokenizerStates.STRING_AFTER_BACKSLASH
             continue
           }
-
           if (n >= 128) {
-            // Parse multi byte (>=128) chars one at a time
+            /** Parse multibyte (>=128) chars one at a time */
             if (n >= 194 && n <= 223) {
               this.bytes_in_sequence = 2
             } else if (n <= 239) {
@@ -330,30 +316,28 @@ export default class Tokenizer {
             } else {
               this.bytes_in_sequence = 4
             }
-
             if (this.bytes_in_sequence <= buffer.length - i) {
-              // if bytes needed to complete char fall outside buffer length, we have a boundary split
+              /** if bytes needed to complete char fall outside buffer length, we have a boundary split */
               this.bufferedString.appendBuf(buffer, i, i + this.bytes_in_sequence)
               i += this.bytes_in_sequence - 1
               continue
             }
-
             this.bytes_remaining = i + this.bytes_in_sequence - buffer.length
             this.char_split_buffer.set(buffer.subarray(i))
             i = buffer.length - 1
             this.state = TokenizerStates.STRING_INCOMPLETE_CHAR
             continue
           }
-
           if (n >= charset.SPACE) {
             this.bufferedString.appendChar(n)
             continue
           }
-
           break
         case TokenizerStates.STRING_INCOMPLETE_CHAR:
-          // check for carry over of a multi byte char split between data chunks
-          // & fill temp buffer it with start of this data chunk up to the boundary limit set in the last iteration
+          /**
+           * Check for carry over of a multibyte char split between data chunks
+           * & fill temp buffer it with start of this data chunk up to the boundary limit set in the last iteration
+           */
           this.char_split_buffer.set(
             buffer.subarray(i, i + this.bytes_remaining),
             this.bytes_in_sequence - this.bytes_remaining
@@ -368,13 +352,11 @@ export default class Tokenizer {
             this.state = TokenizerStates.STRING_DEFAULT
             continue
           }
-
           if (n === charset.LATIN_SMALL_LETTER_U) {
             this.unicode = ''
             this.state = TokenizerStates.STRING_UNICODE_DIGIT_1
             continue
           }
-
           break
         case TokenizerStates.STRING_UNICODE_DIGIT_1:
         case TokenizerStates.STRING_UNICODE_DIGIT_2:
@@ -398,14 +380,14 @@ export default class Tokenizer {
             const intVal = parseInt(this.unicode + String.fromCharCode(n), 16)
             if (this.highSurrogate === undefined) {
               if (intVal >= 0xd8_00 && intVal <= 0xdb_ff) {
-                //<55296,56319> - highSurrogate
+                /** <55296,56319> - highSurrogate */
                 this.highSurrogate = intVal
               } else {
                 this.bufferedString.appendBuf(this.encoder.encode(String.fromCharCode(intVal)))
               }
             } else {
               if (intVal >= 0xdc_00 && intVal <= 0xdf_ff) {
-                //<56320,57343> - lowSurrogate
+                /** <56320,57343> - lowSurrogate */
                 this.bufferedString.appendBuf(
                   this.encoder.encode(String.fromCharCode(this.highSurrogate, intVal))
                 )
@@ -480,20 +462,17 @@ export default class Tokenizer {
             this.state = TokenizerStates.NUMBER_AFTER_DECIMAL
             continue
           }
-
           break
         case TokenizerStates.NUMBER_AFTER_DECIMAL:
           if (n >= charset.DIGIT_ZERO && n <= charset.DIGIT_NINE) {
             this.bufferedNumber.appendChar(n)
             continue
           }
-
           if (n === charset.LATIN_SMALL_LETTER_E || n === charset.LATIN_CAPITAL_LETTER_E) {
             this.bufferedNumber.appendChar(n)
             this.state = TokenizerStates.NUMBER_AFTER_E
             continue
           }
-
           i--
           this.state = TokenizerStates.START
           this.emitNumber()
@@ -504,14 +483,13 @@ export default class Tokenizer {
             this.state = TokenizerStates.NUMBER_AFTER_E_AND_SIGN
             continue
           }
-        /* falls through intentionally */
+        /** falls through intentionally */
         case TokenizerStates.NUMBER_AFTER_E_AND_SIGN:
           if (n >= charset.DIGIT_ZERO && n <= charset.DIGIT_NINE) {
             this.bufferedNumber.appendChar(n)
             this.state = TokenizerStates.NUMBER_AFTER_E_AND_DIGIT
             continue
           }
-
           break
         case TokenizerStates.NUMBER_AFTER_E_AND_DIGIT:
           if (n >= charset.DIGIT_ZERO && n <= charset.DIGIT_NINE) {
@@ -523,7 +501,7 @@ export default class Tokenizer {
           this.state = TokenizerStates.START
           this.emitNumber()
           continue
-        /** TRUE is split into four tokens t r u e and emitted only when complete */
+        /** TRUE is split into four tokens t-r-u-e and emitted only when complete */
         case TokenizerStates.TRUE1:
           if (n === charset.LATIN_SMALL_LETTER_R) {
             this.state = TokenizerStates.TRUE2
@@ -548,7 +526,7 @@ export default class Tokenizer {
             continue
           }
           break
-        /** FALSE is split into five tokens f a l s e and emitted only when complete */
+        /** FALSE is split into five tokens f-a-l-s-e and emitted only when complete */
         case TokenizerStates.FALSE1:
           if (n === charset.LATIN_SMALL_LETTER_A) {
             this.state = TokenizerStates.FALSE2
@@ -579,7 +557,7 @@ export default class Tokenizer {
             continue
           }
           break
-        /** NULL tokens are split by char n u l l */
+        /** NULL tokens are split by char n-u-l-l */
         case TokenizerStates.NULL1:
           if (n === charset.LATIN_SMALL_LETTER_U) {
             this.state = TokenizerStates.NULL2
@@ -689,20 +667,20 @@ export default class Tokenizer {
     }
   }
   /**
-   * @description Meant to be overridedn by the consumer
+   * @description Meant to be overridden by the consumer
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onToken(parsedToken: ParsedTokenInfo): void {
     throw new TokenizerError('Can\'t emit tokens before the "onToken" callback has been set up.')
   }
   /**
-   * @description Meant to be overridedn by the consumer
+   * @description Meant to be overridden by the consumer
    */
   public onError(err: Error): void {
     throw err
   }
   /**
-   * @description Meant to be overridedn by the consumer
+   * @description Meant to be overridden by the consumer
    */
   public onEnd(): void {}
 }

@@ -1,4 +1,4 @@
-import { setDeep, type Indexable } from './path.ts'
+import { type Indexable, setDeep } from './path.ts'
 import { z } from 'zod'
 import JSONParser from './json-parser.ts'
 import { ParsedTokenInfo, StackElement, TokenParserMode, TokenParserState } from './token-parser.ts'
@@ -55,7 +55,7 @@ export type IngestOutcome = {
  * with both Zod v3 and v4. No internal properties (e.g. `_def`) are used.
  */
 export class SchemaStream {
-  private schemaInstance: NestedObject
+  private readonly schemaInstance: NestedObject
   private readonly onKeyComplete: OnKeyCompleteCallback | null
   private readonly autoJSONMode: AutoJSONMode
   private readonly maxUnstringifyDepth: number
@@ -368,8 +368,7 @@ export class SchemaStream {
     }
     let nextValue: ParsedTokenInfo['value'] | NestedValue = value
     if (!partial && typeof value === 'string' && this.autoJSONMode !== 'off') {
-      const unwrapped = this.unstringifyIfJSON(value)
-      nextValue = unwrapped
+      nextValue = this.unstringifyIfJSON(value)
     }
     setDeep(this.schemaInstance as Indexable, fullPath, nextValue)
   }
@@ -596,7 +595,6 @@ export class SchemaStream {
       : Array.from(chunk as Uint8Array)
           .map((code) => String.fromCharCode(code))
           .join('')
-
     let delta = 0
     let { inString, escaped } = context
     for (let i = 0; i < text.length; i++) {
@@ -615,12 +613,10 @@ export class SchemaStream {
         }
         continue
       }
-
       if (char === '"') {
         inString = true
         continue
       }
-
       if (char === '{' || char === '[') {
         delta++
         continue
